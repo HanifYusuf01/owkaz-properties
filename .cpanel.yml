@@ -2,5 +2,5 @@
 deployment:
   tasks:
     - export DEPLOYPATH=/home/neonwave/api-owkaz-git
-    - cd /home/neonwave/api-owkaz-git/backend && /home/neonwave/nodevenv/api-owkaz/20/bin/npm install
-    - cd /home/neonwave/api-owkaz-git/backend && /home/neonwave/nodevenv/api-owkaz/20/bin/npm run build
+    - cd /home/neonwave/api-owkaz-git/backend && /home/neonwave/nodevenv/api-owkaz-git/20/bin/npm install
+    - cd /home/neonwave/api-owkaz-git/backend && /home/neonwave/nodevenv/api-owkaz-git/20/bin/npm run build
