@@ -1,0 +1,34 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Sora:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-navy: #0B2540;
+  --color-navy-mid: #163557;
+  --color-teal: #0E7C6E;
+  --color-teal-light: #12A08E;
+  --color-gold: #C8882A;
+  --color-gold-light: #E5A84A;
+  --color-cream: #F7F3ED;
+  --color-ink: #111827;
+  --color-muted: #6B7280;
+  --color-border: #E5E0D8;
+  --color-surface: #FAFAF8;
+
+  --font-display: 'DM Serif Display', Georgia, serif;
+  --font-body: 'Sora', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-ink);
+  background: #ffffff;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
