@@ -17,7 +17,10 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: ['http://localhost:5173', 'http://localhost:4173'],
+    origin: [
+      'https://owkaz.properties.neonwave.com.ng',
+      'http://localhost:5173',
+    ],
     credentials: true,
   });
 

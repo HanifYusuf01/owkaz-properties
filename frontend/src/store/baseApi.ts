@@ -1,29 +1,33 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
-import type { RootState } from './index';
-import { logout, setCredentials } from '../features/auth/authSlice';
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import type {
+  BaseQueryFn,
+  FetchArgs,
+  FetchBaseQueryError,
+} from "@reduxjs/toolkit/query/react";
+import type { RootState } from "./index";
+import { logout, setCredentials } from "../features/auth/authSlice";
 
 const rawBaseQuery = fetchBaseQuery({
-  baseUrl: '/api',
+  baseUrl: import.meta.env.VITE_API_URL || "/api",
   prepareHeaders: (headers, { getState }) => {
     const token = (getState() as RootState).auth.accessToken;
-    if (token) headers.set('Authorization', `Bearer ${token}`);
+    if (token) headers.set("Authorization", `Bearer ${token}`);
     return headers;
   },
 });
 
-const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> = async (
-  args,
-  api,
-  extraOptions,
-) => {
+const baseQueryWithReauth: BaseQueryFn<
+  string | FetchArgs,
+  unknown,
+  FetchBaseQueryError
+> = async (args, api, extraOptions) => {
   let result = await rawBaseQuery(args, api, extraOptions);
 
   if (result.error?.status === 401) {
     const refreshToken = (api.getState() as RootState).auth.refreshToken;
     if (refreshToken) {
       const refreshResult = await rawBaseQuery(
-        { url: '/auth/refresh', method: 'POST', body: { refreshToken } },
+        { url: "/auth/refresh", method: "POST", body: { refreshToken } },
         api,
         extraOptions,
       );
@@ -42,8 +46,8 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
 };
 
 export const baseApi = createApi({
-  reducerPath: 'api',
+  reducerPath: "api",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['Property', 'User', 'Inquiry', 'Notification', 'MyListings'],
+  tagTypes: ["Property", "User", "Inquiry", "Notification", "MyListings"],
   endpoints: () => ({}),
 });
