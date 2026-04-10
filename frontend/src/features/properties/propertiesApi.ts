@@ -33,6 +33,10 @@ export const propertiesApi = baseApi.injectEndpoints({
       query: () => '/properties/featured',
       providesTags: ['Property'],
     }),
+    getPublicSoldProperties: builder.query<PaginatedResponse<Property>, PropertyFilters>({
+      query: (params) => ({ url: '/properties/sold', params }),
+      providesTags: ['Property'],
+    }),
     getMyProperties: builder.query<PaginatedResponse<Property>, PropertyFilters>({
       query: (params) => ({ url: '/properties/my/listings', params }),
       providesTags: ['MyListings'],
@@ -88,6 +92,7 @@ export const {
   useGetAdminPropertiesQuery,
   useGetSoldPropertiesQuery,
   useGetFeaturedPropertiesQuery,
+  useGetPublicSoldPropertiesQuery,
   useGetMyPropertiesQuery,
   useGetPropertyByIdQuery,
   useCreatePropertyMutation,

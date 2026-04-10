@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Home, CheckSquare, MessageSquare, Users, PlusCircle,
-  Bell, User, Star, Search, Bookmark, LogOut, DollarSign, X,
+  Bell, User, Star, Search, Bookmark, LogOut, DollarSign, X, Building2,
 } from 'lucide-react';
 import { UserRole } from '../../types';
 import { useAppDispatch, useAppSelector } from '../../store';
@@ -50,6 +50,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         items: [
           { label: 'All Listings', path: '/dashboard/listings', icon: <Home size={16} /> },
           { label: 'Sold Projects', path: '/dashboard/sold', icon: <DollarSign size={16} /> },
+          { label: 'Projects', path: '/dashboard/projects', icon: <Building2 size={16} /> },
           { label: 'Inquiries', path: '/dashboard/inquiries', icon: <MessageSquare size={16} /> },
           { label: 'Users', path: '/dashboard/users', icon: <Users size={16} /> },
         ],

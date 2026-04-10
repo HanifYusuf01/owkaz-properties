@@ -41,6 +41,11 @@ export class PropertiesController {
     return this.propertiesService.findFeatured();
   }
 
+  @Get('sold')
+  findSoldPublic(@Query() filters: FilterPropertiesDto) {
+    return this.propertiesService.findSold(filters);
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     await this.propertiesService.incrementViews(id);

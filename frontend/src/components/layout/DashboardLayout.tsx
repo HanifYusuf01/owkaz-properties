@@ -19,6 +19,7 @@ const pageTitles: Record<string, string> = {
   '/dashboard/featured': 'Featured Properties',
   '/dashboard/saved': 'Saved Properties',
   '/dashboard/my-inquiries': 'My Inquiries',
+  '/dashboard/projects': 'Projects Management',
 };
 
 export const DashboardLayout = () => {

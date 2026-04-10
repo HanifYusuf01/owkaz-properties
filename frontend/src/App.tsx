@@ -3,7 +3,17 @@ import { useAuth } from './hooks/useAuth';
 
 // Layout
 import { DashboardLayout } from './components/layout/DashboardLayout';
+import { PublicLayout } from './components/layout/PublicLayout';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
+
+// Public pages
+import { HomePage } from './pages/public/HomePage';
+import { PropertiesPage } from './pages/public/PropertiesPage';
+import { SoldPropertiesPage } from './pages/public/SoldPropertiesPage';
+import { PropertyDetailPage } from './pages/public/PropertyDetailPage';
+import { AboutPage } from './pages/public/AboutPage';
+import { ContactPage } from './pages/public/ContactPage';
+import { ProjectsPage } from './pages/public/ProjectsPage';
 
 // Auth pages
 import { LoginPage } from './pages/LoginPage';
@@ -16,6 +26,7 @@ import { DashboardPage } from './pages/dashboard/DashboardPage';
 import { ApprovalQueuePage } from './pages/dashboard/admin/ApprovalQueuePage';
 import { AllListingsPage } from './pages/dashboard/admin/AllListingsPage';
 import { SoldProjectsPage } from './pages/dashboard/admin/SoldProjectsPage';
+import { ProjectsManagementPage } from './pages/dashboard/admin/ProjectsManagementPage';
 import { InquiriesPage } from './pages/dashboard/admin/InquiriesPage';
 import { UsersPage } from './pages/dashboard/admin/UsersPage';
 import { MyListingsPage } from './pages/dashboard/agent/MyListingsPage';
@@ -40,6 +51,17 @@ function AppContent() {
 
   return (
     <Routes>
+      {/* Public marketing site */}
+      <Route element={<PublicLayout />}>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/properties" element={<PropertiesPage />} />
+        <Route path="/sold-properties" element={<SoldPropertiesPage />} />
+        <Route path="/properties/:id" element={<PropertyDetailPage />} />
+        <Route path="/projects" element={<ProjectsPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+      </Route>
+
       {/* Public auth routes */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
@@ -61,6 +83,7 @@ function AppContent() {
             <Route path="/dashboard/inquiries" element={<InquiriesPage />} />
             <Route path="/dashboard/users" element={<UsersPage />} />
             <Route path="/dashboard/create-listing" element={<SubmitPropertyPage />} />
+            <Route path="/dashboard/projects" element={<ProjectsManagementPage />} />
           </Route>
 
           {/* Agent / Owner */}
@@ -79,8 +102,7 @@ function AppContent() {
       </Route>
 
       {/* Fallback */}
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
