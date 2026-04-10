@@ -5,7 +5,6 @@ import {
   useGetFeaturedPropertiesQuery,
   useGetPropertiesQuery,
 } from '../../features/properties/propertiesApi';
-import { formatPrice } from '../../utils/format';
 import { PropertyCard } from '../../components/property/PropertyCard';
 
 const SEARCH_TABS = ['Buy', 'Rent', 'Shortlet', 'Land'];
@@ -62,9 +61,18 @@ const TESTIMONIALS = [
   },
 ];
 
+const PROPERTY_TYPES = [
+  { label: 'House', emoji: '🏠' },
+  { label: 'Apartment', emoji: '🏢' },
+  { label: 'Commercial', emoji: '🏪' },
+  { label: 'Land', emoji: '🌳' },
+  { label: 'Shortlet', emoji: '🏨' },
+];
+
 export const HomePage = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('Buy');
+  const [activeType, setActiveType] = useState('House');
   const [searchQuery, setSearchQuery] = useState('');
 
   const { data: featuredProperties = [] } = useGetFeaturedPropertiesQuery();
@@ -78,7 +86,7 @@ export const HomePage = () => {
   return (
     <div>
       {/* ── HERO ── */}
-      <section className="bg-navy relative overflow-hidden">
+      <section className="bg-navy relative overflow-hidden min-h-[600px]">
         {/* Grid overlay */}
         <div
           className="absolute inset-0 opacity-[0.04]"
@@ -91,12 +99,10 @@ export const HomePage = () => {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left */}
             <div>
-              <div className="inline-flex items-center gap-2 bg-white/10 rounded-full px-4 py-1.5 mb-6">
-                <span className="w-2 h-2 rounded-full bg-teal-light animate-pulse" />
-                <span className="text-white/80 text-xs font-medium">Nigeria's Premier Property Platform</span>
-              </div>
-              <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl text-white leading-tight mb-5">
-                Find Your <span className="text-gold">Perfect</span><br />Property in Nigeria
+              <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl text-white leading-tight mb-6">
+                Find Your{' '}
+                <span className="text-gold italic">Perfect</span>
+                <br />Property in<br />Nigeria
               </h1>
               <p className="text-white/60 text-base sm:text-lg leading-relaxed mb-8 max-w-lg">
                 From Abuja to Lagos, explore thousands of verified listings — residential, commercial, and land — with trusted agents ready to guide you.
@@ -115,30 +121,32 @@ export const HomePage = () => {
                   List Your Property
                 </button>
               </div>
-              <div className="flex gap-8">
+              <div className="flex gap-10">
                 {[
                   { num: '12,400+', label: 'Active Listings' },
                   { num: '3,800+', label: 'Happy Clients' },
                   { num: '250+', label: 'Verified Agents' },
                 ].map((s) => (
                   <div key={s.label}>
-                    <div className="font-display text-2xl text-gold">{s.num}</div>
+                    <div className="font-display text-3xl font-bold text-white">{s.num}</div>
                     <div className="text-white/50 text-xs mt-0.5">{s.label}</div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Search card */}
-            <div className="bg-white rounded-2xl p-6 shadow-2xl">
+            {/* Search card — glass */}
+            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-2xl" style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)' }}>
               {/* Tabs */}
-              <div className="flex gap-1 bg-cream rounded-xl p-1 mb-5">
+              <div className="flex gap-1 mb-5">
                 {SEARCH_TABS.map((t) => (
                   <button
                     key={t}
                     onClick={() => setActiveTab(t)}
-                    className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${
-                      activeTab === t ? 'bg-white text-navy shadow-sm' : 'text-muted hover:text-navy'
+                    className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
+                      activeTab === t
+                        ? 'bg-white text-navy shadow-sm'
+                        : 'text-white/50 hover:text-white'
                     }`}
                   >
                     {t}
@@ -148,68 +156,72 @@ export const HomePage = () => {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-muted uppercase tracking-wide mb-1.5">Location</label>
+                  <label className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1.5">Location</label>
                   <input
                     type="text"
                     placeholder="e.g. Maitama, Abuja or VI Lagos…"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full border border-border rounded-lg px-3 py-2.5 text-sm text-ink placeholder:text-muted/60 focus:outline-none focus:border-teal transition-colors"
+                    className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-teal transition-colors"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-semibold text-muted uppercase tracking-wide mb-1.5">Min Price (₦)</label>
-                    <select className="w-full border border-border rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:border-teal">
-                      <option>Any</option>
-                      <option>5,000,000</option>
-                      <option>10,000,000</option>
-                      <option>20,000,000</option>
-                      <option>50,000,000</option>
+                    <label className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1.5">Min Price (₦)</label>
+                    <select className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-teal appearance-none">
+                      <option value="" className="bg-navy text-white">Any</option>
+                      <option value="5000000" className="bg-navy text-white">₦5M</option>
+                      <option value="10000000" className="bg-navy text-white">₦10M</option>
+                      <option value="20000000" className="bg-navy text-white">₦20M</option>
+                      <option value="50000000" className="bg-navy text-white">₦50M</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-muted uppercase tracking-wide mb-1.5">Max Price (₦)</label>
-                    <select className="w-full border border-border rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:border-teal">
-                      <option>Any</option>
-                      <option>50,000,000</option>
-                      <option>100,000,000</option>
-                      <option>200,000,000</option>
-                      <option>500,000,000+</option>
+                    <label className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1.5">Max Price (₦)</label>
+                    <select className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-teal appearance-none">
+                      <option value="" className="bg-navy text-white">Any</option>
+                      <option value="50000000" className="bg-navy text-white">₦50M</option>
+                      <option value="100000000" className="bg-navy text-white">₦100M</option>
+                      <option value="200000000" className="bg-navy text-white">₦200M</option>
+                      <option value="500000000" className="bg-navy text-white">₦500M+</option>
                     </select>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-muted uppercase tracking-wide mb-1.5">Bedrooms</label>
-                  <select className="w-full border border-border rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:border-teal">
-                    <option>Any</option>
-                    <option>1 Bedroom</option>
-                    <option>2 Bedrooms</option>
-                    <option>3 Bedrooms</option>
-                    <option>4 Bedrooms</option>
-                    <option>5+ Bedrooms</option>
+                  <label className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1.5">Bedrooms</label>
+                  <select className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-teal appearance-none">
+                    <option value="" className="bg-navy text-white">Any</option>
+                    <option value="1" className="bg-navy text-white">1 Bedroom</option>
+                    <option value="2" className="bg-navy text-white">2 Bedrooms</option>
+                    <option value="3" className="bg-navy text-white">3 Bedrooms</option>
+                    <option value="4" className="bg-navy text-white">4 Bedrooms</option>
+                    <option value="5" className="bg-navy text-white">5+ Bedrooms</option>
                   </select>
                 </div>
 
                 <button
                   onClick={handleSearch}
-                  className="w-full flex items-center justify-center gap-2 bg-navy text-white font-semibold text-sm py-3 rounded-xl hover:bg-navy-mid transition-colors"
+                  className="w-full flex items-center justify-center gap-2 bg-teal text-white font-semibold text-sm py-3 rounded-xl hover:bg-teal-light transition-colors"
                 >
                   <Search size={16} /> Search Properties
                 </button>
               </div>
 
               {/* Type chips */}
-              <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-border">
-                {['🏠 House', '🏢 Apartment', '🏪 Commercial', '🌳 Land', '🏨 Shortlet'].map((chip) => (
+              <div className="flex flex-wrap gap-2 mt-4">
+                {PROPERTY_TYPES.map(({ label, emoji }) => (
                   <button
-                    key={chip}
-                    onClick={() => navigate('/properties')}
-                    className="px-3 py-1 rounded-full text-xs font-medium border border-border text-muted hover:border-teal hover:text-teal transition-colors"
+                    key={label}
+                    onClick={() => { setActiveType(label); navigate(`/properties?search=${label}`); }}
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+                      activeType === label
+                        ? 'bg-teal border-teal text-white'
+                        : 'border-white/20 text-white/60 hover:border-white/40 hover:text-white'
+                    }`}
                   >
-                    {chip}
+                    {emoji} {label}
                   </button>
                 ))}
               </div>
@@ -221,14 +233,14 @@ export const HomePage = () => {
       {/* ── FEATURES STRIP ── */}
       <div className="bg-surface border-y border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
             {FEATURES.map((f) => (
-              <div key={f.title} className="flex gap-3">
-                <div className="mt-0.5 flex-shrink-0">{f.icon}</div>
-                <div>
-                  <div className="font-semibold text-sm text-navy mb-0.5">{f.title}</div>
-                  <div className="text-xs text-muted leading-relaxed">{f.desc}</div>
+              <div key={f.title} className="flex flex-col items-center text-center">
+                <div className="w-14 h-14 flex items-center justify-center bg-white border border-border rounded-xl mb-4 shadow-sm">
+                  {f.icon}
                 </div>
+                <div className="font-semibold text-sm text-navy mb-1">{f.title}</div>
+                <div className="text-xs text-muted leading-relaxed">{f.desc}</div>
               </div>
             ))}
           </div>
@@ -349,12 +361,12 @@ export const HomePage = () => {
                 backgroundSize: '40px 40px',
               }}
             />
-            <div className="relative">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-teal-light">Ready to Get Started?</span>
-              <h2 className="font-display text-3xl sm:text-4xl text-white mt-2 mb-3">
+            <div className="flex items-center flex-col">
+              <span className="text-[12px] font-bold uppercase tracking-widest text-teal-light">Ready to Get Started?</span>
+              <h2 className="font-display text-3xl sm:text-6xl text-white mt-2 mb-3">
                 Your Next Property<br />is One Search Away
               </h2>
-              <p className="text-white/60 text-sm mb-8 max-w-md">
+              <p className="text-white/60 text-lg mb-8 max-w-md">
                 Whether you're buying, renting, or selling — Owkaz has you covered across Nigeria.
               </p>
               <div className="flex flex-wrap gap-3">
