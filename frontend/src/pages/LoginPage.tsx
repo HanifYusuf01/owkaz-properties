@@ -88,6 +88,7 @@ export const LoginPage = () => {
               <Input
                 label="Password"
                 type="password"
+                showToggle
                 placeholder="••••••••"
                 error={errors.password?.message}
                 {...register('password')}

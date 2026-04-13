@@ -14,8 +14,12 @@ const schema = z.object({
   name: z.string().min(2, 'Name is required'),
   email: z.string().email('Invalid email'),
   password: z.string().min(8, 'Minimum 8 characters'),
+  confirmPassword: z.string(),
   role: z.string(),
   agency: z.string().optional(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: 'Passwords do not match',
+  path: ['confirmPassword'],
 });
 
 type FormData = z.infer<typeof schema>;
@@ -80,7 +84,8 @@ export const RegisterPage = () => {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <Input label="Full Name" placeholder="Your full name" error={errors.name?.message} {...formRegister('name')} />
             <Input label="Email" type="email" placeholder="you@example.com" error={errors.email?.message} {...formRegister('email')} />
-            <Input label="Password" type="password" placeholder="Minimum 8 characters" error={errors.password?.message} {...formRegister('password')} />
+            <Input label="Password" type="password" showToggle placeholder="Minimum 8 characters" error={errors.password?.message} {...formRegister('password')} />
+            <Input label="Confirm Password" type="password" showToggle placeholder="Re-enter your password" error={errors.confirmPassword?.message} {...formRegister('confirmPassword')} />
 
             <div>
               <label className="text-xs font-semibold uppercase tracking-wide text-navy block mb-2">I am a...</label>

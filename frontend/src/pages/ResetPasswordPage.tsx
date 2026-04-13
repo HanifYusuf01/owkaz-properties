@@ -100,6 +100,7 @@ export const ResetPasswordPage = () => {
                 <Input
                   label="New Password"
                   type="password"
+                  showToggle
                   placeholder="••••••••"
                   error={errors.password?.message}
                   {...register('password')}
@@ -107,6 +108,7 @@ export const ResetPasswordPage = () => {
                 <Input
                   label="Confirm Password"
                   type="password"
+                  showToggle
                   placeholder="••••••••"
                   error={errors.confirmPassword?.message}
                   {...register('confirmPassword')}

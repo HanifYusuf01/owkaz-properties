@@ -1,6 +1,6 @@
 import { IsEnum, IsOptional, IsString } from 'class-validator';
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { UserStatus } from '../user.entity';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { UserRole, UserStatus } from '../user.entity';
 
 export class UpdateUserDto {
   @ApiPropertyOptional()
@@ -23,4 +23,10 @@ export class UpdateUserStatusDto {
   @ApiPropertyOptional({ enum: UserStatus })
   @IsEnum(UserStatus)
   status: UserStatus;
+}
+
+export class UpdateUserRoleDto {
+  @ApiProperty({ enum: UserRole })
+  @IsEnum(UserRole)
+  role: UserRole;
 }

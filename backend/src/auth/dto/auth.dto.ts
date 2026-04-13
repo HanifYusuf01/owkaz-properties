@@ -3,6 +3,13 @@ import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, MinLength } from 'cl
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserRole } from '../../users/user.entity';
 
+const REGISTERABLE_ROLES = [
+  UserRole.BUYER,
+  UserRole.AGENT,
+  UserRole.OWNER,
+] as const;
+type RegisterableRole = (typeof REGISTERABLE_ROLES)[number];
+
 export class RegisterDto {
   @ApiProperty()
   @IsNotEmpty()
@@ -18,9 +25,9 @@ export class RegisterDto {
   @MinLength(8)
   password: string;
 
-  @ApiProperty({ enum: UserRole, default: UserRole.BUYER })
-  @IsEnum(UserRole)
-  role: UserRole;
+  @ApiProperty({ enum: REGISTERABLE_ROLES, default: UserRole.BUYER })
+  @IsEnum(REGISTERABLE_ROLES)
+  role: RegisterableRole;
 
   @ApiPropertyOptional()
   @IsOptional()
