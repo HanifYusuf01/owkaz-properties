@@ -48,7 +48,8 @@ export const RegisterPage = () => {
 
   const onSubmit = async (data: FormData) => {
     try {
-      const tokens = await register(data).unwrap();
+      const { confirmPassword: _, ...payload } = data;
+      const tokens = await register(payload).unwrap();
       dispatch(setCredentials(tokens));
       navigate('/dashboard');
     } catch {
