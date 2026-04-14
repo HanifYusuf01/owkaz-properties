@@ -20,7 +20,7 @@ export const PropertyCard = ({ property, showStatus = false, actions }: Property
       onClick={() => navigate(`/properties/${property.id}`)}
     >
       {/* Image */}
-      <div className="relative h-48 bg-gradient-to-br from-navy-mid to-teal overflow-hidden flex items-center justify-center">
+      <div className="relative h-48 bg-gray-100 overflow-hidden flex items-center justify-center">
         {property.images?.[0] ? (
           <img src={getImageUrl(property.images[0])} alt={property.title} className="w-full h-full object-cover" />
         ) : (

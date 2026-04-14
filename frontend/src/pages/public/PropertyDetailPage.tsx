@@ -5,6 +5,7 @@ import { useGetPropertyByIdQuery } from '../../features/properties/propertiesApi
 import { useCreateInquiryMutation } from '../../features/inquiries/inquiriesApi';
 import { useAppSelector } from '../../store';
 import { formatPrice, formatDate } from '../../utils/format';
+import { getImageUrl } from '../../utils/imageUrl';
 import { PropertyStatus } from '../../types';
 
 export const PropertyDetailPage = () => {
@@ -70,10 +71,10 @@ export const PropertyDetailPage = () => {
       {/* Gallery */}
       <div className="grid grid-cols-3 gap-3 rounded-2xl overflow-hidden h-64 sm:h-80 mb-8">
         {/* Main image */}
-        <div className="col-span-2 relative bg-gradient-to-br from-navy-mid to-teal flex items-center justify-center overflow-hidden">
+        <div className="col-span-2 relative bg-gray-100 flex items-center justify-center overflow-hidden">
           {images ? (
             <img
-              src={images[activeImg] ?? images[0]}
+              src={getImageUrl(images[activeImg] ?? images[0])}
               alt={property.title}
               className="w-full h-full object-cover"
             />
@@ -96,21 +97,21 @@ export const PropertyDetailPage = () => {
           {images ? (
             <>
               <div
-                className="flex-1 relative bg-gradient-to-br from-teal to-teal-light overflow-hidden cursor-pointer"
+                className="flex-1 relative bg-gray-100 overflow-hidden cursor-pointer"
                 onClick={() => setActiveImg(1 < images.length ? 1 : 0)}
               >
                 <img
-                  src={images[1] ?? images[0]}
+                  src={getImageUrl(images[1] ?? images[0])}
                   alt=""
                   className="w-full h-full object-cover hover:opacity-90 transition-opacity"
                 />
               </div>
               <div
-                className="flex-1 relative bg-gradient-to-br from-navy to-navy-mid overflow-hidden cursor-pointer"
+                className="flex-1 relative bg-gray-100 overflow-hidden cursor-pointer"
                 onClick={() => setActiveImg(2 < images.length ? 2 : 0)}
               >
                 <img
-                  src={images[2] ?? images[0]}
+                  src={getImageUrl(images[2] ?? images[0])}
                   alt=""
                   className="w-full h-full object-cover hover:opacity-90 transition-opacity"
                 />
@@ -123,10 +124,10 @@ export const PropertyDetailPage = () => {
             </>
           ) : (
             <>
-              <div className="flex-1 bg-gradient-to-br from-teal to-teal-light flex items-center justify-center">
+              <div className="flex-1 bg-gray-100 flex items-center justify-center">
                 <span className="text-4xl opacity-20">🛋️</span>
               </div>
-              <div className="flex-1 bg-gradient-to-br from-navy to-navy-mid flex items-center justify-center">
+              <div className="flex-1 bg-gray-100 flex items-center justify-center">
                 <span className="text-4xl opacity-20">🍽️</span>
               </div>
             </>
