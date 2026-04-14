@@ -185,6 +185,19 @@ export const SubmitPropertyPage = () => {
 
   return (
     <div className="max-w-2xl mx-auto">
+      {/* Agency fee disclaimer */}
+      <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5 flex gap-3">
+        <span className="text-amber-500 mt-0.5 flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </span>
+        <div>
+          <p className="text-sm font-semibold text-amber-800">Agency Fee — 5%</p>
+          <p className="text-xs text-amber-700 mt-0.5 leading-relaxed">
+            Owkaz Properties charges a <strong>5% agency fee</strong> on every successful sale or rental transaction facilitated through the platform. This fee covers listing promotion, buyer coordination, and transaction support.
+          </p>
+        </div>
+      </div>
+
       <StepHeader current={step} />
 
       {/* ── Step 1: Type ── */}

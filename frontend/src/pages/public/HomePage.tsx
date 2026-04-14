@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, CheckCircle, Users, Lock, Phone, ArrowRight } from 'lucide-react';
+import { Search, CheckCircle, Users, Lock, Phone, ArrowRight, Bitcoin, Gem, CircleDollarSign, Zap, Landmark, CreditCard } from 'lucide-react';
 import {
   useGetFeaturedPropertiesQuery,
   useGetPropertiesQuery,
@@ -254,7 +254,7 @@ export const HomePage = () => {
             {/* Heading */}
             <div>
               <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/20 border border-gold/30 text-gold text-[10px] font-bold uppercase tracking-widest mb-3">
-                ₿ New — Crypto Payments
+                <Bitcoin size={12} /> New — Crypto Payments
               </span>
               <h2 className="font-display text-2xl sm:text-3xl text-white">
                 Pay Your Way — Including Crypto
@@ -266,19 +266,19 @@ export const HomePage = () => {
 
             {/* Coin chips */}
             <div className="flex flex-wrap justify-center gap-3">
-              {[
-                { symbol: '₿', label: 'Bitcoin', sub: 'BTC', color: 'bg-orange-500/20 border-orange-400/40 text-orange-300' },
-                { symbol: 'Ξ', label: 'Ethereum', sub: 'ETH', color: 'bg-purple-500/20 border-purple-400/40 text-purple-300' },
-                { symbol: '₮', label: 'Tether', sub: 'USDT', color: 'bg-green-500/20 border-green-400/40 text-green-300' },
-                { symbol: '◎', label: 'Solana', sub: 'SOL', color: 'bg-violet-500/20 border-violet-400/40 text-violet-300' },
-                { symbol: '🏦', label: 'Bank Transfer', sub: 'NGN / USD', color: 'bg-white/10 border-white/20 text-white/70' },
-                { symbol: '💳', label: 'Card', sub: 'Visa / Mastercard', color: 'bg-white/10 border-white/20 text-white/70' },
-              ].map((c) => (
+              {([
+                { icon: <Bitcoin size={20} />, label: 'Bitcoin', sub: 'BTC', color: 'bg-orange-500/20 border-orange-400/40 text-orange-300' },
+                { icon: <Gem size={20} />, label: 'Ethereum', sub: 'ETH', color: 'bg-purple-500/20 border-purple-400/40 text-purple-300' },
+                { icon: <CircleDollarSign size={20} />, label: 'Tether', sub: 'USDT', color: 'bg-green-500/20 border-green-400/40 text-green-300' },
+                { icon: <Zap size={20} />, label: 'Solana', sub: 'SOL', color: 'bg-violet-500/20 border-violet-400/40 text-violet-300' },
+                { icon: <Landmark size={20} />, label: 'Bank Transfer', sub: 'NGN / USD', color: 'bg-white/10 border-white/20 text-white/70' },
+                { icon: <CreditCard size={20} />, label: 'Card', sub: 'Visa / Mastercard', color: 'bg-white/10 border-white/20 text-white/70' },
+              ] as const).map((c) => (
                 <div
                   key={c.label}
                   className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl border text-sm font-semibold ${c.color}`}
                 >
-                  <span className="text-xl leading-none">{c.symbol}</span>
+                  {c.icon}
                   <div className="text-left">
                     <div className="leading-tight">{c.label}</div>
                     <div className="text-[10px] font-normal opacity-70">{c.sub}</div>

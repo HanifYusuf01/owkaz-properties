@@ -40,6 +40,19 @@ export const ProviderDashboard = () => {
         </p>
       </div>
 
+      {/* Agency fee notice */}
+      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3 items-start">
+        <span className="text-amber-500 flex-shrink-0 mt-0.5">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </span>
+        <div>
+          <h5 className="text-xs font-bold uppercase tracking-wide text-amber-800 mb-0.5">Agency Fee — 5%</h5>
+          <p className="text-xs text-amber-700 leading-relaxed">
+            A <strong>5% agency fee</strong> applies on every successful sale or rental closed through Owkaz Properties. By submitting a listing you agree to these terms.
+          </p>
+        </div>
+      </div>
+
       {/* My listings */}
       <div>
         <div className="flex items-center justify-between mb-4">
