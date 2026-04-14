@@ -8,7 +8,7 @@ import { useAppDispatch } from '../store';
 import { setCredentials } from '../features/auth/authSlice';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
-import { UserRole } from '../types';
+import { UserRole, AuthTokens } from '../types';
 
 const schema = z.object({
   name: z.string().min(2, 'Name is required'),
@@ -35,6 +35,7 @@ export const RegisterPage = () => {
   const dispatch = useAppDispatch();
   const [register, { isLoading, error }] = useRegisterMutation();
   const [selectedRole, setSelectedRole] = useState<UserRole>(UserRole.BUYER);
+  const [pendingApproval, setPendingApproval] = useState(false);
 
   const { register: formRegister, handleSubmit, setValue, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -49,9 +50,13 @@ export const RegisterPage = () => {
   const onSubmit = async (data: FormData) => {
     try {
       const { confirmPassword: _, ...payload } = data;
-      const tokens = await register(payload).unwrap();
-      dispatch(setCredentials(tokens));
-      navigate('/dashboard');
+      const result = await register(payload).unwrap();
+      if ('pending' in result) {
+        setPendingApproval(true);
+      } else {
+        dispatch(setCredentials(result as AuthTokens));
+        navigate('/dashboard');
+      }
     } catch {
       // handled via RTK state
     }
@@ -73,6 +78,23 @@ export const RegisterPage = () => {
 
       <div className="w-full lg:w-[480px] flex items-center justify-center px-8 py-12 bg-[#FEFBEA]">
         <div className="w-full max-w-sm">
+          {pendingApproval ? (
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-5">
+                <svg className="w-8 h-8 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h2 className="font-display text-2xl text-navy mb-2">Application Submitted</h2>
+              <p className="text-muted text-sm mb-6 leading-relaxed">
+                Your agent account is pending admin approval. You'll be able to sign in once your account is reviewed.
+              </p>
+              <Link to="/login" className="text-teal font-semibold text-sm hover:underline">
+                Back to sign in
+              </Link>
+            </div>
+          ) : (
+            <>
           <h2 className="font-display text-3xl text-navy mb-2">Create Account</h2>
           <p className="text-muted text-sm mb-8">Join Owkaz Properties today</p>
 
@@ -124,6 +146,8 @@ export const RegisterPage = () => {
               Sign in
             </Link>
           </p>
+            </>
+          )}
         </div>
       </div>
     </div>

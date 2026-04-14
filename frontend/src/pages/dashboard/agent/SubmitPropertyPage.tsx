@@ -193,7 +193,7 @@ export const SubmitPropertyPage = () => {
           <div className="px-6 py-5 border-b border-border">
             <h3 className="font-display text-xl text-navy">Select Property Type</h3>
           </div>
-          <div className="p-6 grid grid-cols-2 gap-4">
+          <div className="p-6 grid grid-cols-2 sm:grid-cols-3 gap-4">
             {PROPERTY_TYPES.map(({ type, emoji }) => (
               <button
                 key={type}
@@ -231,7 +231,7 @@ export const SubmitPropertyPage = () => {
               onChange={(e) => set('title', e.target.value)}
               error={errors.title}
             />
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
                 label="Asking Price (₦)"
                 type="number"
@@ -251,7 +251,7 @@ export const SubmitPropertyPage = () => {
                 error={errors.state}
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Select
                 label="LGA"
                 placeholder={form.state ? 'Select LGA...' : 'Select a state first'}
@@ -305,7 +305,7 @@ export const SubmitPropertyPage = () => {
             <h3 className="font-display text-xl text-navy">Specifications & Media</h3>
           </div>
           <div className="p-6 space-y-6">
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 sm:grid-cols-3 gap-4">
               <Input label="Bedrooms" type="number" placeholder="e.g. 4" value={form.beds} onChange={(e) => set('beds', e.target.value)} />
               <Input label="Bathrooms" type="number" placeholder="e.g. 3" value={form.baths} onChange={(e) => set('baths', e.target.value)} />
               <Input label="Size (m²)" type="number" placeholder="e.g. 250" value={form.sqm} onChange={(e) => set('sqm', e.target.value)} />
@@ -356,7 +356,7 @@ export const SubmitPropertyPage = () => {
 
               {/* Photo previews */}
               {form.photos.length > 0 && (
-                <div className="mt-4 grid grid-cols-4 gap-3">
+                <div className="mt-4 grid grid-cols-3 sm:grid-cols-4 gap-3">
                   {form.photos.map((file, i) => (
                     <div key={i} className="relative group aspect-square rounded-lg overflow-hidden border border-border">
                       <img
@@ -400,7 +400,7 @@ export const SubmitPropertyPage = () => {
             <h3 className="font-display text-xl text-navy">Review & Submit</h3>
           </div>
           <div className="p-6 space-y-0">
-            <div className="grid grid-cols-2 gap-x-8 gap-y-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
               <ReviewField label="Type" value={form.type} />
               <ReviewField label="Price" value={`₦${Number(form.price).toLocaleString()}`} />
               <ReviewField label="Title" value={form.title} />
@@ -425,7 +425,7 @@ export const SubmitPropertyPage = () => {
             {form.photoUrls.length > 0 && (
               <div className="pt-5">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-muted mb-2">Photos ({form.photoUrls.length})</p>
-                <div className="grid grid-cols-5 gap-2">
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                   {form.photos.slice(0, 5).map((file, i) => (
                     <div key={i} className="aspect-square rounded-lg overflow-hidden border border-border">
                       <img src={URL.createObjectURL(file)} alt="" className="w-full h-full object-cover" />

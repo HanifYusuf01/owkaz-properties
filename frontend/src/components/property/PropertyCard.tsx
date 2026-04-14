@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Bed, Bath, Maximize, MapPin } from 'lucide-react';
 import { Property } from '../../types';
 import { formatPrice } from '../../utils/format';
+import { getImageUrl } from '../../utils/imageUrl';
 import { Badge } from '../ui/Badge';
 
 interface PropertyCardProps {
@@ -21,7 +22,7 @@ export const PropertyCard = ({ property, showStatus = false, actions }: Property
       {/* Image */}
       <div className="relative h-48 bg-gradient-to-br from-navy-mid to-teal overflow-hidden flex items-center justify-center">
         {property.images?.[0] ? (
-          <img src={property.images[0]} alt={property.title} className="w-full h-full object-cover" />
+          <img src={getImageUrl(property.images[0])} alt={property.title} className="w-full h-full object-cover" />
         ) : (
           <span className="text-6xl opacity-20">🏠</span>
         )}

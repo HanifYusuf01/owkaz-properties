@@ -168,7 +168,28 @@ export const PublicLayout = () => {
             </div>
           </div>
 
-          <div className="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4">
+          {/* Payment icons */}
+          <div className="mt-10 pt-8 border-t border-white/10">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              <span className="text-[10px] uppercase tracking-widest text-white/30 font-semibold whitespace-nowrap">We Accept</span>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { symbol: '₿', label: 'Bitcoin' },
+                  { symbol: 'Ξ', label: 'Ethereum' },
+                  { symbol: '₮', label: 'USDT' },
+                  { symbol: '◎', label: 'Solana' },
+                  { symbol: '🏦', label: 'Bank Transfer' },
+                  { symbol: '💳', label: 'Card' },
+                ].map((p) => (
+                  <span key={p.label} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-[11px] text-white/50">
+                    <span>{p.symbol}</span> {p.label}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 pt-6 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4">
             <span className="text-xs text-white/30">© 2025 Owkaz Property Limited. All rights reserved.</span>
             <div className="flex gap-6">
               {['Privacy Policy', 'Terms of Use', 'Cookie Policy'].map((l) => (

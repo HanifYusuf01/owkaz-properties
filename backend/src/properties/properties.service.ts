@@ -119,6 +119,11 @@ export class PropertiesService {
   async update(id: string, dto: UpdatePropertyDto, user: User): Promise<Property> {
     const property = await this.findById(id);
     this.checkOwnerOrAdmin(property, user);
+    // Non-admin resubmitting a rejected property: reset to PENDING for re-review
+    if (user.role !== UserRole.ADMIN && property.status === PropertyStatus.REJECTED) {
+      property.status = PropertyStatus.PENDING;
+      property.rejectionReason = null as unknown as string;
+    }
     Object.assign(property, dto);
     return this.propertiesRepo.save(property);
   }

@@ -1,6 +1,7 @@
 import {
   Injectable,
   UnauthorizedException,
+  ForbiddenException,
   ConflictException,
   BadRequestException,
 } from '@nestjs/common';
@@ -11,6 +12,7 @@ import * as crypto from 'crypto';
 import { UsersService } from '../users/users.service';
 import { LoginDto, RegisterDto, ForgotPasswordDto, ResetPasswordDto } from './dto/auth.dto';
 import { MailService } from './mail.service';
+import { UserRole, UserStatus } from '../users/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -26,6 +28,12 @@ export class AuthService {
     if (existing) throw new ConflictException('Email already in use');
 
     const passwordHash = await bcrypt.hash(dto.password, 10);
+
+    if (dto.role === UserRole.AGENT) {
+      await this.usersService.create({ ...dto, passwordHash, status: UserStatus.PENDING });
+      return { pending: true, message: 'Your account is pending admin approval. You will be notified once approved.' };
+    }
+
     const user = await this.usersService.create({ ...dto, passwordHash });
     return this.generateTokens(user);
   }
@@ -36,6 +44,14 @@ export class AuthService {
 
     const valid = await bcrypt.compare(dto.password, user.passwordHash);
     if (!valid) throw new UnauthorizedException('Invalid credentials');
+
+    if (user.status === UserStatus.PENDING) {
+      throw new ForbiddenException('Your account is pending admin approval.');
+    }
+
+    if (user.status === UserStatus.SUSPENDED) {
+      throw new ForbiddenException('Your account has been suspended. Please contact support.');
+    }
 
     return this.generateTokens(user);
   }
@@ -65,6 +81,9 @@ export class AuthService {
 
     const valid = await bcrypt.compare(refreshToken, user.refreshTokenHash);
     if (!valid) throw new UnauthorizedException();
+
+    if (user.status === UserStatus.SUSPENDED) throw new UnauthorizedException('Account suspended');
+    if (user.status === UserStatus.PENDING) throw new UnauthorizedException('Account pending approval');
 
     return this.generateTokens(user);
   }

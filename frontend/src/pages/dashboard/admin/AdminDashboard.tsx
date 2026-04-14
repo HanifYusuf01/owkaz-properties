@@ -29,7 +29,7 @@ export const AdminDashboard = () => {
   return (
     <div className="space-y-8">
       {/* Stats */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Total Listings" value={properties.length} color="bg-navy" />
         <StatCard label="Published" value={approved.length} color="bg-green-500" />
         <StatCard label="Pending Review" value={pending.length} color="bg-amber-500" />

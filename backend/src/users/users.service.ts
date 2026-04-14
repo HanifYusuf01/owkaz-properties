@@ -17,6 +17,7 @@ export class UsersService {
     passwordHash: string;
     role: UserRole;
     agency?: string;
+    status?: UserStatus;
   }): Promise<User> {
     const user = this.usersRepo.create(data);
     return this.usersRepo.save(user);

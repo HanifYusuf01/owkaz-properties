@@ -5,6 +5,7 @@ export interface Project {
   name: string;
   type: string;
   location: string;
+  lga: string | null;
   state: string;
   description: string | null;
   priceFrom: number | null;

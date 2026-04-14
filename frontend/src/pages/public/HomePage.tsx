@@ -31,7 +31,7 @@ const FEATURES = [
   {
     icon: <Lock size={22} className="text-teal" />,
     title: 'Secure Transactions',
-    desc: 'Safe, transparent processes with legal documentation support throughout.',
+    desc: 'Safe, transparent processes with legal documentation support. Pay via bank transfer, card, or crypto.',
   },
   {
     icon: <Phone size={22} className="text-teal" />,
@@ -243,6 +243,53 @@ export const HomePage = () => {
                 <div className="text-xs text-muted leading-relaxed">{f.desc}</div>
               </div>
             ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── PAYMENT METHODS ── */}
+      <div className="bg-gradient-to-r from-navy via-navy-mid to-teal py-12 sm:py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col items-center text-center gap-6">
+            {/* Heading */}
+            <div>
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/20 border border-gold/30 text-gold text-[10px] font-bold uppercase tracking-widest mb-3">
+                ₿ New — Crypto Payments
+              </span>
+              <h2 className="font-display text-2xl sm:text-3xl text-white">
+                Pay Your Way — Including Crypto
+              </h2>
+              <p className="text-white/60 text-sm mt-2 max-w-md">
+                Owkaz accepts cryptocurrency alongside traditional payment methods, making it easier for local and diaspora buyers to invest.
+              </p>
+            </div>
+
+            {/* Coin chips */}
+            <div className="flex flex-wrap justify-center gap-3">
+              {[
+                { symbol: '₿', label: 'Bitcoin', sub: 'BTC', color: 'bg-orange-500/20 border-orange-400/40 text-orange-300' },
+                { symbol: 'Ξ', label: 'Ethereum', sub: 'ETH', color: 'bg-purple-500/20 border-purple-400/40 text-purple-300' },
+                { symbol: '₮', label: 'Tether', sub: 'USDT', color: 'bg-green-500/20 border-green-400/40 text-green-300' },
+                { symbol: '◎', label: 'Solana', sub: 'SOL', color: 'bg-violet-500/20 border-violet-400/40 text-violet-300' },
+                { symbol: '🏦', label: 'Bank Transfer', sub: 'NGN / USD', color: 'bg-white/10 border-white/20 text-white/70' },
+                { symbol: '💳', label: 'Card', sub: 'Visa / Mastercard', color: 'bg-white/10 border-white/20 text-white/70' },
+              ].map((c) => (
+                <div
+                  key={c.label}
+                  className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl border text-sm font-semibold ${c.color}`}
+                >
+                  <span className="text-xl leading-none">{c.symbol}</span>
+                  <div className="text-left">
+                    <div className="leading-tight">{c.label}</div>
+                    <div className="text-[10px] font-normal opacity-70">{c.sub}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-white/40 text-xs">
+              Crypto transactions are processed securely. Contact us for wallet details after property selection.
+            </p>
           </div>
         </div>
       </div>

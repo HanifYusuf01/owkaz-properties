@@ -57,12 +57,15 @@ export const ProviderDashboard = () => {
         ) : (
           <div className="space-y-3">
             {properties.map((p) => (
-              <div key={p.id} className="bg-white border border-border rounded-xl p-5 flex gap-4 items-start">
-                <div className="w-12 h-12 rounded-xl bg-cream flex items-center justify-center text-2xl flex-shrink-0">🏠</div>
+              <div key={p.id} className="bg-white border border-border rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row gap-3 sm:gap-4 sm:items-start">
+                <div className="hidden sm:flex w-12 h-12 rounded-xl bg-cream items-center justify-center text-2xl flex-shrink-0">🏠</div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-bold text-navy">{p.title}</div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-navy">{p.title}</span>
+                    <Badge status={p.status} />
+                  </div>
                   <div className="text-xs text-muted mt-0.5">
-                    📍 {p.lga}, {p.state} · {formatPrice(p.price)} · Submitted {formatDate(p.createdAt)}
+                    📍 {p.lga}, {p.state} · {formatPrice(p.price)} · {formatDate(p.createdAt)}
                   </div>
                   {p.status === PropertyStatus.REJECTED && p.rejectionReason && (
                     <div className="mt-2 p-2.5 bg-red-50 border-l-4 border-red-400 rounded text-xs text-red-700">
@@ -70,12 +73,11 @@ export const ProviderDashboard = () => {
                     </div>
                   )}
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <Badge status={p.status} />
-                  {(p.status === PropertyStatus.REJECTED || p.status === PropertyStatus.PENDING) && (
-                    <Button variant="ghost" size="sm" onClick={() => navigate(`/dashboard/my-listings`)}>Edit</Button>
-                  )}
-                </div>
+                {(p.status === PropertyStatus.REJECTED || p.status === PropertyStatus.PENDING) && (
+                  <div className="flex-shrink-0">
+                    <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard/my-listings')}>Edit & Resubmit</Button>
+                  </div>
+                )}
               </div>
             ))}
           </div>

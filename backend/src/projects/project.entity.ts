@@ -20,6 +20,9 @@ export class Project {
   @Column()
   location: string;
 
+  @Column({ type: 'varchar', nullable: true })
+  lga: string | null;
+
   @Column()
   state: string;
 

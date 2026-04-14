@@ -16,6 +16,7 @@ export class CreateProjectDto {
   @ApiProperty() @IsString() name: string;
   @ApiProperty() @IsString() type: string;
   @ApiProperty() @IsString() location: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() lga?: string;
   @ApiProperty() @IsString() state: string;
 
   @ApiPropertyOptional() @IsOptional() @IsString() description?: string;
