@@ -1,6 +1,10 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Bed, Bath, Maximize, MapPin, Eye } from 'lucide-react';
+import { ArrowLeft, Bed, Bath, Maximize, MapPin, Eye, View } from 'lucide-react';
+
+const PanoramaViewer = lazy(() =>
+  import('../../components/property/PanoramaViewer').then((m) => ({ default: m.PanoramaViewer }))
+);
 import { useGetPropertyByIdQuery } from '../../features/properties/propertiesApi';
 import { useCreateInquiryMutation } from '../../features/inquiries/inquiriesApi';
 import { useAppSelector } from '../../store';
@@ -22,6 +26,7 @@ export const PropertyDetailPage = () => {
   const [message, setMessage] = useState('I am interested in this property and would like to schedule a viewing.');
   const [sent, setSent] = useState(false);
   const [activeImg, setActiveImg] = useState(0);
+  const [showPanorama, setShowPanorama] = useState(false);
 
   const handleInquiry = async () => {
     if (!user) { navigate('/login'); return; }
@@ -91,6 +96,15 @@ export const PropertyDetailPage = () => {
               Featured
             </div>
           )}
+          {property.panoramaUrl && (
+            <button
+              onClick={() => setShowPanorama(true)}
+              className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-black/70 hover:bg-black/90 text-white text-xs font-semibold px-3 py-2 rounded-lg border border-white/20 transition-colors backdrop-blur-sm"
+            >
+              <View size={14} />
+              360° View
+            </button>
+          )}
         </div>
         {/* Thumbnails */}
         <div className="flex flex-col gap-3">
@@ -134,6 +148,27 @@ export const PropertyDetailPage = () => {
           )}
         </div>
       </div>
+
+      {/* 360° banner — shown when panorama is available */}
+      {property.panoramaUrl && (
+        <div className="mb-8 flex items-center justify-between gap-4 bg-gradient-to-r from-navy to-teal rounded-2xl px-5 py-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0">
+              <View size={18} className="text-white" />
+            </div>
+            <div>
+              <div className="text-white font-semibold text-sm">Virtual 360° Tour Available</div>
+              <div className="text-white/60 text-xs">Explore every corner of this property interactively</div>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowPanorama(true)}
+            className="flex-shrink-0 flex items-center gap-1.5 bg-white text-navy text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-cream transition-colors"
+          >
+            <View size={13} /> Launch 360° View
+          </button>
+        </div>
+      )}
 
       {/* Content layout */}
       <div className="grid lg:grid-cols-[1fr_380px] gap-8">
@@ -402,6 +437,16 @@ export const PropertyDetailPage = () => {
           </div>
         </div>
       </div>
+      {/* Panorama 360° modal */}
+      {showPanorama && property.panoramaUrl && (
+        <Suspense fallback={
+          <div className="fixed inset-0 z-[100] bg-black flex items-center justify-center">
+            <div className="w-10 h-10 border-4 border-teal border-t-transparent rounded-full animate-spin" />
+          </div>
+        }>
+          <PanoramaViewer src={property.panoramaUrl} onClose={() => setShowPanorama(false)} />
+        </Suspense>
+      )}
     </div>
   );
 };

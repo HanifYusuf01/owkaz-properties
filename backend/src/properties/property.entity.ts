@@ -71,6 +71,9 @@ export class Property {
   @Column('text', { array: true, default: [] })
   images: string[];
 
+  @Column({ type: 'varchar', nullable: true })
+  panoramaUrl: string | null;
+
   @Column({ default: false })
   featured: boolean;
 

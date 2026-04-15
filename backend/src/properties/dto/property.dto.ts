@@ -74,6 +74,11 @@ export class CreatePropertyDto {
   @IsArray()
   @IsString({ each: true })
   images?: string[];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  panoramaUrl?: string;
 }
 
 export class UpdatePropertyDto {
@@ -142,6 +147,11 @@ export class UpdatePropertyDto {
   @IsArray()
   @IsString({ each: true })
   images?: string[];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  panoramaUrl?: string;
 }
 
 export class RejectPropertyDto {

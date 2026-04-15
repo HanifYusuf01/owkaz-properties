@@ -76,11 +76,14 @@ type FormState = {
   amenities: string[];
   photos: File[];
   photoUrls: string[];
+  panoramaFile: File | null;
+  panoramaUrl: string;
 };
 
 const initial: FormState = {
   type: '', title: '', price: '', state: '', lga: '', area: '', description: '',
   beds: '', baths: '', sqm: '', amenities: [], photos: [], photoUrls: [],
+  panoramaFile: null, panoramaUrl: '',
 };
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -92,6 +95,7 @@ export const SubmitPropertyPage = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const panoramaInputRef = useRef<HTMLInputElement>(null);
 
   const [createProperty, { isLoading: submitting }] = useCreatePropertyMutation();
   const [uploadImages] = useUploadImagesMutation();
@@ -120,14 +124,24 @@ export const SubmitPropertyPage = () => {
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setErrors({});
 
-    // Upload photos when leaving step 3
-    if (step === 3 && form.photos.length > 0 && form.photoUrls.length === 0) {
+    // Upload photos and panorama when leaving step 3
+    if (step === 3) {
       setUploading(true);
       try {
-        const fd = new FormData();
-        form.photos.forEach((f) => fd.append('files', f));
-        const { urls } = await uploadImages(fd).unwrap();
-        set('photoUrls', urls);
+        // Regular photos
+        if (form.photos.length > 0 && form.photoUrls.length === 0) {
+          const fd = new FormData();
+          form.photos.forEach((f) => fd.append('files', f));
+          const { urls } = await uploadImages(fd).unwrap();
+          set('photoUrls', urls);
+        }
+        // Panorama
+        if (form.panoramaFile && !form.panoramaUrl) {
+          const fd = new FormData();
+          fd.append('files', form.panoramaFile);
+          const { urls } = await uploadImages(fd).unwrap();
+          set('panoramaUrl', urls[0] ?? '');
+        }
       } catch {
         setErrors({ photos: 'Upload failed. Please try again.' });
         setUploading(false);
@@ -173,6 +187,7 @@ export const SubmitPropertyPage = () => {
         amenities: form.amenities,
         description: form.description,
         images: form.photoUrls,
+        ...(form.panoramaUrl ? { panoramaUrl: form.panoramaUrl } : {}),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any).unwrap();
       navigate('/dashboard/my-listings');
@@ -397,6 +412,50 @@ export const SubmitPropertyPage = () => {
                   )}
                 </div>
               )}
+            </div>
+
+            {/* 360° Panorama upload */}
+            <div className="border-t border-border pt-6">
+              <div className="flex items-center gap-2 mb-3">
+                <label className="text-xs font-semibold uppercase tracking-wide text-navy">360° Panorama Image</label>
+                <span className="text-[10px] bg-teal/10 text-teal px-2 py-0.5 rounded-full font-semibold">Optional</span>
+              </div>
+              <p className="text-xs text-muted mb-3">Upload a single equirectangular (spherical) image to enable immersive 360° virtual tours for buyers.</p>
+              {form.panoramaFile ? (
+                <div className="flex items-center gap-3 p-3 bg-teal/5 border border-teal/20 rounded-xl">
+                  <div className="w-16 h-10 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                    <img src={URL.createObjectURL(form.panoramaFile)} alt="" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-semibold text-navy truncate">{form.panoramaFile.name}</div>
+                    <div className="text-[10px] text-muted">Ready to upload</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { set('panoramaFile', null); set('panoramaUrl', ''); }}
+                    className="text-xs text-red-500 hover:underline flex-shrink-0"
+                  >Remove</button>
+                </div>
+              ) : (
+                <div
+                  onClick={() => panoramaInputRef.current?.click()}
+                  className="border-2 border-dashed border-gray-300 rounded-xl p-5 text-center cursor-pointer hover:border-teal/60 hover:bg-teal/5 transition-colors"
+                >
+                  <div className="text-2xl mb-1">🌐</div>
+                  <p className="text-sm text-muted font-medium">Click to upload panorama image</p>
+                  <p className="text-xs text-muted mt-0.5">Equirectangular JPG/PNG — max 20 MB</p>
+                </div>
+              )}
+              <input
+                ref={panoramaInputRef}
+                type="file"
+                accept="image/jpeg,image/png"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) { set('panoramaFile', file); set('panoramaUrl', ''); }
+                }}
+              />
             </div>
           </div>
           <div className="px-6 pb-6 flex justify-between">

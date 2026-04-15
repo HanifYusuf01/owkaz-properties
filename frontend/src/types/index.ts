@@ -68,6 +68,7 @@ export interface Property {
   amenities: string[];
   description: string;
   images: string[];
+  panoramaUrl?: string | null;
   featured: boolean;
   views: number;
   isOwkaz: boolean;
