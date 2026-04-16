@@ -9,15 +9,16 @@ interface PropertyCardProps {
   property: Property;
   showStatus?: boolean;
   actions?: React.ReactNode;
+  onCardClick?: (property: Property) => void;
 }
 
-export const PropertyCard = ({ property, showStatus = false, actions }: PropertyCardProps) => {
+export const PropertyCard = ({ property, showStatus = false, actions, onCardClick }: PropertyCardProps) => {
   const navigate = useNavigate();
 
   return (
     <div
       className="bg-white border border-border rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all duration-200"
-      onClick={() => navigate(`/properties/${property.id}`)}
+      onClick={() => onCardClick ? onCardClick(property) : navigate(`/properties/${property.id}`)}
     >
       {/* Image */}
       <div className="relative h-48 bg-gray-100 overflow-hidden flex items-center justify-center">

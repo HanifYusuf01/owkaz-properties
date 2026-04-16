@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
-import { useGetProjectsQuery } from '../../features/projects/projectsApi';
+import { useGetProjectsQuery, Project } from '../../features/projects/projectsApi';
 import { formatPrice } from '../../utils/format';
+import { ProjectDetailModal } from '../../components/property/ProjectDetailModal';
 
 const STATUS_STYLES: Record<string, string> = {
   ongoing: 'bg-teal/20 text-teal border-teal/30',
@@ -40,6 +41,7 @@ export const ProjectsPage = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   const { data: projects = [], isLoading } = useGetProjectsQuery({ search: search || undefined });
 
@@ -130,7 +132,7 @@ export const ProjectsPage = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {projects.map((project, idx) => (
-              <div key={project.id} className="bg-white border border-border rounded-2xl overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
+              <div key={project.id} onClick={() => setSelectedProject(project)} className="bg-white border border-border rounded-2xl overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer">
                 {/* Image / gradient */}
                 <div className={`h-44 bg-gradient-to-br ${CARD_GRADS[idx % CARD_GRADS.length]} flex items-center justify-center relative overflow-hidden`}>
                   {project.images?.[0] ? (
@@ -202,10 +204,10 @@ export const ProjectsPage = () => {
                   )}
 
                   <button
-                    onClick={() => navigate('/contact')}
+                    onClick={(e) => { e.stopPropagation(); setSelectedProject(project); }}
                     className="w-full py-2.5 rounded-xl border border-border text-sm font-semibold text-navy hover:bg-navy hover:text-white hover:border-navy transition-all"
                   >
-                    Enquire Now
+                    View Details
                   </button>
                 </div>
               </div>
@@ -253,6 +255,13 @@ export const ProjectsPage = () => {
           </div>
         </div>
       </section>
+
+      {selectedProject && (
+        <ProjectDetailModal
+          project={selectedProject}
+          onClose={() => setSelectedProject(null)}
+        />
+      )}
     </div>
   );
 };

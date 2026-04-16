@@ -1,16 +1,18 @@
 import { useState } from 'react';
 import { useGetPropertiesQuery } from '../../../features/properties/propertiesApi';
 import { PropertyCard } from '../../../components/property/PropertyCard';
+import { PropertyDetailModal } from '../../../components/property/PropertyDetailModal';
 import { Input } from '../../../components/ui/Input';
 import { Select } from '../../../components/ui/Select';
 import { Button } from '../../../components/ui/Button';
-import { PropertyType } from '../../../types';
+import { Property, PropertyType } from '../../../types';
 
 export const BrowsePage = () => {
   const [search, setSearch] = useState('');
   const [type, setType] = useState('');
   const [priceMax, setPriceMax] = useState('');
   const [page, setPage] = useState(1);
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
 
   const { data, isLoading } = useGetPropertiesQuery({
     search: search || undefined,
@@ -65,7 +67,13 @@ export const BrowsePage = () => {
       ) : (
         <>
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
-            {properties.map((p) => <PropertyCard key={p.id} property={p} />)}
+            {properties.map((p) => (
+              <PropertyCard
+                key={p.id}
+                property={p}
+                onCardClick={setSelectedProperty}
+              />
+            ))}
           </div>
           {properties.length === 0 && (
             <div className="py-20 text-center">
@@ -83,6 +91,13 @@ export const BrowsePage = () => {
             </div>
           )}
         </>
+      )}
+
+      {selectedProperty && (
+        <PropertyDetailModal
+          property={selectedProperty}
+          onClose={() => setSelectedProperty(null)}
+        />
       )}
     </div>
   );

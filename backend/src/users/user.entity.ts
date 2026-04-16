@@ -46,6 +46,9 @@ export class User {
   @Column({ type: 'varchar', nullable: true })
   avatarUrl: string | null;
 
+  @Column('uuid', { array: true, default: [] })
+  savedPropertyIds: string[];
+
   @Column({ type: 'varchar', nullable: true })
   refreshTokenHash: string | null;
 

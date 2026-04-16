@@ -34,6 +34,7 @@ import { MyListingsPage } from './pages/dashboard/agent/MyListingsPage';
 import { SubmitPropertyPage } from './pages/dashboard/agent/SubmitPropertyPage';
 import { BrowsePage } from './pages/dashboard/buyer/BrowsePage';
 import { MyInquiriesPage } from './pages/dashboard/buyer/MyInquiriesPage';
+import { SavedPropertiesPage } from './pages/dashboard/buyer/SavedPropertiesPage';
 import { NotificationsPage } from './pages/dashboard/NotificationsPage';
 import { ProfilePage } from './pages/dashboard/ProfilePage';
 
@@ -99,6 +100,7 @@ function AppContent() {
           <Route element={<ProtectedRoute allowedRoles={[UserRole.BUYER]} />}>
             <Route path="/dashboard/browse" element={<BrowsePage />} />
             <Route path="/dashboard/featured" element={<BrowsePage />} />
+            <Route path="/dashboard/saved" element={<SavedPropertiesPage />} />
             <Route path="/dashboard/my-inquiries" element={<MyInquiriesPage />} />
           </Route>
         </Route>

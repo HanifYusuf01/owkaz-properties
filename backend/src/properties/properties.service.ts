@@ -5,7 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Property, PropertyStatus } from './property.entity';
 import { User, UserRole } from '../users/user.entity';
 import {
@@ -23,6 +23,8 @@ export class PropertiesService {
   constructor(
     @InjectRepository(Property)
     private propertiesRepo: Repository<Property>,
+    @InjectRepository(User)
+    private usersRepo: Repository<User>,
     private notificationsService: NotificationsService,
   ) {}
 
@@ -199,6 +201,37 @@ export class PropertiesService {
     const property = await this.findById(id);
     this.checkOwnerOrAdmin(property, user);
     await this.propertiesRepo.remove(property);
+  }
+
+  async saveProperty(propertyId: string, user: User): Promise<void> {
+    await this.findById(propertyId);
+    const dbUser = await this.usersRepo.findOne({ where: { id: user.id } });
+    if (!dbUser) throw new NotFoundException('User not found');
+    if (!dbUser.savedPropertyIds.includes(propertyId)) {
+      dbUser.savedPropertyIds = [...dbUser.savedPropertyIds, propertyId];
+      await this.usersRepo.save(dbUser);
+    }
+  }
+
+  async unsaveProperty(propertyId: string, user: User): Promise<void> {
+    const dbUser = await this.usersRepo.findOne({ where: { id: user.id } });
+    if (!dbUser) throw new NotFoundException('User not found');
+    dbUser.savedPropertyIds = dbUser.savedPropertyIds.filter((id) => id !== propertyId);
+    await this.usersRepo.save(dbUser);
+  }
+
+  async getSavedProperties(user: User): Promise<Property[]> {
+    const dbUser = await this.usersRepo.findOne({ where: { id: user.id } });
+    if (!dbUser || !dbUser.savedPropertyIds.length) return [];
+    return this.propertiesRepo.find({
+      where: { id: In(dbUser.savedPropertyIds) },
+      relations: ['submittedBy'],
+    });
+  }
+
+  async getSavedPropertyIds(user: User): Promise<string[]> {
+    const dbUser = await this.usersRepo.findOne({ where: { id: user.id } });
+    return dbUser?.savedPropertyIds ?? [];
   }
 
   private checkOwnerOrAdmin(property: Property, user: User): void {

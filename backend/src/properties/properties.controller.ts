@@ -46,6 +46,20 @@ export class PropertiesController {
     return this.propertiesService.findSold(filters);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Get('saved')
+  getSaved(@CurrentUser() user: User) {
+    return this.propertiesService.getSavedProperties(user);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Get('saved/ids')
+  getSavedIds(@CurrentUser() user: User) {
+    return this.propertiesService.getSavedPropertyIds(user);
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     await this.propertiesService.incrementViews(id);
@@ -132,6 +146,20 @@ export class PropertiesController {
   @Patch(':id/feature')
   toggleFeatured(@Param('id') id: string) {
     return this.propertiesService.toggleFeatured(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Post(':id/save')
+  saveProperty(@Param('id') id: string, @CurrentUser() user: User) {
+    return this.propertiesService.saveProperty(id, user);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Delete(':id/save')
+  unsaveProperty(@Param('id') id: string, @CurrentUser() user: User) {
+    return this.propertiesService.unsaveProperty(id, user);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
