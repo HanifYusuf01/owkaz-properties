@@ -151,7 +151,7 @@ export const PropertyDetailPage = () => {
 
       {/* 360° banner — shown when panorama is available */}
       {property.panoramaUrl && (
-        <div className="mb-8 flex items-center justify-between gap-4 bg-gradient-to-r from-navy to-teal rounded-2xl px-5 py-4">
+        <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-gradient-to-r from-navy to-teal rounded-2xl px-5 py-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0">
               <View size={18} className="text-white" />
@@ -163,7 +163,7 @@ export const PropertyDetailPage = () => {
           </div>
           <button
             onClick={() => setShowPanorama(true)}
-            className="flex-shrink-0 flex items-center gap-1.5 bg-white text-navy text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-cream transition-colors"
+            className="flex-shrink-0 w-full sm:w-auto flex items-center justify-center gap-1.5 bg-white text-navy text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-cream transition-colors"
           >
             <View size={13} /> Launch 360° View
           </button>
