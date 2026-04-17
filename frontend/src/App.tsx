@@ -16,6 +16,7 @@ import { AboutPage } from './pages/public/AboutPage';
 import { ContactPage } from './pages/public/ContactPage';
 import { ProjectsPage } from './pages/public/ProjectsPage';
 import { ListPropertyPage } from './pages/public/ListPropertyPage';
+import { BuyerProfilePage } from './pages/public/BuyerProfilePage';
 
 // Auth pages
 import { LoginPage } from './pages/LoginPage';
@@ -64,6 +65,13 @@ function AppContent() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/list-property" element={<ListPropertyPage />} />
+
+        {/* Buyer pages — require auth, live in public layout */}
+        <Route element={<ProtectedRoute allowedRoles={[UserRole.BUYER]} />}>
+          <Route path="/saved" element={<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"><h1 className="font-display text-2xl text-navy mb-6">Saved Properties</h1><SavedPropertiesPage /></div>} />
+          <Route path="/my-inquiries" element={<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"><h1 className="font-display text-2xl text-navy mb-6">My Inquiries</h1><MyInquiriesPage /></div>} />
+          <Route path="/profile" element={<BuyerProfilePage />} />
+        </Route>
       </Route>
 
       {/* Public auth routes */}
