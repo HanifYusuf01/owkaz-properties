@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, MapPin } from 'lucide-react';
+import { X, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Project } from '../../features/projects/projectsApi';
 import { formatPrice } from '../../utils/format';
+import { getImageUrl } from '../../utils/imageUrl';
 
 const STATUS_STYLES: Record<string, string> = {
   ongoing: 'bg-teal/20 text-teal border-teal/30',
@@ -29,6 +30,13 @@ export const ProjectDetailModal = ({ project, onClose }: ProjectDetailModalProps
   const navigate = useNavigate();
   const [activeImg, setActiveImg] = useState(0);
 
+  const images = project.images?.length ? project.images : [];
+  const hasImages = images.length > 0;
+  const hasMultiple = images.length > 1;
+
+  const prev = () => setActiveImg((i) => (i === 0 ? images.length - 1 : i - 1));
+  const next = () => setActiveImg((i) => (i === images.length - 1 ? 0 : i + 1));
+
   return (
     <div
       className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
@@ -38,39 +46,74 @@ export const ProjectDetailModal = ({ project, onClose }: ProjectDetailModalProps
         className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Image */}
-        <div className="relative h-52 bg-gradient-to-br from-navy to-teal overflow-hidden rounded-t-2xl flex-shrink-0">
-          {project.images?.[activeImg] ? (
+        {/* ── Image Carousel ── */}
+        <div className="relative h-60 bg-gradient-to-br from-navy to-teal overflow-hidden rounded-t-2xl flex-shrink-0">
+          {hasImages ? (
             <img
-              src={project.images[activeImg]}
-              alt={project.name}
-              className="w-full h-full object-cover"
+              key={activeImg}
+              src={getImageUrl(images[activeImg])}
+              alt={`${project.name} image ${activeImg + 1}`}
+              className="w-full h-full object-cover transition-opacity duration-200"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <span className="text-6xl opacity-20">🏗️</span>
+            <div className="w-full h-full flex items-center justify-center opacity-20">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.2">
+                <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
             </div>
           )}
-          {/* Progress bar */}
-          <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-white/20">
-            <div className="h-full bg-gold transition-all" style={{ width: `${project.progress}%` }} />
-          </div>
-          {/* Thumbnail dots */}
-          {project.images?.length > 1 && (
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
-              {project.images.slice(0, 5).map((_, i) => (
+
+          {/* Prev / Next arrows */}
+          {hasMultiple && (
+            <>
+              <button
+                onClick={(e) => { e.stopPropagation(); prev(); }}
+                className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 flex items-center justify-center text-white transition-colors backdrop-blur-sm"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); next(); }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 flex items-center justify-center text-white transition-colors backdrop-blur-sm"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </>
+          )}
+
+          {/* Image counter */}
+          {hasMultiple && (
+            <div className="absolute top-3 right-10 bg-black/50 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-1 rounded-full">
+              {activeImg + 1} / {images.length}
+            </div>
+          )}
+
+          {/* Dot indicators */}
+          {hasMultiple && (
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+              {images.map((_, i) => (
                 <button
                   key={i}
-                  onClick={() => setActiveImg(i)}
-                  className={`w-1.5 h-1.5 rounded-full transition-colors ${i === activeImg ? 'bg-white' : 'bg-white/50'}`}
+                  onClick={(e) => { e.stopPropagation(); setActiveImg(i); }}
+                  className={`rounded-full transition-all ${
+                    i === activeImg ? 'w-4 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/50'
+                  }`}
                 />
               ))}
             </div>
           )}
+
+          {/* Progress bar */}
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
+            <div className="h-full bg-gold transition-all" style={{ width: `${project.progress}%` }} />
+          </div>
+
           {/* Status badge */}
           <div className={`absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold border ${STATUS_STYLES[project.status] ?? 'bg-surface text-muted border-border'}`}>
             {STATUS_LABELS[project.status] ?? project.status}
           </div>
+
           {/* Close */}
           <button
             onClick={onClose}
@@ -79,6 +122,27 @@ export const ProjectDetailModal = ({ project, onClose }: ProjectDetailModalProps
             <X size={15} />
           </button>
         </div>
+
+        {/* Thumbnail strip */}
+        {hasMultiple && (
+          <div className="flex gap-2 px-4 pt-3 overflow-x-auto scrollbar-none">
+            {images.map((img, i) => (
+              <button
+                key={i}
+                onClick={() => setActiveImg(i)}
+                className={`flex-shrink-0 w-14 h-10 rounded-lg overflow-hidden border-2 transition-all ${
+                  i === activeImg ? 'border-teal' : 'border-transparent opacity-60 hover:opacity-100'
+                }`}
+              >
+                <img
+                  src={getImageUrl(img)}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Body */}
         <div className="p-5">
@@ -147,7 +211,7 @@ export const ProjectDetailModal = ({ project, onClose }: ProjectDetailModalProps
           {/* Features */}
           {project.features?.length > 0 && (
             <div className="mt-4">
-              <h3 className="font-semibold text-sm text-navy mb-2">Features & Facilities</h3>
+              <h3 className="font-semibold text-sm text-navy mb-2">Features &amp; Facilities</h3>
               <div className="flex flex-wrap gap-1.5">
                 {project.features.map((f) => (
                   <span key={f} className="text-[10px] bg-teal/5 border border-teal/20 text-teal px-2 py-0.5 rounded-full">
