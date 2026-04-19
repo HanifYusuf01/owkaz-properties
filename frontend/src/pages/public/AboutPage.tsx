@@ -79,27 +79,15 @@ export const AboutPage = () => {
               </div>
             </div>
 
-            {/* Visual stat card */}
-            <div className="relative bg-gradient-to-br from-navy to-teal rounded-3xl p-10 flex flex-col items-center justify-center min-h-[320px] text-center overflow-hidden">
-              <div
-                className="absolute inset-0 opacity-[0.06]"
-                style={{
-                  backgroundImage: 'linear-gradient(rgba(255,255,255,.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.5) 1px,transparent 1px)',
-                  backgroundSize: '36px 36px',
-                }}
+            {/* Building image card */}
+            <div className="relative rounded-3xl overflow-hidden min-h-[320px]">
+              <img
+                src="/owkaz-building.jpg"
+                alt="Owkaz Properties"
+                className="w-full h-full object-cover absolute inset-0"
               />
-              <div className="relative text-7xl mb-8">🏙️</div>
-              <div className="relative grid grid-cols-3 gap-6 w-full">
-                {[
-                  { num: '2019', label: 'Founded' },
-                  { num: '36+', label: 'States Covered' },
-                  { num: '50K+', label: 'Users Monthly' },
-                ].map((s) => (
-                  <div key={s.label}>
-                    <div className="font-display text-2xl text-white">{s.num}</div>
-                    <div className="text-white/50 text-xs mt-1">{s.label}</div>
-                  </div>
-                ))}
+              {/* Overlay with stats */}
+              <div className="relative z-10 h-full min-h-[320px] flex flex-col justify-end p-8 bg-gradient-to-t from-navy/80 via-navy/30 to-transparent">
               </div>
             </div>
           </div>

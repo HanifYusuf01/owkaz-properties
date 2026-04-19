@@ -50,6 +50,9 @@ export class User {
   savedPropertyIds: string[];
 
   @Column({ type: 'varchar', nullable: true })
+  roleRequest: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
   refreshTokenHash: string | null;
 
   @Column({ type: 'varchar', nullable: true })

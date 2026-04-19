@@ -78,12 +78,13 @@ type FormState = {
   photoUrls: string[];
   panoramaFile: File | null;
   panoramaUrl: string;
+  documents: File[];
 };
 
 const initial: FormState = {
   type: '', title: '', price: '', state: '', lga: '', area: '', description: '',
   beds: '', baths: '', sqm: '', amenities: [], photos: [], photoUrls: [],
-  panoramaFile: null, panoramaUrl: '',
+  panoramaFile: null, panoramaUrl: '', documents: [],
 };
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -96,6 +97,7 @@ export const SubmitPropertyPage = () => {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const panoramaInputRef = useRef<HTMLInputElement>(null);
+  const docInputRef = useRef<HTMLInputElement>(null);
 
   const [createProperty, { isLoading: submitting }] = useCreatePropertyMutation();
   const [uploadImages] = useUploadImagesMutation();
@@ -457,6 +459,55 @@ export const SubmitPropertyPage = () => {
                 }}
               />
             </div>
+
+            {/* Supporting Documents */}
+            <div className="border-t border-border pt-6">
+              <div className="flex items-center gap-2 mb-1">
+                <label className="text-xs font-semibold uppercase tracking-wide text-navy">Supporting Documents</label>
+                <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-semibold">Optional but Recommended</span>
+              </div>
+              <p className="text-xs text-muted mb-3">Upload documents to verify authenticity — e.g. Certificate of Occupancy (CofO), Survey Plan, Deed of Assignment, Building Approval, etc.</p>
+              <div
+                onClick={() => docInputRef.current?.click()}
+                className="border-2 border-dashed border-gray-300 rounded-xl p-5 text-center cursor-pointer hover:border-teal/60 hover:bg-teal/5 transition-colors"
+              >
+                <svg className="w-8 h-8 mx-auto mb-2 text-muted" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                <p className="text-sm text-muted font-medium">Click to upload documents</p>
+                <p className="text-xs text-muted mt-0.5">PDF, JPG, PNG — max 10 MB each</p>
+              </div>
+              <input
+                ref={docInputRef}
+                type="file"
+                accept=".pdf,image/jpeg,image/png"
+                multiple
+                className="hidden"
+                onChange={(e) => {
+                  if (!e.target.files) return;
+                  const arr = Array.from(e.target.files);
+                  set('documents', [...form.documents, ...arr].slice(0, 10));
+                }}
+              />
+              {form.documents.length > 0 && (
+                <div className="mt-3 space-y-2">
+                  {form.documents.map((doc, i) => (
+                    <div key={i} className="flex items-center gap-3 p-3 bg-cream border border-border rounded-lg">
+                      <svg className="w-5 h-5 text-teal flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-semibold text-navy truncate">{doc.name}</div>
+                        <div className="text-[10px] text-muted">{(doc.size / 1024).toFixed(0)} KB</div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => set('documents', form.documents.filter((_, idx) => idx !== i))}
+                        className="text-xs text-red-500 hover:underline flex-shrink-0"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           <div className="px-6 pb-6 flex justify-between">
             <Button variant="ghost" onClick={back}>← Back</Button>
@@ -508,6 +559,20 @@ export const SubmitPropertyPage = () => {
                       +{form.photos.length - 5}
                     </div>
                   )}
+                </div>
+              </div>
+            )}
+
+            {form.documents.length > 0 && (
+              <div className="pt-5">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted mb-2">Supporting Documents ({form.documents.length})</p>
+                <div className="space-y-1.5">
+                  {form.documents.map((doc, i) => (
+                    <div key={i} className="flex items-center gap-2 text-xs text-navy">
+                      <svg className="w-4 h-4 text-teal flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                      {doc.name}
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

@@ -32,8 +32,6 @@ const buyerSidebarAccount = [
 ];
 
 export const PublicNavbar = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const user = useAppSelector((s) => s.auth.user);
@@ -41,6 +39,16 @@ export const PublicNavbar = () => {
 
   const isBuyer = user?.role === UserRole.BUYER;
   const isStaff = user && !isBuyer;
+
+  // Open sidebar automatically only on the buyer's first visit after login
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    if (user?.role !== UserRole.BUYER) return false;
+    const key = `owkaz_sidebar_welcomed_${user.id}`;
+    if (localStorage.getItem(key)) return false;
+    localStorage.setItem(key, '1');
+    return true;
+  });
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   // Lock body scroll when buyer sidebar is open
   useEffect(() => {
@@ -238,22 +246,16 @@ export const PublicNavbar = () => {
               )}
 
               {isBuyer && (
-                /* Buyer: Hello chip + List Property + Sign Out */
+                /* Buyer: Hello chip + Sign Out */
                 <>
                   <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-teal/10 border border-teal/20">
                     <div className="w-6 h-6 rounded-full bg-teal flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
                       {user.name?.slice(0, 2).toUpperCase()}
                     </div>
                     <span className="text-xs font-semibold text-navy">
-                      Hello, {user.name?.split(' ')[0]} 👋
+                      Hello, {user.name?.split(' ')[0]}
                     </span>
                   </div>
-                  <button
-                    onClick={() => navigate('/list-property')}
-                    className="hidden sm:block px-3 py-2 rounded-lg border border-border text-xs font-semibold text-navy hover:border-navy transition-colors"
-                  >
-                    List Property
-                  </button>
                   <button
                     onClick={handleSignOut}
                     className="px-3 py-2 rounded-lg bg-navy text-white text-xs font-semibold hover:bg-navy-mid transition-colors"

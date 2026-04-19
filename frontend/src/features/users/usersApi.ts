@@ -19,6 +19,13 @@ export const usersApi = baseApi.injectEndpoints({
       query: (body) => ({ url: '/users/me', method: 'PATCH', body }),
       invalidatesTags: ['User'],
     }),
+    updateUserRole: builder.mutation<User, { id: string; role: string }>({
+      query: ({ id, role }) => ({ url: `/users/${id}/role`, method: 'PATCH', body: { role } }),
+      invalidatesTags: ['User'],
+    }),
+    requestRole: builder.mutation<{ message: string }, 'agent' | 'owner'>({
+      query: (role) => ({ url: '/users/me/request-role', method: 'POST', body: { role } }),
+    }),
   }),
 });
 
@@ -27,4 +34,6 @@ export const {
   useUpdateUserStatusMutation,
   useDeleteUserMutation,
   useUpdateProfileMutation,
+  useUpdateUserRoleMutation,
+  useRequestRoleMutation,
 } = usersApi;

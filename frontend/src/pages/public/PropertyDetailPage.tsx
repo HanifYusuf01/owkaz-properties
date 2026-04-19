@@ -1,6 +1,6 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Bed, Bath, Maximize, MapPin, Eye, View } from 'lucide-react';
+import { ArrowLeft, Bed, Bath, Maximize, MapPin, Eye, View, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const PanoramaViewer = lazy(() =>
   import('../../components/property/PanoramaViewer').then((m) => ({ default: m.PanoramaViewer }))
@@ -27,6 +27,24 @@ export const PropertyDetailPage = () => {
   const [sent, setSent] = useState(false);
   const [activeImg, setActiveImg] = useState(0);
   const [showPanorama, setShowPanorama] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIdx, setLightboxIdx] = useState(0);
+
+  const openLightbox = (idx: number) => { setLightboxIdx(idx); setLightboxOpen(true); };
+  const closeLightbox = useCallback(() => setLightboxOpen(false), []);
+  const lightboxPrev = useCallback(() => setLightboxIdx((i) => (i === 0 ? (property?.images?.length ?? 1) - 1 : i - 1)), [property]);
+  const lightboxNext = useCallback(() => setLightboxIdx((i) => (i === (property?.images?.length ?? 1) - 1 ? 0 : i + 1)), [property]);
+
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') lightboxPrev();
+      if (e.key === 'ArrowRight') lightboxNext();
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [lightboxOpen, closeLightbox, lightboxPrev, lightboxNext]);
 
   const handleInquiry = async () => {
     if (!user) { navigate('/login'); return; }
@@ -76,29 +94,40 @@ export const PropertyDetailPage = () => {
       {/* Gallery */}
       <div className="grid grid-cols-3 gap-3 rounded-2xl overflow-hidden h-64 sm:h-80 mb-8">
         {/* Main image */}
-        <div className="col-span-2 relative bg-gray-100 flex items-center justify-center overflow-hidden">
+        <div
+          className="col-span-2 relative bg-gray-100 flex items-center justify-center overflow-hidden cursor-pointer group"
+          onClick={() => images && openLightbox(activeImg)}
+        >
           {images ? (
             <img
               src={getImageUrl(images[activeImg] ?? images[0])}
               alt={property.title}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
             />
           ) : (
             <span className="text-8xl opacity-20">🏠</span>
+          )}
+          {/* Expand hint */}
+          {images && (
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">
+                View Gallery
+              </div>
+            </div>
           )}
           {isSold && (
             <div className="absolute top-3 left-3 bg-gold text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
               Sold
             </div>
           )}
-          {property.featured && (
+          {property.featured && !isSold && (
             <div className="absolute top-3 left-3 bg-gold text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
               Featured
             </div>
           )}
           {property.panoramaUrl && (
             <button
-              onClick={() => setShowPanorama(true)}
+              onClick={(e) => { e.stopPropagation(); setShowPanorama(true); }}
               className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-black/70 hover:bg-black/90 text-white text-xs font-semibold px-3 py-2 rounded-lg border border-white/20 transition-colors backdrop-blur-sm"
             >
               <View size={14} />
@@ -111,26 +140,26 @@ export const PropertyDetailPage = () => {
           {images ? (
             <>
               <div
-                className="flex-1 relative bg-gray-100 overflow-hidden cursor-pointer"
-                onClick={() => setActiveImg(1 < images.length ? 1 : 0)}
+                className="flex-1 relative bg-gray-100 overflow-hidden cursor-pointer group"
+                onClick={() => openLightbox(1 < images.length ? 1 : 0)}
               >
                 <img
                   src={getImageUrl(images[1] ?? images[0])}
                   alt=""
-                  className="w-full h-full object-cover hover:opacity-90 transition-opacity"
+                  className="w-full h-full object-cover group-hover:opacity-90 transition-opacity"
                 />
               </div>
               <div
-                className="flex-1 relative bg-gray-100 overflow-hidden cursor-pointer"
-                onClick={() => setActiveImg(2 < images.length ? 2 : 0)}
+                className="flex-1 relative bg-gray-100 overflow-hidden cursor-pointer group"
+                onClick={() => openLightbox(2 < images.length ? 2 : 0)}
               >
                 <img
                   src={getImageUrl(images[2] ?? images[0])}
                   alt=""
-                  className="w-full h-full object-cover hover:opacity-90 transition-opacity"
+                  className="w-full h-full object-cover group-hover:opacity-90 transition-opacity"
                 />
                 {images.length > 3 && (
-                  <div className="absolute inset-0 bg-navy/60 flex items-center justify-center text-white font-semibold text-sm">
+                  <div className="absolute inset-0 bg-navy/60 hover:bg-navy/50 transition-colors flex items-center justify-center text-white font-semibold text-sm">
                     +{images.length - 3} Photos
                   </div>
                 )}
@@ -138,12 +167,8 @@ export const PropertyDetailPage = () => {
             </>
           ) : (
             <>
-              <div className="flex-1 bg-gray-100 flex items-center justify-center">
-                <span className="text-4xl opacity-20">🛋️</span>
-              </div>
-              <div className="flex-1 bg-gray-100 flex items-center justify-center">
-                <span className="text-4xl opacity-20">🍽️</span>
-              </div>
+              <div className="flex-1 bg-gray-100" />
+              <div className="flex-1 bg-gray-100" />
             </>
           )}
         </div>
@@ -446,6 +471,70 @@ export const PropertyDetailPage = () => {
         }>
           <PanoramaViewer src={property.panoramaUrl} onClose={() => setShowPanorama(false)} />
         </Suspense>
+      )}
+
+      {/* Lightbox */}
+      {lightboxOpen && images && (
+        <div
+          className="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center"
+          onClick={closeLightbox}
+        >
+          {/* Close */}
+          <button
+            onClick={closeLightbox}
+            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-10"
+          >
+            <X size={20} />
+          </button>
+
+          {/* Counter */}
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/60 text-white text-xs font-semibold px-3 py-1.5 rounded-full z-10">
+            {lightboxIdx + 1} / {images.length}
+          </div>
+
+          {/* Prev */}
+          {images.length > 1 && (
+            <button
+              onClick={(e) => { e.stopPropagation(); lightboxPrev(); }}
+              className="absolute left-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-10"
+            >
+              <ChevronLeft size={22} />
+            </button>
+          )}
+
+          {/* Image */}
+          <div className="relative max-w-5xl max-h-[85vh] w-full mx-16" onClick={(e) => e.stopPropagation()}>
+            <img
+              key={lightboxIdx}
+              src={getImageUrl(images[lightboxIdx])}
+              alt={`${property.title} ${lightboxIdx + 1}`}
+              className="w-full max-h-[85vh] object-contain"
+            />
+          </div>
+
+          {/* Next */}
+          {images.length > 1 && (
+            <button
+              onClick={(e) => { e.stopPropagation(); lightboxNext(); }}
+              className="absolute right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-10"
+            >
+              <ChevronRight size={22} />
+            </button>
+          )}
+
+          {/* Dot indicators */}
+          {images.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+              {images.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={(e) => { e.stopPropagation(); setLightboxIdx(i); }}
+                  className={`rounded-full transition-all ${i === lightboxIdx ? 'w-5 h-2 bg-white' : 'w-2 h-2 bg-white/40 hover:bg-white/70'}`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

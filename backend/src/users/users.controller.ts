@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Patch,
+  Post,
   Delete,
   Param,
   Body,
@@ -40,6 +41,11 @@ export class UsersController {
   @Patch('me')
   updateMe(@CurrentUser() user: User, @Body() dto: UpdateUserDto) {
     return this.usersService.updateProfile(user.id, dto);
+  }
+
+  @Post('me/request-role')
+  requestRole(@CurrentUser() user: User, @Body('role') role: 'agent' | 'owner') {
+    return this.usersService.requestRole(user, role);
   }
 
   @Get(':id')

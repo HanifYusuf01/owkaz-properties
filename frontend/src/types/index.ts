@@ -50,6 +50,7 @@ export interface User {
   agency?: string;
   status: UserStatus;
   avatarUrl?: string;
+  roleRequest?: string | null;
   createdAt: string;
 }
 

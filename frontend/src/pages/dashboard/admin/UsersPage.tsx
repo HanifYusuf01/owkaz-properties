@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { useGetUsersQuery, useUpdateUserStatusMutation, useDeleteUserMutation } from '../../../features/users/usersApi';
+import { useGetUsersQuery, useUpdateUserStatusMutation, useDeleteUserMutation, useUpdateUserRoleMutation } from '../../../features/users/usersApi';
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
 import { ConfirmModal } from '../../../components/ui/ConfirmModal';
 import { formatDate } from '../../../utils/format';
-import { UserStatus } from '../../../types';
+import { UserRole, UserStatus } from '../../../types';
 import { Trash2Icon } from 'lucide-react';
 
 type ActionTarget = { id: string; name: string };
@@ -18,6 +18,7 @@ export const UsersPage = () => {
   const { data: users = [], isLoading } = useGetUsersQuery({ role: roleFilter || undefined });
   const [updateStatus] = useUpdateUserStatusMutation();
   const [deleteUser] = useDeleteUserMutation();
+  const [updateRole] = useUpdateUserRoleMutation();
 
   const roles = ['', 'admin', 'agent', 'owner', 'buyer'];
 
@@ -80,7 +81,7 @@ export const UsersPage = () => {
             <table className="w-full text-sm">
               <thead className="bg-navy">
                 <tr>
-                  {['User', 'Role', 'Agency', 'Status', 'Joined', 'Actions'].map((h) => (
+                  {['User', 'Role / Request', 'Agency', 'Status', 'Joined', 'Actions'].map((h) => (
                     <th key={h} className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-white/70 whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
@@ -99,7 +100,24 @@ export const UsersPage = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3"><Badge status={u.role} /></td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-1.5">
+                        <select
+                          value={u.role}
+                          onChange={(e) => updateRole({ id: u.id, role: e.target.value })}
+                          className="text-xs border border-border rounded-lg px-2 py-1 bg-white text-navy font-semibold focus:outline-none focus:border-teal"
+                        >
+                          {Object.values(UserRole).map((r) => (
+                            <option key={r} value={r}>{r}</option>
+                          ))}
+                        </select>
+                        {u.roleRequest && (
+                          <span className="text-[10px] bg-amber-100 text-amber-700 border border-amber-200 px-1.5 py-0.5 rounded-full font-semibold whitespace-nowrap">
+                            Req: {u.roleRequest}
+                          </span>
+                        )}
+                      </div>
+                    </td>
                     <td className="px-4 py-3 text-muted whitespace-nowrap">{u.agency || '—'}</td>
                     <td className="px-4 py-3"><Badge status={u.status} /></td>
                     <td className="px-4 py-3 text-muted whitespace-nowrap">{formatDate(u.createdAt)}</td>

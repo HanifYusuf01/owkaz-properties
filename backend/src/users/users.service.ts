@@ -3,12 +3,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User, UserRole, UserStatus } from './user.entity';
 import { UpdateUserDto, UpdateUserRoleDto, UpdateUserStatusDto } from './dto/update-user.dto';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationType } from '../notifications/notification.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepo: Repository<User>,
+    private notificationsService: NotificationsService,
   ) {}
 
   async create(data: {
@@ -59,6 +62,25 @@ export class UsersService {
     if (!user) throw new NotFoundException('User not found');
     await this.usersRepo.update(id, { role: dto.role });
     return this.findById(id) as Promise<User>;
+  }
+
+  async requestRole(user: User, requestedRole: 'agent' | 'owner'): Promise<{ message: string }> {
+    // Save request on user record
+    await this.usersRepo.update(user.id, { roleRequest: requestedRole });
+
+    // Notify all admins
+    const admins = await this.usersRepo.find({ where: { role: UserRole.ADMIN } });
+    await Promise.all(
+      admins.map((admin) =>
+        this.notificationsService.create({
+          userId: admin.id,
+          text: `${user.name} (${user.email}) has requested to become an ${requestedRole}. Review in User Management.`,
+          type: NotificationType.ROLE_REQUEST,
+        }),
+      ),
+    );
+
+    return { message: 'Role request submitted. An admin will review your request.' };
   }
 
   async remove(id: string): Promise<void> {
