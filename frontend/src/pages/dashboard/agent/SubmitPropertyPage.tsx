@@ -79,12 +79,13 @@ type FormState = {
   panoramaFile: File | null;
   panoramaUrl: string;
   documents: File[];
+  documentUrls: string[];
 };
 
 const initial: FormState = {
   type: '', title: '', price: '', state: '', lga: '', area: '', description: '',
   beds: '', baths: '', sqm: '', amenities: [], photos: [], photoUrls: [],
-  panoramaFile: null, panoramaUrl: '', documents: [],
+  panoramaFile: null, panoramaUrl: '', documents: [], documentUrls: [],
 };
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -126,7 +127,7 @@ export const SubmitPropertyPage = () => {
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setErrors({});
 
-    // Upload photos and panorama when leaving step 3
+    // Upload photos, panorama, and documents when leaving step 3
     if (step === 3) {
       setUploading(true);
       try {
@@ -143,6 +144,13 @@ export const SubmitPropertyPage = () => {
           fd.append('files', form.panoramaFile);
           const { urls } = await uploadImages(fd).unwrap();
           set('panoramaUrl', urls[0] ?? '');
+        }
+        // Supporting documents
+        if (form.documents.length > 0 && form.documentUrls.length === 0) {
+          const fd = new FormData();
+          form.documents.forEach((f) => fd.append('files', f));
+          const { urls } = await uploadImages(fd).unwrap();
+          set('documentUrls', urls);
         }
       } catch {
         setErrors({ photos: 'Upload failed. Please try again.' });
@@ -189,6 +197,7 @@ export const SubmitPropertyPage = () => {
         amenities: form.amenities,
         description: form.description,
         images: form.photoUrls,
+        ...(form.documentUrls.length > 0 ? { documents: form.documentUrls } : {}),
         ...(form.panoramaUrl ? { panoramaUrl: form.panoramaUrl } : {}),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any).unwrap();
@@ -485,6 +494,7 @@ export const SubmitPropertyPage = () => {
                   if (!e.target.files) return;
                   const arr = Array.from(e.target.files);
                   set('documents', [...form.documents, ...arr].slice(0, 10));
+                  set('documentUrls', []);
                 }}
               />
               {form.documents.length > 0 && (

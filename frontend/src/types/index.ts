@@ -69,6 +69,7 @@ export interface Property {
   amenities: string[];
   description: string;
   images: string[];
+  documents?: string[];
   panoramaUrl?: string | null;
   featured: boolean;
   views: number;

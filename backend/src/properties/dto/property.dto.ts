@@ -75,6 +75,12 @@ export class CreatePropertyDto {
   @IsString({ each: true })
   images?: string[];
 
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  documents?: string[];
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
