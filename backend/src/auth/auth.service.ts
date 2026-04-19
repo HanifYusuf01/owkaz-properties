@@ -53,7 +53,9 @@ export class AuthService {
       throw new ForbiddenException('Your account has been suspended. Please contact support.');
     }
 
-    return this.generateTokens(user);
+    const tokens = await this.generateTokens(user);
+    const { passwordHash, refreshTokenHash, passwordResetToken, passwordResetExpiry, ...publicUser } = user as any;
+    return { ...tokens, user: publicUser };
   }
 
   async generateTokens(user: { id: string; email: string; role: string }) {

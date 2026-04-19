@@ -4,7 +4,8 @@ import { z } from 'zod';
 import { useNavigate, Link } from 'react-router-dom';
 import { useLoginMutation } from '../features/auth/authApi';
 import { useAppDispatch } from '../store';
-import { setCredentials } from '../features/auth/authSlice';
+import { setCredentials, setUser } from '../features/auth/authSlice';
+import { UserRole } from '../types';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 
@@ -26,9 +27,10 @@ export const LoginPage = () => {
 
   const onSubmit = async (data: FormData) => {
     try {
-      const tokens = await login(data).unwrap();
-      dispatch(setCredentials(tokens));
-      navigate('/dashboard');
+      const result = await login(data).unwrap();
+      dispatch(setCredentials({ accessToken: result.accessToken, refreshToken: result.refreshToken }));
+      dispatch(setUser(result.user));
+      navigate(result.user.role === UserRole.BUYER ? '/' : '/dashboard');
     } catch {
       // error handled via RTK state
     }

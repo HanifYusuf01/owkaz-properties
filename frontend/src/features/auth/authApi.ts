@@ -1,11 +1,12 @@
 import { baseApi } from '../../store/baseApi';
 import { User, AuthTokens } from '../../types';
 
+export type LoginResponse = AuthTokens & { user: User };
 export type RegisterResponse = AuthTokens | { pending: true; message: string };
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    login: builder.mutation<AuthTokens, { email: string; password: string }>({
+    login: builder.mutation<LoginResponse, { email: string; password: string }>({
       query: (body) => ({ url: '/auth/login', method: 'POST', body }),
     }),
     register: builder.mutation<RegisterResponse, { name: string; email: string; password: string; role: string; agency?: string }>({
