@@ -13,6 +13,7 @@ import { Modal } from '../../../components/ui/Modal';
 import { ConfirmModal } from '../../../components/ui/ConfirmModal';
 import { Input } from '../../../components/ui/Input';
 import { Select } from '../../../components/ui/Select';
+import { DocumentViewer } from '../../../components/ui/DocumentViewer';
 import { formatPrice, formatDate } from '../../../utils/format';
 import { getImageUrl } from '../../../utils/imageUrl';
 import { Property, PropertyStatus, PropertyType } from '../../../types';
@@ -294,6 +295,13 @@ export const MyListingsPage = () => {
             <p className="text-[10px] font-bold uppercase tracking-widest text-muted mb-1">Description</p>
             <p className="text-sm text-ink leading-relaxed">{viewProperty.description}</p>
           </div>
+
+          {(viewProperty.documents?.length ?? 0) > 0 && (
+            <div className="mt-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted mb-2">Supporting Documents</p>
+              <DocumentViewer documents={viewProperty.documents ?? []} />
+            </div>
+          )}
 
           {viewProperty.status === PropertyStatus.REJECTED && viewProperty.rejectionReason && (
             <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">

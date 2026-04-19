@@ -11,6 +11,7 @@ import { Modal } from '../../../components/ui/Modal';
 import { ConfirmModal } from '../../../components/ui/ConfirmModal';
 import { Input } from '../../../components/ui/Input';
 import { Select } from '../../../components/ui/Select';
+import { DocumentViewer } from '../../../components/ui/DocumentViewer';
 import { formatPrice, formatDate } from '../../../utils/format';
 import { getImageUrl } from '../../../utils/imageUrl';
 import { Property, PropertyStatus, PropertyType } from '../../../types';
@@ -256,59 +257,7 @@ export const ApprovalQueuePage = () => {
               )}
 
               {/* Supporting documents */}
-              {viewProperty.documents && viewProperty.documents.length > 0 ? (
-                <div className="border border-border rounded-xl overflow-hidden">
-                  <div className="bg-amber-50 border-b border-amber-200 px-4 py-2.5 flex items-center gap-2">
-                    <svg className="w-4 h-4 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
-                    <span className="text-xs font-bold text-amber-800 uppercase tracking-wide">
-                      Supporting Documents ({viewProperty.documents.length})
-                    </span>
-                  </div>
-                  <div className="divide-y divide-border">
-                    {viewProperty.documents.map((doc, i) => {
-                      const filename = doc.split('/').pop() ?? doc;
-                      const isPdf = filename.toLowerCase().endsWith('.pdf');
-                      const docUrl = getImageUrl(doc);
-                      return (
-                        <div key={i} className="flex items-center gap-3 px-4 py-3">
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${isPdf ? 'bg-red-50' : 'bg-blue-50'}`}>
-                            {isPdf ? (
-                              <svg className="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM8.5 17a.5.5 0 01-.5-.5v-1a.5.5 0 011 0v1a.5.5 0 01-.5.5zm3-3h-3v-1h3v1zm0-2h-3v-1h3v1zm4 5h-3v-1h3v1zm0-2h-3v-1h3v1zm0-2h-3v-1h3v1z"/>
-                              </svg>
-                            ) : (
-                              <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
-                              </svg>
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-xs font-semibold text-navy truncate">{filename}</div>
-                            <div className="text-[10px] text-muted">{isPdf ? 'PDF Document' : 'Image'}</div>
-                          </div>
-                          <a
-                            href={docUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex-shrink-0 text-xs font-semibold text-teal hover:underline"
-                          >
-                            Open ↗
-                          </a>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2 px-4 py-3 bg-surface border border-border rounded-xl">
-                  <svg className="w-4 h-4 text-muted flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                  </svg>
-                  <span className="text-xs text-muted">No supporting documents uploaded</span>
-                </div>
-              )}
+              <DocumentViewer documents={viewProperty.documents ?? []} />
 
               {/* Submitted by */}
               <div className="flex items-center gap-3 p-3 bg-surface rounded-lg">
