@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCreatePropertyMutation, useUploadImagesMutation } from '../../../features/properties/propertiesApi';
+import { useCreatePropertyMutation, useUploadImagesMutation, useUploadDocumentsMutation } from '../../../features/properties/propertiesApi';
 import { Input } from '../../../components/ui/Input';
 import { Select } from '../../../components/ui/Select';
 import { Button } from '../../../components/ui/Button';
@@ -102,6 +102,7 @@ export const SubmitPropertyPage = () => {
 
   const [createProperty, { isLoading: submitting }] = useCreatePropertyMutation();
   const [uploadImages] = useUploadImagesMutation();
+  const [uploadDocuments] = useUploadDocumentsMutation();
 
   const set = (field: keyof FormState, value: unknown) =>
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -149,7 +150,7 @@ export const SubmitPropertyPage = () => {
         if (form.documents.length > 0 && form.documentUrls.length === 0) {
           const fd = new FormData();
           form.documents.forEach((f) => fd.append('files', f));
-          const { urls } = await uploadImages(fd).unwrap();
+          const { urls } = await uploadDocuments(fd).unwrap();
           set('documentUrls', urls);
         }
       } catch {
