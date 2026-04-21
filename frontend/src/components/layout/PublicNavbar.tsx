@@ -12,6 +12,7 @@ import { UserRole } from '../../types';
 const navLinks = [
   { label: 'Home', path: '/' },
   { label: 'Properties', path: '/properties' },
+  { label: 'Sold', path: '/sold-properties' },
   { label: 'Projects', path: '/projects' },
   { label: 'About', path: '/about' },
   { label: 'Contact', path: '/contact' },
@@ -86,7 +87,7 @@ export const PublicNavbar = () => {
           {/* Overlay */}
           {sidebarOpen && (
             <div
-              className="fixed inset-0 bg-navy/50 backdrop-blur-sm z-40"
+              className="fixed inset-0 bg-navy/30 z-40"
               onClick={() => setSidebarOpen(false)}
             />
           )}

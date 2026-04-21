@@ -56,6 +56,9 @@ export class Project {
   @Column('simple-array', { nullable: true })
   features: string[];
 
+  @Column({ type: 'varchar', nullable: true })
+  videoUrl: string | null;
+
   @CreateDateColumn()
   createdAt: Date;
 

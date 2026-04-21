@@ -7,6 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Property, PropertyStatus } from './property.entity';
+import { PropertyNote } from './property-note.entity';
 import { User, UserRole } from '../users/user.entity';
 import {
   CreatePropertyDto,
@@ -25,6 +26,8 @@ export class PropertiesService {
     private propertiesRepo: Repository<Property>,
     @InjectRepository(User)
     private usersRepo: Repository<User>,
+    @InjectRepository(PropertyNote)
+    private notesRepo: Repository<PropertyNote>,
     private notificationsService: NotificationsService,
   ) {}
 
@@ -232,6 +235,23 @@ export class PropertiesService {
   async getSavedPropertyIds(user: User): Promise<string[]> {
     const dbUser = await this.usersRepo.findOne({ where: { id: user.id } });
     return dbUser?.savedPropertyIds ?? [];
+  }
+
+  async getNotes(propertyId: string, user: User): Promise<PropertyNote[]> {
+    const property = await this.findById(propertyId);
+    if (user.role !== UserRole.ADMIN && property.submittedBy.id !== user.id) {
+      throw new ForbiddenException('Not authorized to view notes for this property');
+    }
+    return this.notesRepo.find({ where: { propertyId }, order: { createdAt: 'ASC' } });
+  }
+
+  async addNote(propertyId: string, user: User, content: string): Promise<PropertyNote> {
+    const property = await this.findById(propertyId);
+    if (user.role !== UserRole.ADMIN && property.submittedBy.id !== user.id) {
+      throw new ForbiddenException('Not authorized to add notes to this property');
+    }
+    const note = this.notesRepo.create({ propertyId, user, content });
+    return this.notesRepo.save(note);
   }
 
   private checkOwnerOrAdmin(property: Property, user: User): void {

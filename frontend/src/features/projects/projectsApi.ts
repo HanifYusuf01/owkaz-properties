@@ -17,6 +17,7 @@ export interface Project {
   status: string;
   images: string[];
   features: string[];
+  videoUrl?: string | null;
   createdAt: string;
   updatedAt: string;
 }

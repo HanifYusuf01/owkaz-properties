@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, MapPin, ChevronLeft, ChevronRight, Play } from 'lucide-react';
 import { Project } from '../../features/projects/projectsApi';
 import { formatPrice } from '../../utils/format';
 import { getImageUrl } from '../../utils/imageUrl';
@@ -29,6 +29,7 @@ interface ProjectDetailModalProps {
 export const ProjectDetailModal = ({ project, onClose }: ProjectDetailModalProps) => {
   const navigate = useNavigate();
   const [activeImg, setActiveImg] = useState(0);
+  const [showVideo, setShowVideo] = useState(false);
 
   const images = project.images?.length ? project.images : [];
   const hasImages = images.length > 0;
@@ -108,6 +109,16 @@ export const ProjectDetailModal = ({ project, onClose }: ProjectDetailModalProps
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
             <div className="h-full bg-gold transition-all" style={{ width: `${project.progress}%` }} />
           </div>
+
+          {/* Video button */}
+          {project.videoUrl && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setShowVideo(true); }}
+              className="absolute bottom-4 left-3 flex items-center gap-1.5 bg-black/60 hover:bg-black/80 text-white text-[10px] font-semibold px-3 py-1.5 rounded-lg backdrop-blur-sm transition-colors"
+            >
+              <Play size={11} /> Watch Video
+            </button>
+          )}
 
           {/* Status badge */}
           <div className={`absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold border ${STATUS_STYLES[project.status] ?? 'bg-surface text-muted border-border'}`}>
@@ -205,6 +216,41 @@ export const ProjectDetailModal = ({ project, onClose }: ProjectDetailModalProps
             <div className="mt-4">
               <h3 className="font-semibold text-sm text-navy mb-1.5">About This Project</h3>
               <p className="text-xs text-muted leading-relaxed">{project.description}</p>
+            </div>
+          )}
+
+          {/* Video player */}
+          {project.videoUrl && (
+            <div className="mt-4">
+              {showVideo ? (
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-semibold text-sm text-navy flex items-center gap-1.5">
+                      <Play size={14} className="text-teal" /> Project Status Video
+                    </h3>
+                    <button onClick={() => setShowVideo(false)} className="text-xs text-muted hover:text-navy">Hide</button>
+                  </div>
+                  <video
+                    src={getImageUrl(project.videoUrl)}
+                    controls
+                    autoPlay
+                    className="w-full rounded-xl border border-border max-h-56 bg-black"
+                  />
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowVideo(true)}
+                  className="w-full flex items-center gap-3 p-3 bg-navy/5 hover:bg-navy/10 border border-border rounded-xl transition-colors"
+                >
+                  <div className="w-9 h-9 rounded-full bg-navy flex items-center justify-center flex-shrink-0">
+                    <Play size={14} className="text-white ml-0.5" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-xs font-semibold text-navy">Watch Status Video</p>
+                    <p className="text-[10px] text-muted">See the latest construction update</p>
+                  </div>
+                </button>
+              )}
             </div>
           )}
 

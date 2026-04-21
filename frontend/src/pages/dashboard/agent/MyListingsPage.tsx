@@ -7,6 +7,10 @@ import {
   useUpdatePropertyMutation,
   useUploadImagesMutation,
 } from '../../../features/properties/propertiesApi';
+import {
+  useGetPropertyNotesQuery,
+  useAddPropertyNoteMutation,
+} from '../../../features/propertyNotes/propertyNotesApi';
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
 import { Modal } from '../../../components/ui/Modal';
@@ -19,6 +23,71 @@ import { getImageUrl } from '../../../utils/imageUrl';
 import { Property, PropertyStatus, PropertyType } from '../../../types';
 import { NIGERIAN_STATES } from '../../../constants/nigerianStates';
 import { Trash2Icon } from 'lucide-react';
+import { useAppSelector } from '../../../store';
+
+const PropertyNotesSection = ({ propertyId }: { propertyId: string }) => {
+  const currentUser = useAppSelector((s) => s.auth.user);
+  const { data: notes = [], isLoading } = useGetPropertyNotesQuery(propertyId);
+  const [addNote, { isLoading: isSending }] = useAddPropertyNoteMutation();
+  const [noteText, setNoteText] = useState('');
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  const handleSend = async () => {
+    const content = noteText.trim();
+    if (!content) return;
+    await addNote({ propertyId, content });
+    setNoteText('');
+    setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+  };
+
+  return (
+    <div className="mt-4 border border-border rounded-xl overflow-hidden">
+      <div className="bg-navy/5 px-4 py-2.5 border-b border-border">
+        <h4 className="text-xs font-bold uppercase tracking-wide text-navy">Notes from Admin</h4>
+      </div>
+      <div className="max-h-48 overflow-y-auto p-3 space-y-2 bg-white">
+        {isLoading && <p className="text-xs text-muted text-center py-3">Loading notes...</p>}
+        {!isLoading && notes.length === 0 && (
+          <p className="text-xs text-muted text-center py-3">No notes yet. You can leave a note for the admin here.</p>
+        )}
+        {notes.map((note) => {
+          const isMe = note.user.id === currentUser?.id;
+          return (
+            <div key={note.id} className={`flex gap-2 ${isMe ? 'flex-row-reverse' : ''}`}>
+              <div className="w-6 h-6 rounded-full bg-teal flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+                {note.user.name?.charAt(0)}
+              </div>
+              <div className={`max-w-[75%] ${isMe ? 'items-end' : 'items-start'} flex flex-col gap-0.5`}>
+                <div className={`px-3 py-1.5 rounded-xl text-xs leading-relaxed ${isMe ? 'bg-teal text-white rounded-tr-sm' : 'bg-surface text-ink rounded-tl-sm'}`}>
+                  {note.content}
+                </div>
+                <span className="text-[10px] text-muted">{note.user.name} · {formatDate(note.createdAt)}</span>
+              </div>
+            </div>
+          );
+        })}
+        <div ref={bottomRef} />
+      </div>
+      <div className="p-3 border-t border-border bg-white flex gap-2">
+        <input
+          type="text"
+          value={noteText}
+          onChange={(e) => setNoteText(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
+          placeholder="Add a note for the admin..."
+          className="flex-1 px-3 py-1.5 border border-border rounded-lg text-xs text-ink outline-none focus:border-teal transition-colors"
+        />
+        <button
+          onClick={handleSend}
+          disabled={!noteText.trim() || isSending}
+          className="px-3 py-1.5 rounded-lg bg-teal text-white text-xs font-semibold hover:bg-teal/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          Send
+        </button>
+      </div>
+    </div>
+  );
+};
 
 const AMENITIES = ['Pool', 'BQ', 'Generator', 'CCTV', 'Gym', 'Elevator', 'Concierge', 'Smart Home', 'Security', 'Parking'];
 
@@ -308,6 +377,9 @@ export const MyListingsPage = () => {
               <span className="font-semibold">Rejection reason:</span> {viewProperty.rejectionReason}
             </div>
           )}
+
+          {/* Agent–Admin notes */}
+          <PropertyNotesSection propertyId={viewProperty.id} />
         </Modal>
       )}
 

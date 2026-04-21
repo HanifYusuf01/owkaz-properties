@@ -5,15 +5,19 @@ import {
   useRejectPropertyMutation,
   useToggleFeaturedMutation,
   useDeletePropertyMutation,
+  useUpdatePropertyMutation,
 } from '../../../features/properties/propertiesApi';
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
 import { Modal } from '../../../components/ui/Modal';
 import { ConfirmModal } from '../../../components/ui/ConfirmModal';
 import { Input } from '../../../components/ui/Input';
+import { Select } from '../../../components/ui/Select';
 import { formatPrice } from '../../../utils/format';
-import { PropertyStatus } from '../../../types';
-import { Trash2Icon } from 'lucide-react';
+import { getImageUrl } from '../../../utils/imageUrl';
+import { Property, PropertyStatus, PropertyType } from '../../../types';
+import { NIGERIAN_STATES } from '../../../constants/nigerianStates';
+import { Pencil, Trash2Icon } from 'lucide-react';
 
 const TABS = [
   { label: 'All', value: '' },
@@ -22,7 +26,41 @@ const TABS = [
   { label: 'Rejected', value: PropertyStatus.REJECTED },
 ];
 
+const AMENITIES = ['Pool', 'BQ', 'Generator', 'CCTV', 'Gym', 'Elevator', 'Concierge', 'Smart Home', 'Security', 'Parking'];
+
 type ConfirmTarget = { id: string; title: string };
+
+type EditForm = {
+  type: PropertyType | '';
+  title: string;
+  price: string;
+  state: string;
+  lga: string;
+  area: string;
+  description: string;
+  beds: string;
+  baths: string;
+  sqm: string;
+  amenities: string[];
+  images: string[];
+};
+
+function propertyToEdit(p: Property): EditForm {
+  return {
+    type: p.type,
+    title: p.title,
+    price: String(p.price),
+    state: p.state,
+    lga: p.lga,
+    area: p.area,
+    description: p.description,
+    beds: p.beds != null ? String(p.beds) : '',
+    baths: p.baths != null ? String(p.baths) : '',
+    sqm: p.sqm != null ? String(p.sqm) : '',
+    amenities: p.amenities ?? [],
+    images: p.images ?? [],
+  };
+}
 
 export const AllListingsPage = () => {
   const [activeTab, setActiveTab] = useState('');
@@ -35,6 +73,11 @@ export const AllListingsPage = () => {
   const [reason, setReason] = useState('');
   const [isActing, setIsActing] = useState(false);
 
+  const [editTarget, setEditTarget] = useState<Property | null>(null);
+  const [editForm, setEditForm] = useState<EditForm | null>(null);
+  const [editImageIdx, setEditImageIdx] = useState(0);
+  const [isSaving, setIsSaving] = useState(false);
+
   const { data, isLoading } = useGetAdminPropertiesQuery({
     status: activeTab || undefined,
     search: search || undefined,
@@ -45,6 +88,7 @@ export const AllListingsPage = () => {
   const [reject] = useRejectPropertyMutation();
   const [toggleFeatured] = useToggleFeaturedMutation();
   const [deleteProperty] = useDeletePropertyMutation();
+  const [updateProperty] = useUpdatePropertyMutation();
 
   const properties = data?.data ?? [];
 
@@ -58,6 +102,42 @@ export const AllListingsPage = () => {
   const handleFeatured = () => featuredTarget && act(() => toggleFeatured(featuredTarget.id), () => setFeaturedTarget(null));
   const handleReject = () => rejectModal && reason.trim()
     && act(() => reject({ id: rejectModal.id, rejectionReason: reason }), () => { setRejectModal(null); setReason(''); });
+
+  const openEdit = (p: Property) => {
+    setEditTarget(p);
+    setEditForm(propertyToEdit(p));
+    setEditImageIdx(0);
+  };
+
+  const setField = (field: keyof EditForm, value: unknown) =>
+    setEditForm((prev) => prev ? { ...prev, [field]: value } : prev);
+
+  const handleSaveEdit = async () => {
+    if (!editTarget || !editForm) return;
+    setIsSaving(true);
+    try {
+      await updateProperty({
+        id: editTarget.id,
+        data: {
+          type: editForm.type as PropertyType,
+          title: editForm.title,
+          price: Number(editForm.price),
+          state: editForm.state,
+          lga: editForm.lga,
+          area: editForm.area,
+          description: editForm.description,
+          beds: editForm.beds ? Number(editForm.beds) : undefined,
+          baths: editForm.baths ? Number(editForm.baths) : undefined,
+          sqm: editForm.sqm ? Number(editForm.sqm) : undefined,
+          amenities: editForm.amenities,
+          images: editForm.images,
+        },
+      }).unwrap();
+      setEditTarget(null);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -118,6 +198,9 @@ export const AllListingsPage = () => {
                             <Button variant="danger" size="sm" onClick={() => setRejectModal({ id: p.id, title: p.title })}>✗</Button>
                           </>
                         )}
+                        <Button variant="ghost" size="sm" onClick={() => openEdit(p)} title="Edit listing">
+                          <Pencil size={13} />
+                        </Button>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -141,6 +224,125 @@ export const AllListingsPage = () => {
           </div>
         )}
       </div>
+
+      {/* ── Edit Modal ── */}
+      {editTarget && editForm && (
+        <Modal
+          isOpen
+          onClose={() => setEditTarget(null)}
+          title={`Edit: ${editTarget.title}`}
+          size="lg"
+          footer={
+            <>
+              <Button variant="ghost" onClick={() => setEditTarget(null)} disabled={isSaving}>Cancel</Button>
+              <Button onClick={handleSaveEdit} loading={isSaving}>Save Changes</Button>
+            </>
+          }
+        >
+          <div className="space-y-5">
+            {/* Image gallery preview */}
+            {editForm.images.length > 0 && (
+              <div>
+                <div className="aspect-video rounded-xl overflow-hidden bg-gray-100 mb-2">
+                  <img
+                    src={getImageUrl(editForm.images[editImageIdx])}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                {editForm.images.length > 1 && (
+                  <div className="flex gap-2 overflow-x-auto pb-1">
+                    {editForm.images.map((img, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setEditImageIdx(i)}
+                        className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-colors ${i === editImageIdx ? 'border-teal' : 'border-border'}`}
+                      >
+                        <img src={getImageUrl(img)} alt="" className="w-full h-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Type selector */}
+            <div>
+              <label className="text-xs font-semibold uppercase tracking-wide text-navy block mb-2">Property Type</label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {(Object.values(PropertyType) as PropertyType[]).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setField('type', t)}
+                    className={`py-1.5 px-2 rounded-lg border text-xs font-semibold text-center transition-all ${editForm.type === t ? 'bg-navy text-white border-navy' : 'border-border text-ink hover:border-teal/50'}`}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <Input label="Title" value={editForm.title} onChange={(e) => setField('title', e.target.value)} />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input label="Price (₦)" type="number" value={editForm.price} onChange={(e) => setField('price', e.target.value)} />
+              <Select
+                label="State"
+                options={NIGERIAN_STATES.map((s) => ({ value: s.label, label: s.label }))}
+                value={editForm.state}
+                onChange={(e) => setEditForm((prev) => prev ? { ...prev, state: e.target.value, lga: '' } : prev)}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Select
+                label="LGA"
+                placeholder={editForm.state ? 'Select LGA...' : 'Select a state first'}
+                options={(NIGERIAN_STATES.find((s) => s.label === editForm.state)?.lgas ?? []).map((l) => ({ value: l.value, label: l.label }))}
+                value={editForm.lga}
+                onChange={(e) => setField('lga', e.target.value)}
+                disabled={!editForm.state}
+              />
+              <Input label="Area" value={editForm.area} onChange={(e) => setField('area', e.target.value)} />
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              <Input label="Bedrooms" type="number" value={editForm.beds} onChange={(e) => setField('beds', e.target.value)} />
+              <Input label="Bathrooms" type="number" value={editForm.baths} onChange={(e) => setField('baths', e.target.value)} />
+              <Input label="Size (m²)" type="number" value={editForm.sqm} onChange={(e) => setField('sqm', e.target.value)} />
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold uppercase tracking-wide text-navy block mb-1.5">Description</label>
+              <textarea
+                rows={4}
+                value={editForm.description}
+                onChange={(e) => setField('description', e.target.value)}
+                className="w-full px-3.5 py-2.5 border border-border rounded-lg text-sm text-ink bg-white outline-none transition-colors focus:border-teal resize-none"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold uppercase tracking-wide text-navy block mb-2">Amenities</label>
+              <div className="flex flex-wrap gap-2">
+                {AMENITIES.map((a) => (
+                  <button
+                    key={a}
+                    type="button"
+                    onClick={() => setField('amenities', editForm.amenities.includes(a)
+                      ? editForm.amenities.filter((x) => x !== a)
+                      : [...editForm.amenities, a])}
+                    className={`px-3 py-1.5 rounded-full text-xs border transition-all ${editForm.amenities.includes(a) ? 'bg-teal text-white border-teal' : 'bg-white text-ink border-border hover:border-teal/50'}`}
+                  >
+                    {a}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Modal>
+      )}
 
       {/* Approve */}
       <ConfirmModal

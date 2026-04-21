@@ -169,4 +169,26 @@ export class PropertiesController {
   remove(@Param('id') id: string, @CurrentUser() user: User) {
     return this.propertiesService.remove(id, user);
   }
+
+  // ── Property Notes ──
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiBearerAuth()
+  @Roles(UserRole.AGENT, UserRole.OWNER, UserRole.ADMIN)
+  @Get(':id/notes')
+  getNotes(@Param('id') id: string, @CurrentUser() user: User) {
+    return this.propertiesService.getNotes(id, user);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiBearerAuth()
+  @Roles(UserRole.AGENT, UserRole.OWNER, UserRole.ADMIN)
+  @Post(':id/notes')
+  addNote(
+    @Param('id') id: string,
+    @Body('content') content: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.propertiesService.addNote(id, user, content);
+  }
 }

@@ -15,6 +15,7 @@ import { PropertyDetailPage } from './pages/public/PropertyDetailPage';
 import { AboutPage } from './pages/public/AboutPage';
 import { ContactPage } from './pages/public/ContactPage';
 import { ProjectsPage } from './pages/public/ProjectsPage';
+import { ProjectDetailPage } from './pages/public/ProjectDetailPage';
 import { ListPropertyPage } from './pages/public/ListPropertyPage';
 import { BuyerProfilePage } from './pages/public/BuyerProfilePage';
 
@@ -62,6 +63,7 @@ function AppContent() {
         <Route path="/sold-properties" element={<SoldPropertiesPage />} />
         <Route path="/properties/:id" element={<PropertyDetailPage />} />
         <Route path="/projects" element={<ProjectsPage />} />
+        <Route path="/projects/:id" element={<ProjectDetailPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/list-property" element={<ListPropertyPage />} />

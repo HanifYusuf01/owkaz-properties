@@ -34,6 +34,7 @@ export class CreateProjectDto {
 
   @ApiPropertyOptional({ type: [String] }) @IsOptional() @IsArray() images?: string[];
   @ApiPropertyOptional({ type: [String] }) @IsOptional() @IsArray() features?: string[];
+  @ApiPropertyOptional() @IsOptional() @IsString() videoUrl?: string;
 }
 
 export class UpdateProjectDto extends PartialType(CreateProjectDto) {}

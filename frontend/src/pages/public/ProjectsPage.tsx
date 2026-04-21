@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
-import { useGetProjectsQuery, Project } from '../../features/projects/projectsApi';
+import { useGetProjectsQuery } from '../../features/projects/projectsApi';
 import { formatPrice } from '../../utils/format';
 import { getImageUrl } from '../../utils/imageUrl';
-import { ProjectDetailModal } from '../../components/property/ProjectDetailModal';
 
 const STATUS_STYLES: Record<string, string> = {
   ongoing: 'bg-teal/20 text-teal border-teal/30',
@@ -42,7 +41,6 @@ export const ProjectsPage = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   const { data: projects = [], isLoading } = useGetProjectsQuery({ search: search || undefined });
 
@@ -135,7 +133,7 @@ export const ProjectsPage = () => {
             {projects.map((project, idx) => (
               <div
                 key={project.id}
-                onClick={() => setSelectedProject(project)}
+                onClick={() => navigate(`/projects/${project.id}`)}
                 className="bg-white border border-border rounded-2xl overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-200 cursor-pointer"
               >
                 {/* Image / gradient */}
@@ -194,7 +192,7 @@ export const ProjectsPage = () => {
                       </div>
                     </div>
                     <button
-                      onClick={(e) => { e.stopPropagation(); setSelectedProject(project); }}
+                      onClick={(e) => { e.stopPropagation(); navigate(`/projects/${project.id}`); }}
                       className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-navy text-white text-xs font-semibold hover:bg-navy-mid transition-colors flex-shrink-0"
                     >
                       View
@@ -248,12 +246,6 @@ export const ProjectsPage = () => {
         </div>
       </section>
 
-      {selectedProject && (
-        <ProjectDetailModal
-          project={selectedProject}
-          onClose={() => setSelectedProject(null)}
-        />
-      )}
     </div>
   );
 };

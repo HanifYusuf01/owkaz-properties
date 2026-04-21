@@ -63,4 +63,23 @@ export class UploadController {
     const urls = files.map((f) => `/uploads/${f.filename}`);
     return { urls };
   }
+
+  @Post('video')
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FilesInterceptor('files', 1, {
+      storage,
+      fileFilter: (_req, file, cb) => {
+        cb(null, file.mimetype.startsWith('video/'));
+      },
+      limits: { fileSize: 200 * 1024 * 1024 },
+    }),
+  )
+  uploadVideo(@UploadedFiles() files: Express.Multer.File[]) {
+    if (!files || files.length === 0) {
+      throw new BadRequestException('No valid video file received. Allowed types: MP4, WebM, MOV.');
+    }
+    const urls = files.map((f) => `/uploads/${f.filename}`);
+    return { urls };
+  }
 }

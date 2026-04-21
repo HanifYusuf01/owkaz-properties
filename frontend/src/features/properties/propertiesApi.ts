@@ -87,6 +87,9 @@ export const propertiesApi = baseApi.injectEndpoints({
     uploadDocuments: builder.mutation<{ urls: string[] }, FormData>({
       query: (formData) => ({ url: '/upload/documents', method: 'POST', body: formData }),
     }),
+    uploadVideo: builder.mutation<{ urls: string[] }, FormData>({
+      query: (formData) => ({ url: '/upload/video', method: 'POST', body: formData }),
+    }),
     getSavedProperties: builder.query<Property[], void>({
       query: () => '/properties/saved',
       providesTags: ['SavedProperty'],
@@ -123,6 +126,7 @@ export const {
   useDeletePropertyMutation,
   useUploadImagesMutation,
   useUploadDocumentsMutation,
+  useUploadVideoMutation,
   useGetSavedPropertiesQuery,
   useGetSavedPropertyIdsQuery,
   useSavePropertyMutation,
