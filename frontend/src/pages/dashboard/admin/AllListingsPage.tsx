@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   useGetAdminPropertiesQuery,
   useApprovePropertyMutation,
@@ -6,6 +6,7 @@ import {
   useToggleFeaturedMutation,
   useDeletePropertyMutation,
   useUpdatePropertyMutation,
+  useUploadImagesMutation,
 } from '../../../features/properties/propertiesApi';
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
@@ -42,7 +43,8 @@ type EditForm = {
   baths: string;
   sqm: string;
   amenities: string[];
-  images: string[];
+  existingImages: string[];
+  newPhotos: File[];
 };
 
 function propertyToEdit(p: Property): EditForm {
@@ -58,7 +60,8 @@ function propertyToEdit(p: Property): EditForm {
     baths: p.baths != null ? String(p.baths) : '',
     sqm: p.sqm != null ? String(p.sqm) : '',
     amenities: p.amenities ?? [],
-    images: p.images ?? [],
+    existingImages: p.images ?? [],
+    newPhotos: [],
   };
 }
 
@@ -75,8 +78,9 @@ export const AllListingsPage = () => {
 
   const [editTarget, setEditTarget] = useState<Property | null>(null);
   const [editForm, setEditForm] = useState<EditForm | null>(null);
-  const [editImageIdx, setEditImageIdx] = useState(0);
+  const [editError, setEditError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const editFileRef = useRef<HTMLInputElement>(null);
 
   const { data, isLoading } = useGetAdminPropertiesQuery({
     status: activeTab || undefined,
@@ -89,6 +93,7 @@ export const AllListingsPage = () => {
   const [toggleFeatured] = useToggleFeaturedMutation();
   const [deleteProperty] = useDeletePropertyMutation();
   const [updateProperty] = useUpdatePropertyMutation();
+  const [uploadImages] = useUploadImagesMutation();
 
   const properties = data?.data ?? [];
 
@@ -106,16 +111,37 @@ export const AllListingsPage = () => {
   const openEdit = (p: Property) => {
     setEditTarget(p);
     setEditForm(propertyToEdit(p));
-    setEditImageIdx(0);
+    setEditError(null);
   };
 
   const setField = (field: keyof EditForm, value: unknown) =>
     setEditForm((prev) => prev ? { ...prev, [field]: value } : prev);
 
+  const onEditFilesSelected = (files: FileList | null) => {
+    if (!files || !editForm) return;
+    const arr = Array.from(files).filter((f) => f.type.startsWith('image/'));
+    const total = editForm.existingImages.length + editForm.newPhotos.length;
+    const allowed = Math.max(0, 20 - total);
+    setField('newPhotos', [...editForm.newPhotos, ...arr].slice(0, allowed));
+  };
+
   const handleSaveEdit = async () => {
     if (!editTarget || !editForm) return;
+    if (editForm.existingImages.length === 0 && editForm.newPhotos.length === 0) {
+      setEditError('At least 1 photo is required');
+      return;
+    }
+    setEditError(null);
     setIsSaving(true);
     try {
+      let newUrls: string[] = [];
+      if (editForm.newPhotos.length > 0) {
+        const fd = new FormData();
+        editForm.newPhotos.forEach((f) => fd.append('files', f));
+        const { urls } = await uploadImages(fd).unwrap();
+        newUrls = urls;
+      }
+
       await updateProperty({
         id: editTarget.id,
         data: {
@@ -130,10 +156,12 @@ export const AllListingsPage = () => {
           baths: editForm.baths ? Number(editForm.baths) : undefined,
           sqm: editForm.sqm ? Number(editForm.sqm) : undefined,
           amenities: editForm.amenities,
-          images: editForm.images,
+          images: [...editForm.existingImages, ...newUrls],
         },
       }).unwrap();
       setEditTarget(null);
+    } catch {
+      setEditError('Update failed. Please try again.');
     } finally {
       setIsSaving(false);
     }
@@ -240,31 +268,41 @@ export const AllListingsPage = () => {
           }
         >
           <div className="space-y-5">
-            {/* Image gallery preview */}
-            {editForm.images.length > 0 && (
-              <div>
-                <div className="aspect-video rounded-xl overflow-hidden bg-gray-100 mb-2">
-                  <img
-                    src={getImageUrl(editForm.images[editImageIdx])}
-                    alt=""
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                {editForm.images.length > 1 && (
-                  <div className="flex gap-2 overflow-x-auto pb-1">
-                    {editForm.images.map((img, i) => (
-                      <button
-                        key={i}
-                        onClick={() => setEditImageIdx(i)}
-                        className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-colors ${i === editImageIdx ? 'border-teal' : 'border-border'}`}
-                      >
-                        <img src={getImageUrl(img)} alt="" className="w-full h-full object-cover" />
-                      </button>
-                    ))}
+            {/* Photos */}
+            <div>
+              <label className="text-xs font-semibold uppercase tracking-wide text-navy block mb-2">Photos</label>
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-2">
+                {editForm.existingImages.map((url, i) => (
+                  <div key={`e-${i}`} className="relative group aspect-square rounded-lg overflow-hidden border border-border">
+                    <img src={getImageUrl(url)} alt="" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setField('existingImages', editForm.existingImages.filter((_, idx) => idx !== i))}
+                      className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >×</button>
                   </div>
+                ))}
+                {editForm.newPhotos.map((file, i) => (
+                  <div key={`n-${i}`} className="relative group aspect-square rounded-lg overflow-hidden border border-teal/40">
+                    <img src={URL.createObjectURL(file)} alt="" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setField('newPhotos', editForm.newPhotos.filter((_, idx) => idx !== i))}
+                      className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >×</button>
+                  </div>
+                ))}
+                {(editForm.existingImages.length + editForm.newPhotos.length) < 20 && (
+                  <button
+                    type="button"
+                    onClick={() => editFileRef.current?.click()}
+                    className="aspect-square rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:border-teal/60 hover:text-teal transition-colors text-2xl"
+                  >+</button>
                 )}
               </div>
-            )}
+              <input ref={editFileRef} type="file" accept="image/jpeg,image/png,image/webp" multiple className="hidden" onChange={(e) => onEditFilesSelected(e.target.files)} />
+              {editError && <p className="text-xs text-red-500">{editError}</p>}
+            </div>
 
             {/* Type selector */}
             <div>

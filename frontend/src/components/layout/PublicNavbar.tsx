@@ -41,15 +41,15 @@ export const PublicNavbar = () => {
   const isBuyer = user?.role === UserRole.BUYER;
   const isStaff = user && !isBuyer;
 
-  // Open sidebar automatically only on the buyer's first visit after login
-  const [sidebarOpen, setSidebarOpen] = useState(() => {
-    if (user?.role !== UserRole.BUYER) return false;
-    const key = `owkaz_sidebar_welcomed_${user.id}`;
-    if (localStorage.getItem(key)) return false;
-    localStorage.setItem(key, '1');
-    return true;
-  });
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  // Sidebar is open by default for buyers (opens as soon as the buyer identity is known)
+  useEffect(() => {
+    if (user?.role === UserRole.BUYER) {
+      setSidebarOpen(true);
+    }
+  }, [user?.role]);
 
   // Lock body scroll when buyer sidebar is open
   useEffect(() => {
