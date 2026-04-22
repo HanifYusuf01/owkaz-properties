@@ -10,7 +10,8 @@ import { UserRole } from '../../../types';
 
 export const InquiriesPage = () => {
   const { data: inquiries = [], isLoading } = useGetInquiriesQuery({});
-  const { data: users = [] } = useGetUsersQuery({ role: UserRole.AGENT });
+  const { data: usersData } = useGetUsersQuery({ role: UserRole.AGENT, limit: 1000 });
+  const users = usersData?.data ?? [];
   const [update] = useUpdateInquiryMutation();
   const [assign] = useAssignInquiryMutation();
   const [selected, setSelected] = useState<string | null>(null);

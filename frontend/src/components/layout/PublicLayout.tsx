@@ -19,12 +19,7 @@ export const PublicLayout = () => {
             {/* Brand */}
             <div>
               <div className="flex items-center gap-2.5 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-gold/20 border border-gold/30 flex items-center justify-center text-gold font-display font-bold text-sm">
-                  O
-                </div>
-                <span className="font-display text-xl text-white">
-                  Owk<em className="text-gold not-italic">az</em>
-                </span>
+                <img src="/OWKAZ LOGO.png" alt="Owkaz" className="h-8" />
               </div>
               <p className="text-sm text-white/50 leading-relaxed max-w-[220px]">
                 Nigeria's most trusted property platform connecting buyers, sellers, and agents across the country.

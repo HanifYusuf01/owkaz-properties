@@ -42,6 +42,7 @@ export const PublicNavbar = () => {
   const isStaff = user && !isBuyer;
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [publicNavOpen, setPublicNavOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   // Sidebar is open by default for buyers (opens as soon as the buyer identity is known)
@@ -51,15 +52,15 @@ export const PublicNavbar = () => {
     }
   }, [user?.role]);
 
-  // Lock body scroll when buyer sidebar is open
+  // Lock body scroll when either drawer is open
   useEffect(() => {
-    if (sidebarOpen) {
+    if (sidebarOpen || publicNavOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
     }
     return () => { document.body.style.overflow = ''; };
-  }, [sidebarOpen]);
+  }, [sidebarOpen, publicNavOpen]);
 
   // Close staff dropdown on outside click
   useEffect(() => {
@@ -75,6 +76,7 @@ export const PublicNavbar = () => {
   const handleSignOut = () => {
     dispatch(logout());
     setSidebarOpen(false);
+    setPublicNavOpen(false);
     setDropdownOpen(false);
     navigate('/');
   };
@@ -104,9 +106,9 @@ export const PublicNavbar = () => {
                 className="flex items-center gap-2 cursor-pointer"
                 onClick={() => { navigate('/'); setSidebarOpen(false); }}
               >
-                <div className="w-8 h-8 rounded-lg bg-gold/20 border border-gold/30 flex items-center justify-center text-gold font-display font-bold text-sm">O</div>
-                <span className="font-display text-lg text-white">Owk<em className="text-gold not-italic">az</em></span>
+                <img src="/OWKAZ LOGO.png" alt="Owkaz" className="h-8" />
               </div>
+
               <button
                 onClick={() => setSidebarOpen(false)}
                 className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/20 transition-colors"
@@ -189,28 +191,133 @@ export const PublicNavbar = () => {
         </>
       )}
 
+      {/* ── PUBLIC NAV DRAWER (non-buyers, mobile) ── */}
+      {!isBuyer && (
+        <>
+          {publicNavOpen && (
+            <div
+              className="md:hidden fixed inset-0 bg-navy/30 z-40"
+              onClick={() => setPublicNavOpen(false)}
+            />
+          )}
+          <aside
+            className={`md:hidden fixed left-0 top-0 h-screen w-64 bg-navy flex flex-col z-50 transition-transform duration-300 ${
+              publicNavOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
+            }`}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-5 border-b border-white/10 flex-shrink-0">
+              <div
+                className="flex items-center gap-2 cursor-pointer"
+                onClick={() => { navigate('/'); setPublicNavOpen(false); }}
+              >
+                 <img src="/OWKAZ LOGO.png" alt="Owkaz" className="h-8" />
+              </div>
+              <button
+                onClick={() => setPublicNavOpen(false)}
+                className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/20 transition-colors"
+                aria-label="Close menu"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Navigation */}
+            <nav className="flex-1 overflow-y-auto py-3">
+              {navLinks.map((l) => (
+                <NavLink
+                  key={l.path}
+                  to={l.path}
+                  end={l.path === '/'}
+                  onClick={() => setPublicNavOpen(false)}
+                  className={({ isActive }) =>
+                    `block px-5 py-3 text-sm border-l-[3px] transition-all ${
+                      isActive
+                        ? 'text-white border-teal bg-white/6 font-semibold'
+                        : 'text-white/70 border-transparent hover:text-white hover:bg-white/5'
+                    }`
+                  }
+                >
+                  {l.label}
+                </NavLink>
+              ))}
+
+              {isStaff && (
+                <>
+                  <div className="h-px bg-white/8 mx-5 my-2" />
+                  <div className="px-5 py-2 text-[9px] font-bold uppercase tracking-widest text-white/25">Dashboard</div>
+                  <button
+                    onClick={() => { navigate('/dashboard'); setPublicNavOpen(false); }}
+                    className="w-full flex items-center gap-3 px-5 py-3 text-sm text-white/70 border-l-[3px] border-transparent hover:text-white hover:bg-white/5 transition-all"
+                  >
+                    <LayoutDashboard size={16} /> My Dashboard
+                  </button>
+                  <button
+                    onClick={() => { navigate('/dashboard/submit'); setPublicNavOpen(false); }}
+                    className="w-full flex items-center gap-3 px-5 py-3 text-sm text-white/70 border-l-[3px] border-transparent hover:text-white hover:bg-white/5 transition-all"
+                  >
+                    <PlusCircle size={16} /> List a Property
+                  </button>
+                  <button
+                    onClick={() => { navigate('/dashboard/profile'); setPublicNavOpen(false); }}
+                    className="w-full flex items-center gap-3 px-5 py-3 text-sm text-white/70 border-l-[3px] border-transparent hover:text-white hover:bg-white/5 transition-all"
+                  >
+                    <User size={16} /> Profile Settings
+                  </button>
+                </>
+              )}
+            </nav>
+
+            {/* Footer */}
+            {!user ? (
+              <div className="px-5 py-4 border-t border-white/10 flex-shrink-0">
+                <button
+                  onClick={() => { navigate('/login'); setPublicNavOpen(false); }}
+                  className="w-full py-2.5 rounded-lg bg-gold text-navy text-sm font-semibold hover:bg-gold/90 transition-colors"
+                >
+                  Sign In
+                </button>
+              </div>
+            ) : (
+              <div className="px-5 py-4 border-t border-white/10 flex items-center gap-3 flex-shrink-0">
+                <div className="w-9 h-9 rounded-full bg-teal flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                  {user.name?.charAt(0).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-white text-xs font-semibold truncate">{user.name}</div>
+                  <div className="text-white/40 text-[10px] truncate capitalize">{user.role}</div>
+                </div>
+                <button
+                  onClick={handleSignOut}
+                  className="text-white/30 hover:text-white/70 transition-colors flex-shrink-0"
+                  title="Sign out"
+                >
+                  <LogOut size={15} />
+                </button>
+              </div>
+            )}
+          </aside>
+        </>
+      )}
+
       {/* ── TOP BAR ── */}
       <nav className="sticky top-0 z-30 bg-surface border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 gap-3">
 
-            {/* Left: hamburger (buyer only) + logo */}
+            {/* Left: hamburger (mobile, all roles) + logo */}
             <div className="flex items-center gap-3">
-              {isBuyer && (
-                <button
-                  onClick={() => setSidebarOpen(true)}
-                  className="w-9 h-9 flex flex-col items-center justify-center gap-1.5 rounded-lg bg-navy hover:bg-navy-mid transition-colors flex-shrink-0"
-                >
-                  <span className="w-4 h-0.5 bg-white rounded-full" />
-                  <span className="w-4 h-0.5 bg-white rounded-full" />
-                  <span className="w-4 h-0.5 bg-white rounded-full" />
-                </button>
-              )}
+              <button
+                onClick={() => (isBuyer ? setSidebarOpen(true) : setPublicNavOpen(true))}
+                className="md:hidden w-9 h-9 flex flex-col items-center justify-center gap-1.5 rounded-lg bg-navy hover:bg-navy-mid transition-colors flex-shrink-0"
+                aria-label="Open menu"
+              >
+                <span className="w-4 h-0.5 bg-white rounded-full" />
+                <span className="w-4 h-0.5 bg-white rounded-full" />
+                <span className="w-4 h-0.5 bg-white rounded-full" />
+              </button>
               <Link to="/" className="flex items-center gap-2.5 flex-shrink-0">
-                <div className="w-8 h-8 rounded-lg bg-navy flex items-center justify-center text-gold font-display font-bold text-sm">O</div>
-                <span className="font-display text-xl text-navy hidden sm:block">
-                  Owk<em className="text-teal not-italic">az</em>
-                </span>
+             <img src='/OWKAZ LOGO.png' alt='owkaz' className="h-8"/>
               </Link>
             </div>
 

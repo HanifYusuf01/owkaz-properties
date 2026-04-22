@@ -14,6 +14,7 @@ import { Modal } from '../../../components/ui/Modal';
 import { ConfirmModal } from '../../../components/ui/ConfirmModal';
 import { Input } from '../../../components/ui/Input';
 import { Select } from '../../../components/ui/Select';
+import { DataTable, Column } from '../../../components/ui/DataTable';
 import { formatPrice } from '../../../utils/format';
 import { getImageUrl } from '../../../utils/imageUrl';
 import { Property, PropertyStatus, PropertyType } from '../../../types';
@@ -65,9 +66,12 @@ function propertyToEdit(p: Property): EditForm {
   };
 }
 
+const PAGE_SIZE = 10;
+
 export const AllListingsPage = () => {
   const [activeTab, setActiveTab] = useState('');
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
 
   const [approveTarget, setApproveTarget] = useState<ConfirmTarget | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ConfirmTarget | null>(null);
@@ -85,7 +89,8 @@ export const AllListingsPage = () => {
   const { data, isLoading } = useGetAdminPropertiesQuery({
     status: activeTab || undefined,
     search: search || undefined,
-    limit: 50,
+    page,
+    limit: PAGE_SIZE,
   });
 
   const [approve] = useApprovePropertyMutation();
@@ -96,6 +101,8 @@ export const AllListingsPage = () => {
   const [uploadImages] = useUploadImagesMutation();
 
   const properties = data?.data ?? [];
+  const total = data?.total ?? 0;
+  const totalPages = data?.totalPages ?? 1;
 
   const act = async (fn: () => Promise<unknown>, onDone: () => void) => {
     setIsActing(true);
@@ -167,6 +174,52 @@ export const AllListingsPage = () => {
     }
   };
 
+  const columns: Column<Property>[] = [
+    {
+      key: 'property',
+      header: 'Property',
+      cell: (p) => (
+        <>
+          <div className="font-semibold text-navy">{p.title}</div>
+          <div className="text-xs text-muted whitespace-nowrap">{p.lga}, {p.state}</div>
+        </>
+      ),
+    },
+    { key: 'type', header: 'Type', className: 'text-muted whitespace-nowrap', cell: (p) => p.type },
+    { key: 'provider', header: 'Provider', className: 'text-muted whitespace-nowrap', cell: (p) => p.submittedBy?.name },
+    { key: 'price', header: 'Price', className: 'font-medium text-navy whitespace-nowrap', cell: (p) => formatPrice(p.price) },
+    { key: 'views', header: 'Views', className: 'text-muted', cell: (p) => p.views },
+    { key: 'status', header: 'Status', cell: (p) => <Badge status={p.status} /> },
+    {
+      key: 'actions',
+      header: 'Actions',
+      cell: (p) => (
+        <div className="flex gap-1.5 flex-wrap">
+          {p.status === PropertyStatus.PENDING && (
+            <>
+              <Button variant="success" size="sm" onClick={() => setApproveTarget({ id: p.id, title: p.title })}>✓</Button>
+              <Button variant="danger" size="sm" onClick={() => setRejectModal({ id: p.id, title: p.title })}>✗</Button>
+            </>
+          )}
+          <Button variant="ghost" size="sm" onClick={() => openEdit(p)} title="Edit listing">
+            <Pencil size={13} />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setFeaturedTarget({ id: p.id, title: p.title, featured: p.featured })}
+            title={p.featured ? 'Remove from featured' : 'Add to featured'}
+          >
+            {p.featured ? '★' : '☆'}
+          </Button>
+          <Button variant="danger" size="sm" onClick={() => setDeleteTarget({ id: p.id, title: p.title })}>
+            <Trash2Icon size={14} />
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-4">
       {/* Tabs */}
@@ -174,7 +227,7 @@ export const AllListingsPage = () => {
         {TABS.map((tab) => (
           <button
             key={tab.value}
-            onClick={() => setActiveTab(tab.value)}
+            onClick={() => { setActiveTab(tab.value); setPage(1); }}
             className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all whitespace-nowrap ${
               activeTab === tab.value ? 'bg-white text-navy shadow-sm' : 'text-muted hover:text-navy'
             }`}
@@ -188,70 +241,21 @@ export const AllListingsPage = () => {
       <Input
         placeholder="Search listings..."
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={(e) => { setSearch(e.target.value); setPage(1); }}
         className="max-w-xs"
       />
 
-      {/* Table */}
-      <div className="bg-white border border-border rounded-xl overflow-hidden">
-        {isLoading ? (
-          <div className="py-20 text-center text-muted">Loading...</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-navy">
-                <tr>
-                  {['Property', 'Type', 'Provider', 'Price', 'Views', 'Status', 'Actions'].map((h) => (
-                    <th key={h} className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-white/70 whitespace-nowrap">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {properties.map((p) => (
-                  <tr key={p.id} className="hover:bg-surface transition-colors">
-                    <td className="px-4 py-3">
-                      <div className="font-semibold text-navy">{p.title}</div>
-                      <div className="text-xs text-muted whitespace-nowrap">{p.lga}, {p.state}</div>
-                    </td>
-                    <td className="px-4 py-3 text-muted whitespace-nowrap">{p.type}</td>
-                    <td className="px-4 py-3 text-muted whitespace-nowrap">{p.submittedBy?.name}</td>
-                    <td className="px-4 py-3 font-medium text-navy whitespace-nowrap">{formatPrice(p.price)}</td>
-                    <td className="px-4 py-3 text-muted">{p.views}</td>
-                    <td className="px-4 py-3"><Badge status={p.status} /></td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-1.5 flex-wrap">
-                        {p.status === PropertyStatus.PENDING && (
-                          <>
-                            <Button variant="success" size="sm" onClick={() => setApproveTarget({ id: p.id, title: p.title })}>✓</Button>
-                            <Button variant="danger" size="sm" onClick={() => setRejectModal({ id: p.id, title: p.title })}>✗</Button>
-                          </>
-                        )}
-                        <Button variant="ghost" size="sm" onClick={() => openEdit(p)} title="Edit listing">
-                          <Pencil size={13} />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setFeaturedTarget({ id: p.id, title: p.title, featured: p.featured })}
-                          title={p.featured ? 'Remove from featured' : 'Add to featured'}
-                        >
-                          {p.featured ? '★' : '☆'}
-                        </Button>
-                        <Button variant="danger" size="sm" onClick={() => setDeleteTarget({ id: p.id, title: p.title })}>
-                          <Trash2Icon size={14} />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {properties.length === 0 && (
-              <div className="py-16 text-center text-muted text-sm">No listings found</div>
-            )}
-          </div>
-        )}
-      </div>
+      <DataTable
+        columns={columns}
+        rows={properties}
+        rowKey={(p) => p.id}
+        isLoading={isLoading}
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        onPageChange={setPage}
+        emptyState={<div className="py-16 text-center text-muted text-sm bg-white border border-border rounded-xl">No listings found</div>}
+      />
 
       {/* ── Edit Modal ── */}
       {editTarget && editForm && (

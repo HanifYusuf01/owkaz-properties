@@ -1,9 +1,16 @@
 import { baseApi } from '../../store/baseApi';
-import { User } from '../../types';
+import { User, PaginatedResponse } from '../../types';
+
+interface UserFilters {
+  role?: string;
+  status?: string;
+  page?: number;
+  limit?: number;
+}
 
 export const usersApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getUsers: builder.query<User[], { role?: string; status?: string }>({
+    getUsers: builder.query<PaginatedResponse<User>, UserFilters>({
       query: (params) => ({ url: '/users', params }),
       providesTags: ['User'],
     }),

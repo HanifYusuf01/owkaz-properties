@@ -342,9 +342,7 @@ export const PropertyDetailPage = () => {
             <div className="p-5">
               {/* Owkaz branding */}
               <div className="flex items-center gap-3 bg-cream rounded-xl p-3 mb-4">
-                <div className="w-9 h-9 rounded-full bg-navy flex items-center justify-center text-gold font-display font-bold text-sm flex-shrink-0">
-                  O
-                </div>
+                <img src="/OWKAZ LOGO.png" alt="Owkaz" className="h-6" />
                 <div>
                   <div className="text-sm font-semibold text-navy">Owkaz Properties</div>
                   <div className="text-xs text-muted">Enquiries managed by Owkaz</div>

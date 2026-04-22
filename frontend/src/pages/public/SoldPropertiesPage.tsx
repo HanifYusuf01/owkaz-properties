@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, SlidersHorizontal, X } from 'lucide-react';
 import { useGetPublicSoldPropertiesQuery } from '../../features/properties/propertiesApi';
 import { formatPrice, formatDate } from '../../utils/format';
+import { getImageUrl } from '../../utils/imageUrl';
 
 const BED_OPTIONS = ['Any', '1', '2', '3', '4', '5+'];
 
@@ -230,7 +231,7 @@ export const SoldPropertiesPage = () => {
                     {/* Image */}
                     <div className="relative h-48 bg-gradient-to-br from-navy-mid to-teal overflow-hidden flex items-center justify-center">
                       {p.images?.[0] ? (
-                        <img src={p.images[0]} alt={p.title} className="w-full h-full object-cover" />
+                        <img src={getImageUrl(p.images[0])} alt={p.title} className="w-full h-full object-cover" />
                       ) : (
                         <span className="text-6xl opacity-20">🏠</span>
                       )}

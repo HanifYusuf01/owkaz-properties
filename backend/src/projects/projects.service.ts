@@ -11,18 +11,24 @@ export class ProjectsService {
     private readonly repo: Repository<Project>,
   ) {}
 
-  findAll(search?: string): Promise<Project[]> {
-    if (search) {
-      return this.repo.find({
-        where: [
+  async findAll(
+    filters: { search?: string; page?: number; limit?: number } = {},
+  ): Promise<{ data: Project[]; total: number; page: number; limit: number; totalPages: number }> {
+    const { search, page = 1, limit = 12 } = filters;
+    const where = search
+      ? [
           { name: ILike(`%${search}%`) },
           { location: ILike(`%${search}%`) },
           { state: ILike(`%${search}%`) },
-        ],
-        order: { createdAt: 'DESC' },
-      });
-    }
-    return this.repo.find({ order: { createdAt: 'DESC' } });
+        ]
+      : undefined;
+    const [data, total] = await this.repo.findAndCount({
+      where,
+      order: { createdAt: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+    return { data, total, page, limit, totalPages: Math.ceil(total / limit) || 1 };
   }
 
   async findById(id: string): Promise<Project> {

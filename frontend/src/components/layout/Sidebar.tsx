@@ -140,9 +140,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       {/* Brand */}
       <div className="px-6 py-7 border-b border-white/10 flex items-start justify-between">
         <div>
-          <div className="font-display text-2xl text-white">
-            Owkaz <span className="text-gold">Properties</span>
-          </div>
+         <img src="/OWKAZ LOGO.png" alt="Owkaz" className="h-8" />
           <span className={`mt-2 inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${roleColors[role]}`}>
             {role}
           </span>

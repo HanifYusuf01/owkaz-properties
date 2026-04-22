@@ -18,6 +18,7 @@ import { ConfirmModal } from '../../../components/ui/ConfirmModal';
 import { Input } from '../../../components/ui/Input';
 import { Select } from '../../../components/ui/Select';
 import { DocumentViewer } from '../../../components/ui/DocumentViewer';
+import { DataTable, Column } from '../../../components/ui/DataTable';
 import { formatPrice, formatDate } from '../../../utils/format';
 import { getImageUrl } from '../../../utils/imageUrl';
 import { Property, PropertyStatus, PropertyType } from '../../../types';
@@ -122,9 +123,12 @@ const emptyEdit: EditForm = {
   existingImages: [], newPhotos: [],
 };
 
+const PAGE_SIZE = 10;
+
 export const MyListingsPage = () => {
   const navigate = useNavigate();
-  const { data, isLoading } = useGetMyPropertiesQuery({ limit: 50 });
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useGetMyPropertiesQuery({ page, limit: PAGE_SIZE });
   const [markSold] = useMarkPropertySoldMutation();
   const [deleteProperty] = useDeletePropertyMutation();
   const [updateProperty] = useUpdatePropertyMutation();
@@ -143,6 +147,8 @@ export const MyListingsPage = () => {
   const editFileRef = useRef<HTMLInputElement>(null);
 
   const properties = data?.data ?? [];
+  const total = data?.total ?? 0;
+  const totalPages = data?.totalPages ?? 1;
 
   const setEdit = (field: keyof EditForm, value: unknown) =>
     setEditForm((prev) => ({ ...prev, [field]: value }));
@@ -243,7 +249,61 @@ export const MyListingsPage = () => {
     setEdit('newPhotos', [...editForm.newPhotos, ...arr].slice(0, allowed));
   };
 
-  if (isLoading) return <div className="py-20 text-center text-muted">Loading...</div>;
+  const columns: Column<Property>[] = [
+    {
+      key: 'property',
+      header: 'Property',
+      cell: (p) => (
+        <>
+          <div className="font-semibold text-navy">{p.title}</div>
+          {p.status === PropertyStatus.REJECTED && p.rejectionReason && (
+            <div className="text-xs text-red-500 mt-0.5">❌ {p.rejectionReason}</div>
+          )}
+        </>
+      ),
+    },
+    {
+      key: 'price',
+      header: 'Price',
+      className: 'font-medium text-navy whitespace-nowrap',
+      cell: (p) => formatPrice(p.price),
+    },
+    {
+      key: 'submitted',
+      header: 'Submitted',
+      className: 'text-muted whitespace-nowrap',
+      cell: (p) => formatDate(p.createdAt),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      cell: (p) => <Badge status={p.status} />,
+    },
+    {
+      key: 'actions',
+      header: 'Actions',
+      cell: (p) => (
+        <div className="flex gap-1.5 flex-wrap">
+          <Button variant="ghost" size="sm" onClick={() => { setViewImageIdx(0); setViewProperty(p); }}>
+            View
+          </Button>
+          {p.status === PropertyStatus.APPROVED && (
+            <Button variant="ghost" size="sm" onClick={() => setSoldModal({ id: p.id, title: p.title })}>
+              Mark Sold
+            </Button>
+          )}
+          {(p.status === PropertyStatus.REJECTED || p.status === PropertyStatus.PENDING) && (
+            <Button variant="ghost" size="sm" onClick={() => openEdit(p)}>
+              Edit & Resubmit
+            </Button>
+          )}
+          <Button variant="danger" size="sm" onClick={() => setDeleteTarget({ id: p.id, title: p.title })}>
+            <Trash2Icon size={14} />
+          </Button>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className="space-y-4">
@@ -251,63 +311,25 @@ export const MyListingsPage = () => {
         <Button onClick={() => navigate('/dashboard/submit')}>+ Submit Property</Button>
       </div>
 
-      {properties.length === 0 ? (
-        <div className="py-20 text-center">
-          <div className="text-5xl mb-3">🏠</div>
-          <h3 className="font-semibold text-navy">No listings yet</h3>
-          <p className="text-sm text-muted mt-1 mb-4">Submit your first property for review.</p>
-          <Button onClick={() => navigate('/dashboard/submit')}>Submit Property</Button>
-        </div>
-      ) : (
-        <div className="bg-white border border-border rounded-xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-navy">
-                <tr>
-                  {['Property', 'Price', 'Submitted', 'Status', 'Actions'].map((h) => (
-                    <th key={h} className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-white/70 whitespace-nowrap">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {properties.map((p) => (
-                  <tr key={p.id} className="hover:bg-surface transition-colors">
-                    <td className="px-4 py-3">
-                      <div className="font-semibold text-navy">{p.title}</div>
-                      {p.status === PropertyStatus.REJECTED && p.rejectionReason && (
-                        <div className="text-xs text-red-500 mt-0.5">❌ {p.rejectionReason}</div>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 font-medium text-navy whitespace-nowrap">{formatPrice(p.price)}</td>
-                    <td className="px-4 py-3 text-muted whitespace-nowrap">{formatDate(p.createdAt)}</td>
-                    <td className="px-4 py-3"><Badge status={p.status} /></td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-1.5 flex-wrap">
-                        <Button variant="ghost" size="sm" onClick={() => { setViewImageIdx(0); setViewProperty(p); }}>
-                          View
-                        </Button>
-                        {p.status === PropertyStatus.APPROVED && (
-                          <Button variant="ghost" size="sm" onClick={() => setSoldModal({ id: p.id, title: p.title })}>
-                            Mark Sold
-                          </Button>
-                        )}
-                        {(p.status === PropertyStatus.REJECTED || p.status === PropertyStatus.PENDING) && (
-                          <Button variant="ghost" size="sm" onClick={() => openEdit(p)}>
-                            Edit & Resubmit
-                          </Button>
-                        )}
-                        <Button variant="danger" size="sm" onClick={() => setDeleteTarget({ id: p.id, title: p.title })}>
-                          <Trash2Icon size={14} />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      <DataTable
+        columns={columns}
+        rows={properties}
+        rowKey={(p) => p.id}
+        isLoading={isLoading}
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        onPageChange={setPage}
+        emptyState={
+          <div className="py-20 text-center">
+            <div className="text-5xl mb-3">🏠</div>
+            <h3 className="font-semibold text-navy">No listings yet</h3>
+            <p className="text-sm text-muted mt-1 mb-4">Submit your first property for review.</p>
+            <Button onClick={() => navigate('/dashboard/submit')}>Submit Property</Button>
           </div>
-        </div>
-      )}
+        }
+      />
+
 
       {/* ── View Modal ── */}
       {viewProperty && (

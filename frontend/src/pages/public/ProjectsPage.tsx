@@ -42,7 +42,8 @@ export const ProjectsPage = () => {
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
 
-  const { data: projects = [], isLoading } = useGetProjectsQuery({ search: search || undefined });
+  const { data: projectsData, isLoading } = useGetProjectsQuery({ search: search || undefined, limit: 1000 });
+  const projects = projectsData?.data ?? [];
 
   return (
     <div>

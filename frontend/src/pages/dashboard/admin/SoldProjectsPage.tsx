@@ -2,13 +2,49 @@ import { useState } from 'react';
 import { useGetSoldPropertiesQuery } from '../../../features/properties/propertiesApi';
 import { PropertyCard } from '../../../components/property/PropertyCard';
 import { Badge } from '../../../components/ui/Badge';
+import { DataTable, Column } from '../../../components/ui/DataTable';
 import { formatPrice, formatDate } from '../../../utils/format';
 import { Input } from '../../../components/ui/Input';
+import { Property } from '../../../types';
+
+const PAGE_SIZE = 10;
 
 export const SoldProjectsPage = () => {
   const [search, setSearch] = useState('');
-  const { data, isLoading } = useGetSoldPropertiesQuery({ search: search || undefined, limit: 50 });
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useGetSoldPropertiesQuery({ search: search || undefined, page, limit: PAGE_SIZE });
   const properties = data?.data ?? [];
+  const total = data?.total ?? 0;
+  const totalPages = data?.totalPages ?? 1;
+
+  const columns: Column<Property>[] = [
+    {
+      key: 'property',
+      header: 'Property',
+      cell: (p) => (
+        <>
+          <div className="font-semibold text-navy">{p.title}</div>
+          <div className="text-xs text-muted">📍 {p.area}, {p.lga}</div>
+        </>
+      ),
+    },
+    { key: 'type', header: 'Type', className: 'text-muted', cell: (p) => p.type },
+    { key: 'listed', header: 'Listed Price', className: 'font-medium text-navy', cell: (p) => formatPrice(p.price) },
+    {
+      key: 'sale',
+      header: 'Sale Price',
+      className: 'font-semibold text-blue-700',
+      cell: (p) => (p.salePrice ? formatPrice(p.salePrice) : '—'),
+    },
+    {
+      key: 'sold-date',
+      header: 'Sold Date',
+      className: 'text-muted',
+      cell: (p) => (p.soldAt ? formatDate(p.soldAt) : '—'),
+    },
+    { key: 'provider', header: 'Provider', className: 'text-muted', cell: (p) => p.submittedBy?.name },
+    { key: 'status', header: 'Status', cell: (p) => <Badge status={p.status} /> },
+  ];
 
   return (
     <div className="space-y-6">
@@ -24,55 +60,27 @@ export const SoldProjectsPage = () => {
       <Input
         placeholder="Search sold properties..."
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={(e) => { setSearch(e.target.value); setPage(1); }}
         className="max-w-xs"
       />
 
-      {/* Table */}
-      {isLoading ? (
-        <div className="py-20 text-center text-muted">Loading...</div>
-      ) : (
-        <div className="bg-white border border-border rounded-xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-navy">
-                <tr>
-                  {['Property', 'Type', 'Listed Price', 'Sale Price', 'Sold Date', 'Provider', 'Status'].map((h) => (
-                    <th key={h} className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-white/70">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {properties.map((p) => (
-                  <tr key={p.id} className="hover:bg-surface transition-colors">
-                    <td className="px-4 py-3">
-                      <div className="font-semibold text-navy">{p.title}</div>
-                      <div className="text-xs text-muted">📍 {p.area}, {p.lga}</div>
-                    </td>
-                    <td className="px-4 py-3 text-muted">{p.type}</td>
-                    <td className="px-4 py-3 font-medium text-navy">{formatPrice(p.price)}</td>
-                    <td className="px-4 py-3 font-semibold text-blue-700">
-                      {p.salePrice ? formatPrice(p.salePrice) : '—'}
-                    </td>
-                    <td className="px-4 py-3 text-muted">
-                      {p.soldAt ? formatDate(p.soldAt) : '—'}
-                    </td>
-                    <td className="px-4 py-3 text-muted">{p.submittedBy?.name}</td>
-                    <td className="px-4 py-3"><Badge status={p.status} /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {properties.length === 0 && (
-              <div className="py-20 text-center">
-                <div className="text-4xl mb-3">🏷</div>
-                <h3 className="font-semibold text-navy">No sold properties yet</h3>
-                <p className="text-sm text-muted mt-1">Properties marked as sold will appear here.</p>
-              </div>
-            )}
+      <DataTable
+        columns={columns}
+        rows={properties}
+        rowKey={(p) => p.id}
+        isLoading={isLoading}
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        onPageChange={setPage}
+        emptyState={
+          <div className="py-20 text-center bg-white border border-border rounded-xl">
+            <div className="text-4xl mb-3">🏷</div>
+            <h3 className="font-semibold text-navy">No sold properties yet</h3>
+            <p className="text-sm text-muted mt-1">Properties marked as sold will appear here.</p>
           </div>
-        </div>
-      )}
+        }
+      />
 
       {/* Cards view */}
       {properties.length > 0 && (

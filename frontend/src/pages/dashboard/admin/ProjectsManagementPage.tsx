@@ -13,6 +13,7 @@ import { Input } from '../../../components/ui/Input';
 import { Select } from '../../../components/ui/Select';
 import { Modal } from '../../../components/ui/Modal';
 import { ConfirmModal } from '../../../components/ui/ConfirmModal';
+import { DataTable, Column } from '../../../components/ui/DataTable';
 import { getImageUrl } from '../../../utils/imageUrl';
 import { formatPrice } from '../../../utils/format';
 import { NIGERIAN_STATES } from '../../../constants/nigerianStates';
@@ -91,8 +92,14 @@ const toFormState = (p: Project): FormState => ({
   newVideoFile: null,
 });
 
+const PAGE_SIZE = 10;
+
 export const ProjectsManagementPage = () => {
-  const { data: projects = [], isLoading } = useGetProjectsQuery({});
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useGetProjectsQuery({ page, limit: PAGE_SIZE });
+  const projects = data?.data ?? [];
+  const total = data?.total ?? 0;
+  const totalPages = data?.totalPages ?? 1;
   const [create, { isLoading: isCreating }] = useCreateProjectMutation();
   const [update, { isLoading: isUpdating }] = useUpdateProjectMutation();
   const [deleteProject] = useDeleteProjectMutation();
@@ -222,6 +229,82 @@ export const ProjectsManagementPage = () => {
 
   const allPreviewImages = [...form.existingImages, ...previewImageUrls];
 
+  const columns: Column<Project>[] = [
+    {
+      key: 'project',
+      header: 'Project',
+      className: 'max-w-[180px]',
+      cell: (p) => (
+        <>
+          <div className="font-semibold text-navy truncate">{p.name}</div>
+          {p.completionDate && <div className="text-xs text-muted">Est. {p.completionDate}</div>}
+          {p.videoUrl && <div className="text-[10px] text-teal mt-0.5">▶ Video attached</div>}
+        </>
+      ),
+    },
+    {
+      key: 'type',
+      header: 'Type',
+      className: 'text-muted whitespace-nowrap max-w-[140px]',
+      cell: (p) => <span className="truncate block">{p.type}</span>,
+    },
+    {
+      key: 'location',
+      header: 'Location',
+      className: 'max-w-[160px]',
+      cell: (p) => (
+        <>
+          <div className="text-muted truncate">{p.lga ? `${p.lga}, ` : ''}{p.state}</div>
+          {p.location && <div className="text-xs text-muted/70 truncate">{p.location}</div>}
+        </>
+      ),
+    },
+    {
+      key: 'units',
+      header: 'Units',
+      className: 'whitespace-nowrap',
+      cell: (p) => (
+        <>
+          <div className="text-navy font-medium">{p.availableUnits}<span className="text-muted font-normal"> / {p.totalUnits}</span></div>
+          <div className="text-[10px] text-muted">available</div>
+        </>
+      ),
+    },
+    {
+      key: 'progress',
+      header: 'Progress',
+      className: 'whitespace-nowrap',
+      cell: (p) => (
+        <div className="flex items-center gap-2">
+          <div className="w-16 h-1.5 bg-border rounded-full overflow-hidden">
+            <div className="h-full bg-teal" style={{ width: `${p.progress}%` }} />
+          </div>
+          <span className="text-xs text-muted">{p.progress}%</span>
+        </div>
+      ),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      className: 'whitespace-nowrap',
+      cell: (p) => (
+        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${STATUS_COLORS[p.status] ?? 'bg-surface text-muted'}`}>
+          {STATUS_LABELS[p.status] ?? p.status}
+        </span>
+      ),
+    },
+    {
+      key: 'actions',
+      header: 'Actions',
+      cell: (p) => (
+        <div className="flex gap-1.5">
+          <Button variant="ghost" size="sm" onClick={() => openEdit(p)}><Pencil size={13} /></Button>
+          <Button variant="danger" size="sm" onClick={() => setDeleteTarget({ id: p.id, name: p.name })}><Trash2 size={13} /></Button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
@@ -230,72 +313,24 @@ export const ProjectsManagementPage = () => {
         </Button>
       </div>
 
-      <div className="bg-white border border-border rounded-xl overflow-hidden">
-        {isLoading ? (
-          <div className="py-20 text-center text-muted">Loading...</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-navy">
-                <tr>
-                  {['Project', 'Type', 'Location', 'Units', 'Progress', 'Status', 'Actions'].map((h) => (
-                    <th key={h} className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-white/70 whitespace-nowrap">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {projects.map((p) => (
-                  <tr key={p.id} className="hover:bg-surface transition-colors">
-                    <td className="px-4 py-3 max-w-[180px]">
-                      <div className="font-semibold text-navy truncate">{p.name}</div>
-                      {p.completionDate && <div className="text-xs text-muted">Est. {p.completionDate}</div>}
-                      {p.videoUrl && <div className="text-[10px] text-teal mt-0.5">▶ Video attached</div>}
-                    </td>
-                    <td className="px-4 py-3 text-muted whitespace-nowrap max-w-[140px]">
-                      <span className="truncate block">{p.type}</span>
-                    </td>
-                    <td className="px-4 py-3 max-w-[160px]">
-                      <div className="text-muted truncate">{p.lga ? `${p.lga}, ` : ''}{p.state}</div>
-                      {p.location && <div className="text-xs text-muted/70 truncate">{p.location}</div>}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="text-navy font-medium">{p.availableUnits}<span className="text-muted font-normal"> / {p.totalUnits}</span></div>
-                      <div className="text-[10px] text-muted">available</div>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <div className="w-16 h-1.5 bg-border rounded-full overflow-hidden">
-                          <div className="h-full bg-teal" style={{ width: `${p.progress}%` }} />
-                        </div>
-                        <span className="text-xs text-muted">{p.progress}%</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${STATUS_COLORS[p.status] ?? 'bg-surface text-muted'}`}>
-                        {STATUS_LABELS[p.status] ?? p.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-1.5">
-                        <Button variant="ghost" size="sm" onClick={() => openEdit(p)}><Pencil size={13} /></Button>
-                        <Button variant="danger" size="sm" onClick={() => setDeleteTarget({ id: p.id, name: p.name })}><Trash2 size={13} /></Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {projects.length === 0 && (
-              <div className="py-16 text-center">
-                <div className="text-4xl mb-3">🏗️</div>
-                <h3 className="font-semibold text-navy">No projects yet</h3>
-                <p className="text-sm text-muted mt-1 mb-4">Add your first development project.</p>
-                <Button onClick={openCreate}><PlusCircle size={14} className="mr-1.5" /> Add Project</Button>
-              </div>
-            )}
+      <DataTable
+        columns={columns}
+        rows={projects}
+        rowKey={(p) => p.id}
+        isLoading={isLoading}
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        onPageChange={setPage}
+        emptyState={
+          <div className="py-16 text-center bg-white border border-border rounded-xl">
+            <div className="text-4xl mb-3">🏗️</div>
+            <h3 className="font-semibold text-navy">No projects yet</h3>
+            <p className="text-sm text-muted mt-1 mb-4">Add your first development project.</p>
+            <Button onClick={openCreate}><PlusCircle size={14} className="mr-1.5" /> Add Project</Button>
           </div>
-        )}
-      </div>
+        }
+      />
 
       {/* Create / Edit modal */}
       <Modal

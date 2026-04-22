@@ -26,11 +26,20 @@ export class UsersService {
     return this.usersRepo.save(user);
   }
 
-  async findAll(role?: UserRole, status?: UserStatus): Promise<User[]> {
+  async findAll(
+    filters: { role?: UserRole; status?: UserStatus; page?: number; limit?: number } = {},
+  ): Promise<{ data: User[]; total: number; page: number; limit: number; totalPages: number }> {
+    const { role, status, page = 1, limit = 20 } = filters;
     const query = this.usersRepo.createQueryBuilder('user');
     if (role) query.andWhere('user.role = :role', { role });
     if (status) query.andWhere('user.status = :status', { status });
-    return query.orderBy('user.createdAt', 'DESC').getMany();
+    const total = await query.getCount();
+    const data = await query
+      .orderBy('user.createdAt', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getMany();
+    return { data, total, page, limit, totalPages: Math.ceil(total / limit) || 1 };
   }
 
   async findById(id: string): Promise<User | null> {

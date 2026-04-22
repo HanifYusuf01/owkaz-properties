@@ -28,8 +28,18 @@ export class UsersController {
   @Get()
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
-  findAll(@Query('role') role?: UserRole, @Query('status') status?: UserStatus) {
-    return this.usersService.findAll(role, status);
+  findAll(
+    @Query('role') role?: UserRole,
+    @Query('status') status?: UserStatus,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.usersService.findAll({
+      role,
+      status,
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+    });
   }
 
   @Get('me')

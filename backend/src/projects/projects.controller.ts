@@ -18,8 +18,16 @@ export class ProjectsController {
   // ── Public ──
 
   @Get()
-  findAll(@Query('search') search?: string) {
-    return this.projectsService.findAll(search);
+  findAll(
+    @Query('search') search?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.projectsService.findAll({
+      search,
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+    });
   }
 
   @Get(':id')

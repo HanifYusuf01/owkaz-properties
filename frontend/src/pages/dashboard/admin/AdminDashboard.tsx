@@ -3,8 +3,9 @@ import { useGetAdminPropertiesQuery } from '../../../features/properties/propert
 import { useGetInquiriesQuery } from '../../../features/inquiries/inquiriesApi';
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
+import { DataTable, Column } from '../../../components/ui/DataTable';
 import { formatPrice, formatDate } from '../../../utils/format';
-import { PropertyStatus } from '../../../types';
+import { Property, PropertyStatus } from '../../../types';
 
 const StatCard = ({ label, value, color }: { label: string; value: number; color: string }) => (
   <div className="bg-white border border-border rounded-xl p-6 relative overflow-hidden">
@@ -20,6 +21,14 @@ export const AdminDashboard = () => {
   const { data: inquiries = [] } = useGetInquiriesQuery({});
 
   const properties = propsData?.data ?? [];
+  const recentColumns: Column<Property>[] = [
+    { key: 'property', header: 'Property', className: 'font-semibold text-navy', cell: (p) => p.title },
+    { key: 'type', header: 'Type', className: 'text-muted', cell: (p) => p.type },
+    { key: 'provider', header: 'Provider', className: 'text-muted', cell: (p) => p.submittedBy?.name },
+    { key: 'price', header: 'Price', className: 'text-navy font-medium', cell: (p) => formatPrice(p.price) },
+    { key: 'views', header: 'Views', className: 'text-muted', cell: (p) => p.views },
+    { key: 'status', header: 'Status', cell: (p) => <Badge status={p.status} /> },
+  ];
   const pending = properties.filter((p) => p.status === PropertyStatus.PENDING);
   const approved = properties.filter((p) => p.status === PropertyStatus.APPROVED);
   const rejected = properties.filter((p) => p.status === PropertyStatus.REJECTED);
@@ -90,33 +99,14 @@ export const AdminDashboard = () => {
       </div>
 
       {/* Recent table */}
-      <div className="bg-white border border-border rounded-xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-border">
-          <h3 className="font-display text-lg text-navy">Recent Listings</h3>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-navy text-white">
-              <tr>
-                {['Property', 'Type', 'Provider', 'Price', 'Views', 'Status'].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-white/70">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {properties.slice(0, 8).map((p) => (
-                <tr key={p.id} className="hover:bg-surface transition-colors">
-                  <td className="px-4 py-3 font-semibold text-navy">{p.title}</td>
-                  <td className="px-4 py-3 text-muted">{p.type}</td>
-                  <td className="px-4 py-3 text-muted">{p.submittedBy?.name}</td>
-                  <td className="px-4 py-3 text-navy font-medium">{formatPrice(p.price)}</td>
-                  <td className="px-4 py-3 text-muted">{p.views}</td>
-                  <td className="px-4 py-3"><Badge status={p.status} /></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      <div>
+        <h3 className="font-display text-lg text-navy mb-3">Recent Listings</h3>
+        <DataTable
+          columns={recentColumns}
+          rows={properties.slice(0, 8)}
+          rowKey={(p) => p.id}
+          emptyState={<div className="py-16 text-center text-muted text-sm bg-white border border-border rounded-xl">No listings yet</div>}
+        />
       </div>
     </div>
   );

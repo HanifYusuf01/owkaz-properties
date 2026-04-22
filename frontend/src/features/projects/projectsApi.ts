@@ -1,4 +1,5 @@
 import { baseApi } from '../../store/baseApi';
+import { PaginatedResponse } from '../../types';
 
 export interface Project {
   id: string;
@@ -27,7 +28,7 @@ export type UpdateProjectPayload = Partial<CreateProjectPayload>;
 
 export const projectsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getProjects: builder.query<Project[], { search?: string }>({
+    getProjects: builder.query<PaginatedResponse<Project>, { search?: string; page?: number; limit?: number }>({
       query: (params) => ({ url: '/projects', params }),
       providesTags: ['Project'],
     }),

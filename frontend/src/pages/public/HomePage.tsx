@@ -99,12 +99,12 @@ export const HomePage = () => {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left */}
             <div>
-              <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl text-white leading-tight mb-6">
+              <h1 className="font-display text-4xl sm:text-6xl lg:text-7xl text-white leading-tight mb-6">
                 Find Your{' '}
                 <span className="text-gold italic">Perfect</span>
                 <br />Property in<br />Nigeria
               </h1>
-              <p className="text-white/60 text-base sm:text-lg leading-relaxed mb-8 max-w-lg">
+              <p className="text-white/60 text-xs sm:text-lg leading-relaxed mb-8 max-w-lg">
                 From Abuja to Lagos, explore thousands of verified listings — residential, commercial, and land — with trusted agents ready to guide you.
               </p>
               <div className="flex flex-wrap gap-3 mb-10">
