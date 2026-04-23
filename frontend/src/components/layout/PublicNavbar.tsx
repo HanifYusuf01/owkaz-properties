@@ -309,7 +309,7 @@ export const PublicNavbar = () => {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => (isBuyer ? setSidebarOpen(true) : setPublicNavOpen(true))}
-                className="md:hidden w-9 h-9 flex flex-col items-center justify-center gap-1.5 rounded-lg bg-navy hover:bg-navy-mid transition-colors flex-shrink-0"
+                className={`${isBuyer ? '' : 'md:hidden'} w-9 h-9 flex flex-col items-center justify-center gap-1.5 rounded-lg bg-navy hover:bg-navy-mid transition-colors flex-shrink-0`}
                 aria-label="Open menu"
               >
                 <span className="w-4 h-0.5 bg-white rounded-full" />
