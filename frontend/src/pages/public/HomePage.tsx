@@ -660,7 +660,7 @@ export const HomePage = () => {
                   className="relative rounded-2xl overflow-hidden group shadow-sm hover:shadow-xl transition-shadow duration-300 h-40"
                 >
                   <img
-                    src={loc.imageUrl}
+                    src={getImageUrl(loc.imageUrl)}
                     alt={loc.name}
                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
