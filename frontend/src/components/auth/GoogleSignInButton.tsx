@@ -1,25 +1,5 @@
 import { useEffect, useRef } from 'react';
 
-interface GoogleCredentialResponse {
-  credential: string;
-}
-
-declare global {
-  interface Window {
-    google?: {
-      accounts: {
-        id: {
-          initialize: (config: {
-            client_id: string;
-            callback: (response: GoogleCredentialResponse) => void;
-          }) => void;
-          renderButton: (parent: HTMLElement, options: Record<string, string>) => void;
-        };
-      };
-    };
-  }
-}
-
 interface GoogleSignInButtonProps {
   onCredential: (idToken: string) => void;
 }
@@ -41,7 +21,7 @@ export const GoogleSignInButton = ({ onCredential }: GoogleSignInButtonProps) =>
     let cancelled = false;
 
     const renderButton = () => {
-      if (cancelled || !window.google || !buttonRef.current) return;
+      if (cancelled || !window.google?.accounts || !buttonRef.current) return;
       window.google.accounts.id.initialize({
         client_id: clientId,
         callback: (response) => onCredentialRef.current(response.credential),

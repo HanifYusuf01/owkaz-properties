@@ -1,10 +1,3 @@
-declare global {
-  interface Window {
-    google?: typeof google;
-    __onGoogleMapsLoaded?: () => void;
-  }
-}
-
 let loadPromise: Promise<typeof google> | null = null;
 
 /**

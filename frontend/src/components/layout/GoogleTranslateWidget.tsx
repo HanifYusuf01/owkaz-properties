@@ -1,13 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronDown, Languages } from 'lucide-react';
 
-declare global {
-  interface Window {
-    google?: { translate?: { TranslateElement?: unknown } };
-    googleTranslateElementInit?: () => void;
-  }
-}
-
 // Google Translate's widget mutates text nodes directly, which can clash with React's own
 // reconciliation (removeChild/insertBefore on nodes GT has already rearranged). This patches
 // both to fail softly instead of throwing, which is the standard mitigation for this combo.
@@ -17,7 +10,7 @@ function patchDomForGoogleTranslate() {
 
   const originalRemoveChild = Node.prototype.removeChild;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Node.prototype.removeChild = function (child: any) {
+  Node.prototype.removeChild = function (this: Node, child: any) {
     if (child.parentNode !== this) {
       return child;
     }
@@ -26,7 +19,7 @@ function patchDomForGoogleTranslate() {
 
   const originalInsertBefore = Node.prototype.insertBefore;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Node.prototype.insertBefore = function (newNode: any, referenceNode: any) {
+  Node.prototype.insertBefore = function (this: Node, newNode: any, referenceNode: any) {
     if (referenceNode && referenceNode.parentNode !== this) {
       return newNode;
     }
