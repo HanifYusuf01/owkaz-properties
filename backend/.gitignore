@@ -1,0 +1,16 @@
+# cPanel-generated / server-local files that live in the deploy path but aren't source.
+# Adding these here (rather than deleting them on the server) is deliberate — some of them
+# (node_modules, upload) may be what the live app is actually running from or storing into.
+node_modules
+.htaccess
+tmp/
+upload/
+*.zip
+*.tsbuildinfo
+main.d.ts
+/auth
+/common
+/inquiries
+/notifications
+/properties
+/users
