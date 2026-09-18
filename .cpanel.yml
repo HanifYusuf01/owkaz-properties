@@ -4,3 +4,6 @@ deployment:
     - export DEPLOYPATH=/home/neonwave/api-owkaz-git
     - cd /home/neonwave/api-owkaz-git/backend && /home/neonwave/nodevenv/api-owkaz-git/22/bin/npm install
     - cd /home/neonwave/api-owkaz-git/backend && /home/neonwave/nodevenv/api-owkaz-git/22/bin/npm run build
+    - cd /home/neonwave/api-owkaz-git/frontend && /home/neonwave/nodevenv/api-owkaz-git/22/bin/npm install
+    - cd /home/neonwave/api-owkaz-git/frontend && /home/neonwave/nodevenv/api-owkaz-git/22/bin/npm run build
+    - /bin/cp -rf /home/neonwave/api-owkaz-git/frontend/dist/. /home/neonwave/owkaz.properties.neonwave.com.ng/
