@@ -35,6 +35,13 @@ export class RegisterDto {
   agency?: string;
 }
 
+export class GoogleAuthDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  idToken: string;
+}
+
 export class LoginDto {
   @ApiProperty()
   @IsEmail()

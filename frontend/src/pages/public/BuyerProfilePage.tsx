@@ -1,8 +1,11 @@
 import { useAppDispatch, useAppSelector } from '../../store';
 import { useUpdateProfileMutation, useRequestRoleMutation } from '../../features/users/usersApi';
-import { logout } from '../../features/auth/authSlice';
+import { useUploadImagesMutation } from '../../features/properties/propertiesApi';
+import { logout, setUser } from '../../features/auth/authSlice';
+import { getImageUrl } from '../../utils/imageUrl';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { Camera } from 'lucide-react';
 
 export const BuyerProfilePage = () => {
   const user = useAppSelector((s) => s.auth.user);
@@ -10,17 +13,28 @@ export const BuyerProfilePage = () => {
   const navigate = useNavigate();
   const [updateProfile, { isLoading, isSuccess }] = useUpdateProfileMutation();
   const [requestRole, { isLoading: isRequesting, isSuccess: requestSent }] = useRequestRoleMutation();
+  const [uploadImages, { isLoading: isUploadingAvatar }] = useUploadImagesMutation();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fullName = user?.name ?? '';
   const parts = fullName.split(' ');
   const [firstName, setFirstName] = useState(parts[0] ?? '');
   const [lastName, setLastName] = useState(parts.slice(1).join(' '));
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState(user?.phone ?? '');
+  const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl ?? '');
   const [selectedRole, setSelectedRole] = useState<'agent' | 'owner' | null>(null);
+
+  const handleAvatarChange = async (file: File) => {
+    const fd = new FormData();
+    fd.append('files', file);
+    const { urls } = await uploadImages(fd).unwrap();
+    setAvatarUrl(urls[0]);
+  };
 
   const handleSave = async () => {
     const name = [firstName, lastName].filter(Boolean).join(' ');
-    await updateProfile({ name });
+    const updated = await updateProfile({ name, phone, avatarUrl }).unwrap();
+    dispatch(setUser(updated));
   };
 
   const handleSignOut = () => {
@@ -34,13 +48,51 @@ export const BuyerProfilePage = () => {
       <h1 className="font-display text-2xl text-navy mb-6">My Profile</h1>
 
       {/* Avatar card */}
-      <div className="bg-navy rounded-2xl p-5 flex items-center gap-4 mb-5">
-        <div className="w-12 h-12 rounded-full bg-teal flex items-center justify-center text-white text-lg font-bold flex-shrink-0">
-          {user?.name?.slice(0, 2).toUpperCase() ?? '?'}
+      <div className="bg-navy rounded-2xl p-5 flex items-center gap-5 mb-5">
+        <div className="relative flex-shrink-0">
+          {avatarUrl ? (
+            <img
+              src={getImageUrl(avatarUrl)}
+              alt={user?.name}
+              className="w-20 h-20 rounded-full object-cover border-2 border-white/10"
+            />
+          ) : (
+            <div className="w-20 h-20 rounded-full bg-teal flex items-center justify-center text-white text-2xl font-bold border-2 border-white/10">
+              {user?.name?.slice(0, 2).toUpperCase() ?? '?'}
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploadingAvatar}
+            className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-teal border-2 border-navy flex items-center justify-center text-white hover:bg-teal-light transition-colors disabled:opacity-60"
+            aria-label="Change profile picture"
+          >
+            <Camera size={14} />
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleAvatarChange(file);
+            }}
+          />
         </div>
-        <div>
-          <div className="font-semibold text-white">{user?.name}</div>
+        <div className="flex-1 min-w-0">
+          <div className="font-semibold text-white text-lg">{user?.name}</div>
           <div className="text-white/50 text-sm">{user?.email}</div>
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploadingAvatar}
+            className="inline-flex items-center gap-1.5 mt-2.5 px-3.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-semibold transition-colors disabled:opacity-60"
+          >
+            <Camera size={13} />
+            {isUploadingAvatar ? 'Uploading…' : avatarUrl ? 'Change Photo' : 'Upload Profile Picture'}
+          </button>
         </div>
       </div>
 

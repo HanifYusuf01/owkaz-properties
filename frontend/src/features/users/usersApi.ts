@@ -22,7 +22,7 @@ export const usersApi = baseApi.injectEndpoints({
       query: (id) => ({ url: `/users/${id}`, method: 'DELETE' }),
       invalidatesTags: ['User'],
     }),
-    updateProfile: builder.mutation<User, { name?: string; agency?: string; avatarUrl?: string }>({
+    updateProfile: builder.mutation<User, { name?: string; agency?: string; phone?: string; avatarUrl?: string }>({
       query: (body) => ({ url: '/users/me', method: 'PATCH', body }),
       invalidatesTags: ['User'],
     }),

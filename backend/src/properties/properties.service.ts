@@ -55,7 +55,7 @@ export class PropertiesService {
 
     if (search) {
       query.andWhere(
-        '(property.title ILIKE :search OR property.area ILIKE :search OR property.lga ILIKE :search)',
+        '(property.title ILIKE :search OR property.area ILIKE :search OR property.lga ILIKE :search OR property.state ILIKE :search)',
         { search: `%${search}%` },
       );
     }
@@ -106,6 +106,33 @@ export class PropertiesService {
 
   async findSold(filters: FilterPropertiesDto) {
     return this.findAll({ ...filters, status: PropertyStatus.SOLD });
+  }
+
+  async getPriceRange(status?: string): Promise<{ min: number; max: number }> {
+    const targetStatus = status === 'sold' ? PropertyStatus.SOLD : PropertyStatus.APPROVED;
+    const result = await this.propertiesRepo
+      .createQueryBuilder('property')
+      .where('property.status = :status', { status: targetStatus })
+      .select('MIN(property.price)', 'min')
+      .addSelect('MAX(property.price)', 'max')
+      .getRawOne();
+
+    return {
+      min: result?.min != null ? Number(result.min) : 0,
+      max: result?.max != null ? Number(result.max) : 0,
+    };
+  }
+
+  async getStateCounts(): Promise<{ state: string; count: number }[]> {
+    const rows = await this.propertiesRepo
+      .createQueryBuilder('property')
+      .where('property.status = :status', { status: PropertyStatus.APPROVED })
+      .select('property.state', 'state')
+      .addSelect('COUNT(*)', 'count')
+      .groupBy('property.state')
+      .getRawMany();
+
+    return rows.map((r) => ({ state: r.state, count: Number(r.count) }));
   }
 
   async findById(id: string): Promise<Property> {

@@ -1,5 +1,5 @@
 import { baseApi } from '../../store/baseApi';
-import { Inquiry } from '../../types';
+import { Inquiry, InquiryMessage } from '../../types';
 
 export const inquiriesApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -27,6 +27,14 @@ export const inquiriesApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Inquiry'],
     }),
+    getInquiryMessages: builder.query<InquiryMessage[], string>({
+      query: (id) => `/inquiries/${id}/messages`,
+      providesTags: (_result, _err, id) => [{ type: 'InquiryMessage', id }],
+    }),
+    sendInquiryMessage: builder.mutation<InquiryMessage, { id: string; message: string }>({
+      query: ({ id, message }) => ({ url: `/inquiries/${id}/messages`, method: 'POST', body: { message } }),
+      invalidatesTags: (_result, _err, { id }) => [{ type: 'InquiryMessage', id }, 'Inquiry'],
+    }),
   }),
 });
 
@@ -36,4 +44,6 @@ export const {
   useCreateInquiryMutation,
   useUpdateInquiryMutation,
   useAssignInquiryMutation,
+  useGetInquiryMessagesQuery,
+  useSendInquiryMessageMutation,
 } = inquiriesApi;

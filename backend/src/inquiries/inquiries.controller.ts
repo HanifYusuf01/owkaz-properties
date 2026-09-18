@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { InquiriesService } from './inquiries.service';
-import { CreateInquiryDto, UpdateInquiryDto, AssignInquiryDto } from './dto/inquiry.dto';
+import { CreateInquiryDto, UpdateInquiryDto, AssignInquiryDto, SendInquiryMessageDto } from './dto/inquiry.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -61,5 +61,15 @@ export class InquiriesController {
   @Roles(UserRole.ADMIN)
   assign(@Param('id') id: string, @Body() dto: AssignInquiryDto) {
     return this.inquiriesService.assign(id, dto);
+  }
+
+  @Get(':id/messages')
+  getMessages(@Param('id') id: string, @CurrentUser() user: User) {
+    return this.inquiriesService.getMessages(id, user);
+  }
+
+  @Post(':id/messages')
+  addMessage(@Param('id') id: string, @Body() dto: SendInquiryMessageDto, @CurrentUser() user: User) {
+    return this.inquiriesService.addMessage(id, user, dto);
   }
 }

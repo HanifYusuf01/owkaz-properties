@@ -1,9 +1,10 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCreatePropertyMutation, useUploadImagesMutation, useUploadDocumentsMutation } from '../../../features/properties/propertiesApi';
+import { useCreatePropertyMutation, useUploadImagesMutation, useUploadDocumentsMutation, useUploadVideoMutation } from '../../../features/properties/propertiesApi';
 import { Input } from '../../../components/ui/Input';
 import { Select } from '../../../components/ui/Select';
 import { Button } from '../../../components/ui/Button';
+import { AddressSearchInput } from '../../../components/property/AddressSearchInput';
 import { PropertyType } from '../../../types';
 import { NIGERIAN_STATES } from '../../../constants/nigerianStates';
 
@@ -69,6 +70,8 @@ type FormState = {
   state: string;
   lga: string;
   area: string;
+  latitude: number | null;
+  longitude: number | null;
   description: string;
   beds: string;
   baths: string;
@@ -78,15 +81,19 @@ type FormState = {
   photoUrls: string[];
   panoramaFile: File | null;
   panoramaUrl: string;
+  videoFile: File | null;
+  videoUrl: string;
   documents: File[];
   documentUrls: string[];
 };
 
 const initial: FormState = {
-  type: '', title: '', price: '', state: '', lga: '', area: '', description: '',
+  type: '', title: '', price: '', state: '', lga: '', area: '', latitude: null, longitude: null, description: '',
   beds: '', baths: '', sqm: '', amenities: [], photos: [], photoUrls: [],
-  panoramaFile: null, panoramaUrl: '', documents: [], documentUrls: [],
+  panoramaFile: null, panoramaUrl: '', videoFile: null, videoUrl: '', documents: [], documentUrls: [],
 };
+
+const MAX_VIDEO_SIZE = 15 * 1024 * 1024; // 15MB
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
@@ -98,11 +105,13 @@ export const SubmitPropertyPage = () => {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const panoramaInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
   const docInputRef = useRef<HTMLInputElement>(null);
 
   const [createProperty, { isLoading: submitting }] = useCreatePropertyMutation();
   const [uploadImages] = useUploadImagesMutation();
   const [uploadDocuments] = useUploadDocumentsMutation();
+  const [uploadVideo] = useUploadVideoMutation();
 
   const set = (field: keyof FormState, value: unknown) =>
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -145,6 +154,13 @@ export const SubmitPropertyPage = () => {
           fd.append('files', form.panoramaFile);
           const { urls } = await uploadImages(fd).unwrap();
           set('panoramaUrl', urls[0] ?? '');
+        }
+        // Property video
+        if (form.videoFile && !form.videoUrl) {
+          const fd = new FormData();
+          fd.append('files', form.videoFile);
+          const { urls } = await uploadVideo(fd).unwrap();
+          set('videoUrl', urls[0] ?? '');
         }
         // Supporting documents
         if (form.documents.length > 0 && form.documentUrls.length === 0) {
@@ -192,6 +208,8 @@ export const SubmitPropertyPage = () => {
         state: form.state,
         lga: form.lga,
         area: form.area,
+        ...(form.latitude != null ? { latitude: form.latitude } : {}),
+        ...(form.longitude != null ? { longitude: form.longitude } : {}),
         beds: form.beds ? Number(form.beds) : undefined,
         baths: form.baths ? Number(form.baths) : undefined,
         sqm: form.sqm ? Number(form.sqm) : undefined,
@@ -200,6 +218,7 @@ export const SubmitPropertyPage = () => {
         images: form.photoUrls,
         ...(form.documentUrls.length > 0 ? { documents: form.documentUrls } : {}),
         ...(form.panoramaUrl ? { panoramaUrl: form.panoramaUrl } : {}),
+        ...(form.videoUrl ? { videoUrl: form.videoUrl } : {}),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any).unwrap();
       navigate('/dashboard/my-listings');
@@ -218,7 +237,7 @@ export const SubmitPropertyPage = () => {
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         </span>
         <div>
-          <p className="text-sm font-semibold text-amber-800">Agency Fee — 5%</p>
+          <p className="text-sm font-semibold text-amber-800">Agency Fee: 5%</p>
           <p className="text-xs text-amber-700 mt-0.5 leading-relaxed">
             Owkaz Properties charges a <strong>5% agency fee</strong> on every successful sale or rental transaction facilitated through the platform. This fee covers listing promotion, buyer coordination, and transaction support.
           </p>
@@ -312,6 +331,11 @@ export const SubmitPropertyPage = () => {
                 error={errors.area}
               />
             </div>
+            <AddressSearchInput
+              latitude={form.latitude}
+              longitude={form.longitude}
+              onSelect={({ lat, lng }) => setForm((prev) => ({ ...prev, latitude: lat, longitude: lng }))}
+            />
             <div>
               <label className="text-xs font-semibold uppercase tracking-wide text-navy block mb-1.5">Description</label>
               <textarea
@@ -382,7 +406,7 @@ export const SubmitPropertyPage = () => {
               >
                 <div className="text-4xl mb-2">📷</div>
                 <p className="text-sm text-muted font-medium">Click to upload images (min. 1, max. 20)</p>
-                <p className="text-xs text-muted mt-1">JPG, PNG — max 5 MB per image</p>
+                <p className="text-xs text-muted mt-1">JPG, PNG (max 5 MB per image)</p>
               </div>
               <input
                 ref={fileInputRef}
@@ -455,7 +479,7 @@ export const SubmitPropertyPage = () => {
                 >
                   <div className="text-2xl mb-1">🌐</div>
                   <p className="text-sm text-muted font-medium">Click to upload panorama image</p>
-                  <p className="text-xs text-muted mt-0.5">Equirectangular JPG/PNG — max 20 MB</p>
+                  <p className="text-xs text-muted mt-0.5">Equirectangular JPG/PNG (max 20 MB)</p>
                 </div>
               )}
               <input
@@ -470,20 +494,71 @@ export const SubmitPropertyPage = () => {
               />
             </div>
 
+            {/* Property Video */}
+            <div className="border-t border-border pt-6">
+              <div className="flex items-center gap-2 mb-3">
+                <label className="text-xs font-semibold uppercase tracking-wide text-navy">Property Video</label>
+                <span className="text-[10px] bg-teal/10 text-teal px-2 py-0.5 rounded-full font-semibold">Optional</span>
+              </div>
+              <p className="text-xs text-muted mb-3">Upload a short walkthrough video to give buyers a better feel for the property.</p>
+              {form.videoFile ? (
+                <div className="flex items-center gap-3 p-3 bg-teal/5 border border-teal/20 rounded-xl">
+                  <video src={URL.createObjectURL(form.videoFile)} className="w-16 h-10 rounded-lg bg-black object-cover flex-shrink-0" muted />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-semibold text-navy truncate">{form.videoFile.name}</div>
+                    <div className="text-[10px] text-muted">{(form.videoFile.size / (1024 * 1024)).toFixed(1)} MB · Ready to upload</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { set('videoFile', null); set('videoUrl', ''); setErrors((prev) => ({ ...prev, video: '' })); }}
+                    className="text-xs text-red-500 hover:underline flex-shrink-0"
+                  >Remove</button>
+                </div>
+              ) : (
+                <div
+                  onClick={() => videoInputRef.current?.click()}
+                  className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-colors hover:border-teal/60 hover:bg-teal/5 ${errors.video ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
+                >
+                  <div className="text-2xl mb-1">🎬</div>
+                  <p className="text-sm text-muted font-medium">Click to upload a property video</p>
+                  <p className="text-xs text-muted mt-0.5">MP4, WebM, MOV (max 15 MB)</p>
+                </div>
+              )}
+              {errors.video && <p className="text-xs text-red-500 mt-1.5">{errors.video}</p>}
+              <input
+                ref={videoInputRef}
+                type="file"
+                accept="video/mp4,video/webm,video/quicktime"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  if (file.size > MAX_VIDEO_SIZE) {
+                    setErrors((prev) => ({ ...prev, video: `Video is ${(file.size / (1024 * 1024)).toFixed(1)} MB — max size is 15 MB.` }));
+                    if (videoInputRef.current) videoInputRef.current.value = '';
+                    return;
+                  }
+                  setErrors((prev) => ({ ...prev, video: '' }));
+                  set('videoFile', file);
+                  set('videoUrl', '');
+                }}
+              />
+            </div>
+
             {/* Supporting Documents */}
             <div className="border-t border-border pt-6">
               <div className="flex items-center gap-2 mb-1">
                 <label className="text-xs font-semibold uppercase tracking-wide text-navy">Supporting Documents</label>
                 <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-semibold">Optional but Recommended</span>
               </div>
-              <p className="text-xs text-muted mb-3">Upload documents to verify authenticity — e.g. Certificate of Occupancy (CofO), Survey Plan, Deed of Assignment, Building Approval, etc.</p>
+              <p className="text-xs text-muted mb-3">Upload documents to verify authenticity, e.g. Certificate of Occupancy (CofO), Survey Plan, Deed of Assignment, Building Approval, etc.</p>
               <div
                 onClick={() => docInputRef.current?.click()}
                 className="border-2 border-dashed border-gray-300 rounded-xl p-5 text-center cursor-pointer hover:border-teal/60 hover:bg-teal/5 transition-colors"
               >
                 <svg className="w-8 h-8 mx-auto mb-2 text-muted" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
                 <p className="text-sm text-muted font-medium">Click to upload documents</p>
-                <p className="text-xs text-muted mt-0.5">PDF, JPG, PNG — max 10 MB each</p>
+                <p className="text-xs text-muted mt-0.5">PDF, JPG, PNG (max 10 MB each)</p>
               </div>
               <input
                 ref={docInputRef}
@@ -540,6 +615,8 @@ export const SubmitPropertyPage = () => {
               <ReviewField label="Title" value={form.title} />
               <ReviewField label="Location" value={`${form.state}, ${form.area}`} />
               <ReviewField label="LGA" value={form.lga} />
+              <ReviewField label="Exact Location" value={form.latitude != null ? 'Pinned' : 'Not pinned'} />
+              <ReviewField label="Video" value={form.videoFile ? 'Attached' : 'None'} />
               <ReviewField label="Size" value={form.sqm ? `${form.sqm} m²` : '—'} />
               <ReviewField label="Bedrooms" value={form.beds || '—'} />
               <ReviewField label="Bathrooms" value={form.baths || '—'} />

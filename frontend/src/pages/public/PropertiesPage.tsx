@@ -1,8 +1,22 @@
-import { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Search, SlidersHorizontal, X } from 'lucide-react';
-import { useGetPropertiesQuery } from '../../features/properties/propertiesApi';
+import { useEffect, useState } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { Search, SlidersHorizontal, X, Map as MapIcon } from 'lucide-react';
+import {
+  useGetPropertiesQuery,
+  useGetPropertiesPriceRangeQuery,
+  useGetPropertiesStateCountsQuery,
+  useGetSavedPropertyIdsQuery,
+  useSavePropertyMutation,
+  useUnsavePropertyMutation,
+} from '../../features/properties/propertiesApi';
+import { useGetContentQuery } from '../../features/content/contentApi';
+import { PAGE_CONTENT } from '../../features/content/pageContentConfig';
 import { PropertyCard } from '../../components/property/PropertyCard';
+import { PriceRangeDropdown } from '../../components/property/PriceRangeDropdown';
+import { NigeriaMap } from '../../components/property/NigeriaMap';
+import { normalizeStateName } from '../../utils/nigeriaStateNames';
+import { useAppSelector } from '../../store';
+import { Property } from '../../types';
 
 const PROPERTY_TYPES = ['House / Duplex', 'Apartment / Flat', 'Bungalow', 'Commercial', 'Land / Plot'];
 const BED_OPTIONS = ['Any', '1', '2', '3', '4', '5+'];
@@ -14,21 +28,24 @@ interface FilterPanelProps {
   setPriceMin: (v: string) => void;
   priceMax: string;
   setPriceMax: (v: string) => void;
+  priceBounds: { min: number; max: number } | undefined;
   selectedTypes: string[];
   toggleType: (t: string) => void;
   beds: string;
   setBeds: (v: string) => void;
   onApply: () => void;
   onReset: () => void;
+  onOpenMap: () => void;
 }
 
 const FilterPanel = ({
   searchInput, setSearchInput,
   priceMin, setPriceMin,
   priceMax, setPriceMax,
+  priceBounds,
   selectedTypes, toggleType,
   beds, setBeds,
-  onApply, onReset,
+  onApply, onReset, onOpenMap,
 }: FilterPanelProps) => (
   <div className="space-y-6">
     <div className="flex items-center justify-between">
@@ -49,28 +66,46 @@ const FilterPanel = ({
           className="w-full border border-border rounded-lg pl-8 pr-3 py-2.5 text-sm focus:outline-none focus:border-teal transition-colors"
         />
       </div>
+      <button
+        onClick={onOpenMap}
+        className="mt-2 w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-border text-xs font-semibold text-navy hover:border-teal hover:text-teal transition-colors"
+      >
+        <MapIcon size={13} /> Browse by Map
+      </button>
     </div>
 
     {/* Price */}
     <div>
       <div className="text-[10px] font-bold uppercase tracking-widest text-muted mb-2">Price Range (₦)</div>
-      <div className="grid grid-cols-[1fr_16px_1fr] items-center gap-1">
-        <input
-          type="text"
-          placeholder="Min"
-          value={priceMin}
-          onChange={(e) => setPriceMin(e.target.value)}
-          className="min-w-0 w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-teal transition-colors"
+      {priceBounds && priceBounds.max > priceBounds.min ? (
+        <PriceRangeDropdown
+          variant="inline"
+          min={priceBounds.min}
+          max={priceBounds.max}
+          valueMin={priceMin}
+          valueMax={priceMax}
+          onChangeMin={setPriceMin}
+          onChangeMax={setPriceMax}
         />
-        <span className="text-muted text-xs text-center">–</span>
-        <input
-          type="text"
-          placeholder="Max"
-          value={priceMax}
-          onChange={(e) => setPriceMax(e.target.value)}
-          className="min-w-0 w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-teal transition-colors"
-        />
-      </div>
+      ) : (
+        <div className="grid grid-cols-[1fr_16px_1fr] items-center gap-1">
+          <input
+            type="text"
+            placeholder="Min"
+            value={priceMin}
+            onChange={(e) => setPriceMin(e.target.value)}
+            className="min-w-0 w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-teal transition-colors"
+          />
+          <span />
+          <input
+            type="text"
+            placeholder="Max"
+            value={priceMax}
+            onChange={(e) => setPriceMax(e.target.value)}
+            className="min-w-0 w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-teal transition-colors"
+          />
+        </div>
+      )}
     </div>
 
     {/* Property Type */}
@@ -119,28 +154,56 @@ const FilterPanel = ({
 );
 
 export const PropertiesPage = () => {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { data: savedContent } = useGetContentQuery('properties');
+  const content = { ...PAGE_CONTENT.properties.defaults, ...savedContent };
+  const user = useAppSelector((s) => s.auth.user);
+  const { data: savedIds = [] } = useGetSavedPropertyIdsQuery(undefined, { skip: !user });
+  const [saveProperty] = useSavePropertyMutation();
+  const [unsaveProperty] = useUnsavePropertyMutation();
+  const handleToggleSave = (property: Property) => {
+    if (!user) { navigate('/login'); return; }
+    if (savedIds.includes(property.id)) unsaveProperty(property.id);
+    else saveProperty(property.id);
+  };
 
-  const [search, setSearch] = useState(searchParams.get('search') ?? '');
   const [searchInput, setSearchInput] = useState(searchParams.get('search') ?? '');
+  const [debouncedSearch, setDebouncedSearch] = useState(searchInput);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
-  const [beds, setBeds] = useState('Any');
-  const [priceMin, setPriceMin] = useState('');
-  const [priceMax, setPriceMax] = useState('');
+  const [beds, setBeds] = useState(searchParams.get('beds') === '5' ? '5+' : (searchParams.get('beds') ?? 'Any'));
+  const [priceMin, setPriceMin] = useState(searchParams.get('priceMin') ?? '');
+  const [priceMax, setPriceMax] = useState(searchParams.get('priceMax') ?? '');
+  const [debouncedPriceMin, setDebouncedPriceMin] = useState(priceMin);
+  const [debouncedPriceMax, setDebouncedPriceMax] = useState(priceMax);
   const [sort, setSort] = useState('newest');
   const [page, setPage] = useState(1);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const LIMIT = 12;
 
+  // Live search: debounce free-text inputs so results populate as the user types
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setDebouncedSearch(searchInput);
+      setDebouncedPriceMin(priceMin);
+      setDebouncedPriceMax(priceMax);
+      setPage(1);
+    }, 350);
+    return () => clearTimeout(timeout);
+  }, [searchInput, priceMin, priceMax]);
+
   const { data, isLoading } = useGetPropertiesQuery({
-    search: search || undefined,
+    search: debouncedSearch || undefined,
     beds: beds !== 'Any' ? (beds === '5+' ? 5 : Number(beds)) : undefined,
-    priceMin: priceMin ? Number(priceMin.replace(/,/g, '')) : undefined,
-    priceMax: priceMax ? Number(priceMax.replace(/,/g, '')) : undefined,
+    priceMin: debouncedPriceMin ? Number(debouncedPriceMin.replace(/,/g, '')) : undefined,
+    priceMax: debouncedPriceMax ? Number(debouncedPriceMax.replace(/,/g, '')) : undefined,
     page,
     limit: LIMIT,
   });
+  const { data: priceBounds } = useGetPropertiesPriceRangeQuery();
+  const { data: stateCounts = [] } = useGetPropertiesStateCountsQuery();
+  const [mapOpen, setMapOpen] = useState(false);
 
   const properties = data?.data ?? [];
   const total = data?.total ?? 0;
@@ -150,18 +213,30 @@ export const PropertiesPage = () => {
     setSelectedTypes((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]));
 
   const handleApply = () => {
-    setSearch(searchInput);
+    setDebouncedSearch(searchInput);
+    setDebouncedPriceMin(priceMin);
+    setDebouncedPriceMax(priceMax);
     setPage(1);
     setSidebarOpen(false);
   };
 
+  const handleSelectState = (stateName: string) => {
+    const term = normalizeStateName(stateName) === 'fct' ? 'FCT' : stateName;
+    setSearchInput(term);
+    setDebouncedSearch(term);
+    setPage(1);
+    setMapOpen(false);
+  };
+
   const handleReset = () => {
-    setSearch('');
     setSearchInput('');
+    setDebouncedSearch('');
     setSelectedTypes([]);
     setBeds('Any');
     setPriceMin('');
     setPriceMax('');
+    setDebouncedPriceMin('');
+    setDebouncedPriceMax('');
     setPage(1);
   };
 
@@ -169,10 +244,12 @@ export const PropertiesPage = () => {
     searchInput, setSearchInput,
     priceMin, setPriceMin,
     priceMax, setPriceMax,
+    priceBounds,
     selectedTypes, toggleType,
     beds, setBeds,
     onApply: handleApply,
     onReset: handleReset,
+    onOpenMap: () => setMapOpen(true),
   };
 
   return (
@@ -181,8 +258,8 @@ export const PropertiesPage = () => {
       <div className="bg-navy py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <span className="text-[10px] font-bold uppercase tracking-widest text-teal-light">Browse Listings</span>
-          <h1 className="font-display text-3xl sm:text-4xl text-white mt-1">All Properties</h1>
-          <p className="text-white/50 text-sm mt-2">Explore verified properties across Nigeria</p>
+          <h1 className="font-display text-3xl sm:text-4xl text-white mt-1">{content.heroTitle}</h1>
+          <p className="text-white/50 text-sm mt-2">{content.heroSubtitle}</p>
         </div>
       </div>
 
@@ -261,7 +338,12 @@ export const PropertiesPage = () => {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
                 {properties.map((p) => (
-                  <PropertyCard key={p.id} property={p} />
+                  <PropertyCard
+                    key={p.id}
+                    property={p}
+                    isSaved={savedIds.includes(p.id)}
+                    onToggleSave={handleToggleSave}
+                  />
                 ))}
               </div>
             )}
@@ -304,6 +386,29 @@ export const PropertiesPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Map modal */}
+      {mapOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setMapOpen(false)} />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="font-display text-xl text-navy">Browse by State</h2>
+                <p className="text-xs text-muted mt-0.5">Click a state to see its listings.</p>
+              </div>
+              <button
+                onClick={() => setMapOpen(false)}
+                className="text-muted hover:text-ink transition-colors"
+                aria-label="Close map"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <NigeriaMap stateCounts={stateCounts} onSelectState={handleSelectState} />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

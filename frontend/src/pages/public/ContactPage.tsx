@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useSendContactMessageMutation } from '../../features/contact/contactApi';
+import { useGetContentQuery } from '../../features/content/contentApi';
+import { PAGE_CONTENT } from '../../features/content/pageContentConfig';
 import { Locate, Phone, Mail, MessageCircleWarning } from 'lucide-react';
 const SUBJECTS = [
   'General Enquiry',
@@ -47,6 +49,8 @@ export const ContactPage = () => {
   const [error, setError] = useState('');
 
   const [sendMessage, { isLoading }] = useSendContactMessageMutation();
+  const { data: savedContent } = useGetContentQuery('contact');
+  const content = { ...PAGE_CONTENT.contact.defaults, ...savedContent };
 
   const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -66,7 +70,7 @@ export const ContactPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <span className="text-[10px] font-bold uppercase tracking-widest text-teal-light">Get In Touch</span>
           <h1 className="font-display text-4xl sm:text-5xl text-white mt-3 leading-tight">
-            We're Here to Help<br />You Find Your Next Home
+            {content.heroLine1}<br />{content.heroLine2}
           </h1>
         </div>
       </div>
@@ -79,7 +83,7 @@ export const ContactPage = () => {
           <div>
             <h2 className="font-display text-3xl text-navy mb-2">Let's Have a<br />Conversation</h2>
             <p className="text-muted text-sm leading-relaxed mb-8">
-              Whether you have questions about a listing, need guidance on buying or selling, or want to partner with us — our team is ready to help.
+              Whether you have questions about a listing, need guidance on buying or selling, or want to partner with us, our team is ready to help.
             </p>
 
             <div className="space-y-5">

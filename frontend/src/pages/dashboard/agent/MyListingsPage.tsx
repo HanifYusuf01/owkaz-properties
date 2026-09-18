@@ -25,6 +25,7 @@ import { Property, PropertyStatus, PropertyType } from '../../../types';
 import { NIGERIAN_STATES } from '../../../constants/nigerianStates';
 import { Trash2Icon } from 'lucide-react';
 import { useAppSelector } from '../../../store';
+import { AddressSearchInput } from '../../../components/property/AddressSearchInput';
 
 const PropertyNotesSection = ({ propertyId }: { propertyId: string }) => {
   const currentUser = useAppSelector((s) => s.auth.user);
@@ -108,6 +109,8 @@ type EditForm = {
   state: string;
   lga: string;
   area: string;
+  latitude: number | null;
+  longitude: number | null;
   description: string;
   beds: string;
   baths: string;
@@ -118,7 +121,7 @@ type EditForm = {
 };
 
 const emptyEdit: EditForm = {
-  type: '', title: '', price: '', state: '', lga: '', area: '',
+  type: '', title: '', price: '', state: '', lga: '', area: '', latitude: null, longitude: null,
   description: '', beds: '', baths: '', sqm: '', amenities: [],
   existingImages: [], newPhotos: [],
 };
@@ -162,6 +165,8 @@ export const MyListingsPage = () => {
       state: p.state,
       lga: p.lga,
       area: p.area,
+      latitude: p.latitude ?? null,
+      longitude: p.longitude ?? null,
       description: p.description,
       beds: p.beds != null ? String(p.beds) : '',
       baths: p.baths != null ? String(p.baths) : '',
@@ -210,6 +215,8 @@ export const MyListingsPage = () => {
           state: editForm.state,
           lga: editForm.lga,
           area: editForm.area,
+          ...(editForm.latitude != null ? { latitude: editForm.latitude } : {}),
+          ...(editForm.longitude != null ? { longitude: editForm.longitude } : {}),
           description: editForm.description,
           beds: editForm.beds ? Number(editForm.beds) : undefined,
           baths: editForm.baths ? Number(editForm.baths) : undefined,
@@ -463,6 +470,12 @@ export const MyListingsPage = () => {
               />
               <Input label="Area / Neighbourhood" value={editForm.area} onChange={(e) => setEdit('area', e.target.value)} error={editErrors.area} />
             </div>
+
+            <AddressSearchInput
+              latitude={editForm.latitude}
+              longitude={editForm.longitude}
+              onSelect={({ lat, lng }) => setEditForm((prev) => ({ ...prev, latitude: lat, longitude: lng }))}
+            />
 
             <div className="grid grid-cols-3 gap-3 sm:gap-4">
               <Input label="Bedrooms" type="number" value={editForm.beds} onChange={(e) => setEdit('beds', e.target.value)} />

@@ -46,6 +46,16 @@ export class PropertiesController {
     return this.propertiesService.findSold(filters);
   }
 
+  @Get('price-range')
+  getPriceRange(@Query('status') status?: string) {
+    return this.propertiesService.getPriceRange(status);
+  }
+
+  @Get('state-counts')
+  getStateCounts() {
+    return this.propertiesService.getStateCounts();
+  }
+
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Get('saved')

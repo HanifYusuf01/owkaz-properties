@@ -1,13 +1,15 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate, Link } from 'react-router-dom';
-import { useLoginMutation } from '../features/auth/authApi';
+import { useLoginMutation, useGoogleLoginMutation } from '../features/auth/authApi';
 import { useAppDispatch } from '../store';
 import { setCredentials, setUser } from '../features/auth/authSlice';
 import { UserRole } from '../types';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
+import { GoogleSignInButton } from '../components/auth/GoogleSignInButton';
 
 const schema = z.object({
   email: z.string().email('Invalid email'),
@@ -20,6 +22,8 @@ export const LoginPage = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [login, { isLoading, error }] = useLoginMutation();
+  const [googleLogin, { isLoading: isGoogleLoading }] = useGoogleLoginMutation();
+  const [googleError, setGoogleError] = useState<string | null>(null);
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -33,6 +37,22 @@ export const LoginPage = () => {
       navigate(result.user.role === UserRole.BUYER ? '/' : '/dashboard');
     } catch {
       // error handled via RTK state
+    }
+  };
+
+  const handleGoogleCredential = async (idToken: string) => {
+    setGoogleError(null);
+    try {
+      const result = await googleLogin({ idToken }).unwrap();
+      dispatch(setCredentials({ accessToken: result.accessToken, refreshToken: result.refreshToken }));
+      dispatch(setUser(result.user));
+      navigate(result.user.role === UserRole.BUYER ? '/' : '/dashboard');
+    } catch (err) {
+      const message = err && typeof err === 'object' && 'data' in err
+        && typeof (err as { data?: unknown }).data === 'object' && (err as { data?: { message?: string } }).data?.message
+        ? (err as { data: { message: string } }).data.message
+        : 'Could not sign in with Google. Please try again.';
+      setGoogleError(message);
     }
   };
 
@@ -107,6 +127,25 @@ export const LoginPage = () => {
               Sign In
             </Button>
           </form>
+
+          {Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID) && (
+            <>
+              <div className="flex items-center gap-3 my-6">
+                <div className="flex-1 h-px bg-border" />
+                <span className="text-xs text-muted uppercase tracking-wide">or</span>
+                <div className="flex-1 h-px bg-border" />
+              </div>
+
+              {googleError && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+                  {googleError}
+                </div>
+              )}
+              <div className={isGoogleLoading ? 'opacity-60 pointer-events-none' : ''}>
+                <GoogleSignInButton onCredential={handleGoogleCredential} />
+              </div>
+            </>
+          )}
 
           <p className="text-center text-sm text-muted mt-6">
             Don't have an account?{' '}

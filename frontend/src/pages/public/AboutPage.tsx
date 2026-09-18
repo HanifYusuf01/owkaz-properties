@@ -1,10 +1,14 @@
 import { useNavigate } from 'react-router-dom';
+import { useGetContentQuery } from '../../features/content/contentApi';
+import { PAGE_CONTENT } from '../../features/content/pageContentConfig';
+import { getImageUrl } from '../../utils/imageUrl';
+import { MultilineText } from '../../components/ui/MultilineText';
 
 const VALUES = [
-  { icon: '🔍', title: 'Transparency', desc: 'Every listing is verified. Every agent is screened. No hidden fees, no misleading information — ever.' },
+  { icon: '🔍', title: 'Transparency', desc: 'Every listing is verified. Every agent is screened. No hidden fees, no misleading information, ever.' },
   { icon: '🛡️', title: 'Trust & Safety', desc: 'We work hard to protect both buyers and sellers. Our verification process reduces fraud significantly.' },
-  { icon: '🌍', title: 'Accessibility', desc: 'Whether you\'re in Abuja, Lagos, Kano, or in the diaspora — Owkaz works for you, on any device.' },
-  { icon: '⚡', title: 'Innovation', desc: 'We continuously improve our platform — smart search, AI-powered recommendations, and more.' },
+  { icon: '🌍', title: 'Accessibility', desc: 'Whether you\'re in Abuja, Lagos, Kano, or in the diaspora, Owkaz works for you on any device.' },
+  { icon: '⚡', title: 'Innovation', desc: 'We continuously improve our platform with smart search, AI-powered recommendations, and more.' },
   { icon: '🤝', title: 'Community', desc: 'We support local agents and empower small property owners to compete with large developers.' },
   { icon: '📊', title: 'Data-Driven', desc: 'Market reports, price trends, and location insights to help you make the most informed decisions.' },
 ];
@@ -32,6 +36,8 @@ const TESTIMONIALS = [
 
 export const AboutPage = () => {
   const navigate = useNavigate();
+  const { data: savedContent } = useGetContentQuery('about');
+  const content = { ...PAGE_CONTENT.about.defaults, ...savedContent };
 
   return (
     <div>
@@ -40,10 +46,10 @@ export const AboutPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <span className="text-[10px] font-bold uppercase tracking-widest text-teal-light">Our Story</span>
           <h1 className="font-display text-4xl sm:text-7xl text-white mt-3 leading-tight">
-            Built for <em className="text-gold not-italic">Nigeria's</em><br />Property Market
+            {content.heroLine1} <em className="text-gold not-italic">{content.heroHighlight}</em><br />{content.heroLine2}
           </h1>
           <p className="text-white/60 text-base sm:text-lg mt-4 max-w-xl leading-relaxed">
-            Owkaz was founded with one mission: to make property search and listing in Nigeria transparent, trustworthy, and easy for everyone — from first-time homebuyers to seasoned investors.
+            {content.heroSubtitle}
           </p>
         </div>
       </div>
@@ -55,13 +61,13 @@ export const AboutPage = () => {
             <div>
               <span className="text-[10px] font-bold uppercase tracking-widest text-teal">Our Mission</span>
               <h2 className="font-display text-3xl sm:text-4xl text-navy mt-3 leading-tight">
-                Making Real Estate<br />Accessible to All Nigerians
+                <MultilineText text={content.missionTitle} />
               </h2>
               <p className="text-muted text-sm leading-relaxed mt-4">
-                We believe every Nigerian deserves access to quality property information without the fear of fraud or misinformation. Our platform connects verified agents, honest landlords, and genuine buyers in a secure digital environment.
+                {content.missionBody1}
               </p>
               <p className="text-muted text-sm leading-relaxed mt-4">
-                From the bustling corridors of Victoria Island to the serene developments of Maitama, and the commercial hubs of Port Harcourt — Owkaz is your trusted guide through Nigeria's dynamic property landscape.
+                {content.missionBody2}
               </p>
               <div className="flex flex-wrap gap-3 mt-8">
                 <button
@@ -82,7 +88,7 @@ export const AboutPage = () => {
             {/* Building image card */}
             <div className="relative rounded-3xl overflow-hidden min-h-[320px]">
               <img
-                src="/owkaz-building.jpg"
+                src={content.missionImage.startsWith('/uploads/') ? getImageUrl(content.missionImage) : content.missionImage}
                 alt="Owkaz Properties"
                 className="w-full h-full object-cover absolute inset-0"
               />

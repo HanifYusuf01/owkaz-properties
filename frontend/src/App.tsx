@@ -6,6 +6,7 @@ import { DashboardLayout } from './components/layout/DashboardLayout';
 import { PublicLayout } from './components/layout/PublicLayout';
 import { AuthLayout } from './components/layout/AuthLayout';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
+import { GoogleTranslateWidget } from './components/layout/GoogleTranslateWidget';
 
 // Public pages
 import { HomePage } from './pages/public/HomePage';
@@ -17,6 +18,9 @@ import { ContactPage } from './pages/public/ContactPage';
 import { ProjectsPage } from './pages/public/ProjectsPage';
 import { ProjectDetailPage } from './pages/public/ProjectDetailPage';
 import { ListPropertyPage } from './pages/public/ListPropertyPage';
+import { PrivacyPolicyPage } from './pages/public/PrivacyPolicyPage';
+import { TermsOfUsePage } from './pages/public/TermsOfUsePage';
+import { CookiePolicyPage } from './pages/public/CookiePolicyPage';
 import { BuyerProfilePage } from './pages/public/BuyerProfilePage';
 
 // Auth pages
@@ -31,6 +35,7 @@ import { ApprovalQueuePage } from './pages/dashboard/admin/ApprovalQueuePage';
 import { AllListingsPage } from './pages/dashboard/admin/AllListingsPage';
 import { SoldProjectsPage } from './pages/dashboard/admin/SoldProjectsPage';
 import { ProjectsManagementPage } from './pages/dashboard/admin/ProjectsManagementPage';
+import { SiteContentPage } from './pages/dashboard/admin/SiteContentPage';
 import { InquiriesPage } from './pages/dashboard/admin/InquiriesPage';
 import { UsersPage } from './pages/dashboard/admin/UsersPage';
 import { MyListingsPage } from './pages/dashboard/agent/MyListingsPage';
@@ -55,7 +60,9 @@ function AppContent() {
   }
 
   return (
-    <Routes>
+    <>
+      <GoogleTranslateWidget />
+      <Routes>
       {/* Public marketing site */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
@@ -67,6 +74,9 @@ function AppContent() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/list-property" element={<ListPropertyPage />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+        <Route path="/terms-of-use" element={<TermsOfUsePage />} />
+        <Route path="/cookie-policy" element={<CookiePolicyPage />} />
 
         {/* Buyer pages — require auth, live in public layout */}
         <Route element={<ProtectedRoute allowedRoles={[UserRole.BUYER]} />}>
@@ -100,6 +110,7 @@ function AppContent() {
             <Route path="/dashboard/users" element={<UsersPage />} />
             <Route path="/dashboard/create-listing" element={<SubmitPropertyPage />} />
             <Route path="/dashboard/projects" element={<ProjectsManagementPage />} />
+            <Route path="/dashboard/site-content" element={<SiteContentPage />} />
           </Route>
 
           {/* Agent / Owner */}
@@ -120,7 +131,8 @@ function AppContent() {
 
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+      </Routes>
+    </>
   );
 }
 

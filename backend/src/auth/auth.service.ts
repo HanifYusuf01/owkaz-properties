@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { OAuth2Client } from 'google-auth-library';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { UsersService } from '../users/users.service';
@@ -49,6 +50,46 @@ export class AuthService {
       throw new ForbiddenException('Your account is pending admin approval.');
     }
 
+    if (user.status === UserStatus.SUSPENDED) {
+      throw new ForbiddenException('Your account has been suspended. Please contact support.');
+    }
+
+    const tokens = await this.generateTokens(user);
+    const { passwordHash, refreshTokenHash, passwordResetToken, passwordResetExpiry, ...publicUser } = user as any;
+    return { ...tokens, user: publicUser };
+  }
+
+  async googleAuth(idToken: string) {
+    const clientId = this.configService.get<string>('GOOGLE_CLIENT_ID');
+    if (!clientId) {
+      throw new BadRequestException('Google sign-in is not configured on this server.');
+    }
+
+    let payload: { email?: string; name?: string } | undefined;
+    try {
+      const client = new OAuth2Client(clientId);
+      const ticket = await client.verifyIdToken({ idToken, audience: clientId });
+      payload = ticket.getPayload();
+    } catch {
+      throw new UnauthorizedException('Invalid Google credential');
+    }
+
+    if (!payload?.email) throw new UnauthorizedException('Google account has no email');
+
+    let user = await this.usersService.findByEmail(payload.email);
+    if (!user) {
+      const passwordHash = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 10);
+      user = await this.usersService.create({
+        name: payload.name ?? payload.email.split('@')[0],
+        email: payload.email,
+        passwordHash,
+        role: UserRole.BUYER,
+      });
+    }
+
+    if (user.status === UserStatus.PENDING) {
+      throw new ForbiddenException('Your account is pending admin approval.');
+    }
     if (user.status === UserStatus.SUSPENDED) {
       throw new ForbiddenException('Your account has been suspended. Please contact support.');
     }

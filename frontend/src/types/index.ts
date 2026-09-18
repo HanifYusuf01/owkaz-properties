@@ -48,8 +48,10 @@ export interface User {
   email: string;
   role: UserRole;
   agency?: string;
+  phone?: string | null;
   status: UserStatus;
-  avatarUrl?: string;
+  avatarUrl?: string | null;
+  isBot?: boolean;
   roleRequest?: string | null;
   createdAt: string;
 }
@@ -63,6 +65,8 @@ export interface Property {
   state: string;
   lga: string;
   area: string;
+  latitude?: number | null;
+  longitude?: number | null;
   beds?: number;
   baths?: number;
   sqm?: number;
@@ -71,6 +75,7 @@ export interface Property {
   images: string[];
   documents?: string[];
   panoramaUrl?: string | null;
+  videoUrl?: string | null;
   featured: boolean;
   views: number;
   isOwkaz: boolean;
@@ -102,6 +107,13 @@ export interface Inquiry {
   internalNotes?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface InquiryMessage {
+  id: string;
+  sender: User;
+  message: string;
+  createdAt: string;
 }
 
 export interface Notification {

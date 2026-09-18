@@ -1,9 +1,18 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { useGetProjectsQuery } from '../../features/projects/projectsApi';
 import { formatPrice } from '../../utils/format';
 import { getImageUrl } from '../../utils/imageUrl';
+import { useGetContentQuery } from '../../features/content/contentApi';
+import { PAGE_CONTENT } from '../../features/content/pageContentConfig';
+
+const formatCompact = (n: number): string => {
+  if (n >= 1_000_000_000) return `₦${(n / 1_000_000_000).toFixed(1).replace(/\.0$/, '')}B`;
+  if (n >= 1_000_000) return `₦${(n / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`;
+  if (n >= 1_000) return `₦${(n / 1_000).toFixed(1).replace(/\.0$/, '')}K`;
+  return `₦${n}`;
+};
 
 const STATUS_STYLES: Record<string, string> = {
   ongoing: 'bg-teal/20 text-teal border-teal/30',
@@ -30,20 +39,35 @@ const CARD_GRADS = [
   'from-teal-light to-teal',
 ];
 
-const STATS = [
-  { num: '18', label: 'Active Projects' },
-  { num: '2,400+', label: 'Units Delivered' },
-  { num: '6', label: 'States Covered' },
-  { num: '₦50B+', label: 'Total Value' },
-];
-
 export const ProjectsPage = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
+  const { data: savedContent } = useGetContentQuery('projects');
+  const content = { ...PAGE_CONTENT.projects.defaults, ...savedContent };
 
   const { data: projectsData, isLoading } = useGetProjectsQuery({ search: search || undefined, limit: 1000 });
   const projects = projectsData?.data ?? [];
+
+  // Real-time stats derived from the whole project portfolio, not just the (possibly search-filtered) list above
+  const { data: allProjectsData } = useGetProjectsQuery({ limit: 1000 }, { skip: !search });
+  const allProjects = search ? (allProjectsData?.data ?? []) : projects;
+
+  const stats = useMemo(() => {
+    const activeProjects = allProjects.filter((p) => p.status !== 'completed').length;
+    const unitsDelivered = allProjects
+      .filter((p) => p.status === 'completed')
+      .reduce((sum, p) => sum + (p.totalUnits ?? 0), 0);
+    const statesCovered = new Set(allProjects.map((p) => p.state)).size;
+    const totalValue = allProjects.reduce((sum, p) => sum + (p.priceFrom ?? 0) * (p.totalUnits ?? 0), 0);
+
+    return [
+      { num: activeProjects.toLocaleString(), label: 'Active Projects' },
+      { num: unitsDelivered.toLocaleString(), label: 'Units Delivered' },
+      { num: statesCovered.toLocaleString(), label: 'States Covered' },
+      ...(totalValue > 0 ? [{ num: formatCompact(totalValue), label: 'Total Value' }] : []),
+    ];
+  }, [allProjects]);
 
   return (
     <div>
@@ -59,13 +83,13 @@ export const ProjectsPage = () => {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <span className="text-[10px] font-bold uppercase tracking-widest text-teal-light">Our Developments</span>
           <h1 className="font-display text-4xl sm:text-5xl text-white mt-3 leading-tight">
-            Premium Property<br />Projects Across Nigeria
+            {content.heroLine1}<br />{content.heroLine2}
           </h1>
           <p className="text-white/60 text-base sm:text-lg mt-4 max-w-xl leading-relaxed">
-            From gated estates in Abuja to luxury apartments in Lagos — Owkaz curates and markets Nigeria's finest residential and commercial developments.
+            {content.heroSubtitle}
           </p>
           <div className="flex flex-wrap gap-8 mt-10">
-            {STATS.map((s) => (
+            {stats.map((s) => (
               <div key={s.label}>
                 <div className="font-display text-3xl text-gold">{s.num}</div>
                 <div className="text-white/50 text-xs mt-0.5">{s.label}</div>
@@ -121,7 +145,7 @@ export const ProjectsPage = () => {
             <div className="text-5xl mb-3">🏗️</div>
             <h3 className="font-semibold text-navy text-lg">No projects found</h3>
             <p className="text-sm text-muted mt-1">
-              {search ? 'Try a different search term.' : 'Check back soon — new developments are coming.'}
+              {search ? 'Try a different search term.' : 'Check back soon. New developments are coming.'}
             </p>
             {search && (
               <button onClick={() => { setSearch(''); setSearchInput(''); }} className="mt-4 px-5 py-2.5 rounded-xl bg-navy text-white text-sm font-semibold">

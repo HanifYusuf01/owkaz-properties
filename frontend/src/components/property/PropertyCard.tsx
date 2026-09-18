@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Bed, Bath, Maximize, MapPin } from 'lucide-react';
+import { Bed, Bath, Maximize, MapPin, Bookmark, BookmarkCheck } from 'lucide-react';
 import { Property } from '../../types';
 import { formatPrice } from '../../utils/format';
 import { getImageUrl } from '../../utils/imageUrl';
@@ -10,9 +10,11 @@ interface PropertyCardProps {
   showStatus?: boolean;
   actions?: React.ReactNode;
   onCardClick?: (property: Property) => void;
+  isSaved?: boolean;
+  onToggleSave?: (property: Property) => void;
 }
 
-export const PropertyCard = ({ property, showStatus = false, actions, onCardClick }: PropertyCardProps) => {
+export const PropertyCard = ({ property, showStatus = false, actions, onCardClick, isSaved, onToggleSave }: PropertyCardProps) => {
   const navigate = useNavigate();
 
   return (
@@ -28,9 +30,19 @@ export const PropertyCard = ({ property, showStatus = false, actions, onCardClic
           <span className="text-6xl opacity-20">🏠</span>
         )}
         <div className="absolute top-3 left-3 flex gap-2">
-          {property.isOwkaz && <Badge status="admin" className="text-[10px]" />}
           {property.featured && <span className="bg-gold text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Featured</span>}
         </div>
+        {onToggleSave && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onToggleSave(property); }}
+            aria-label={isSaved ? 'Unsave property' : 'Save property'}
+            className={`absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm transition-colors ${
+              isSaved ? 'bg-teal text-white' : 'bg-black/40 text-white hover:bg-black/60'
+            }`}
+          >
+            {isSaved ? <BookmarkCheck size={15} /> : <Bookmark size={15} />}
+          </button>
+        )}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-navy/80 to-transparent p-4">
           <div className="font-display text-xl text-white">{formatPrice(property.price)}</div>
           <div className="text-white/60 text-[10px] uppercase tracking-wide">Asking Price</div>

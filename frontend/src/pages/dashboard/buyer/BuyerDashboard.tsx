@@ -38,7 +38,7 @@ export const BuyerDashboard = () => {
       <div className="bg-green-50 border border-green-200 rounded-xl p-4">
         <h5 className="text-xs font-bold uppercase tracking-wide text-green-800 mb-1">✅ Safe & Curated Marketplace</h5>
         <p className="text-xs text-green-700">
-          Every listing on Owkaz is reviewed by our team. Inquire on any property and our agents will coordinate everything — you'll never need to contact a seller directly.
+          Every listing on Owkaz is reviewed by our team. Inquire on any property and our agents will coordinate everything, so you'll never need to contact a seller directly.
         </p>
       </div>
 

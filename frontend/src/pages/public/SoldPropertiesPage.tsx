@@ -1,9 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, SlidersHorizontal, X } from 'lucide-react';
-import { useGetPublicSoldPropertiesQuery } from '../../features/properties/propertiesApi';
+import { useGetPublicSoldPropertiesQuery, useGetPropertiesPriceRangeQuery } from '../../features/properties/propertiesApi';
 import { formatPrice, formatDate } from '../../utils/format';
 import { getImageUrl } from '../../utils/imageUrl';
+import { useGetContentQuery } from '../../features/content/contentApi';
+import { PAGE_CONTENT } from '../../features/content/pageContentConfig';
+import { PriceRangeDropdown } from '../../components/property/PriceRangeDropdown';
 
 const BED_OPTIONS = ['Any', '1', '2', '3', '4', '5+'];
 
@@ -14,6 +17,7 @@ interface FilterPanelProps {
   setPriceMin: (v: string) => void;
   priceMax: string;
   setPriceMax: (v: string) => void;
+  priceBounds: { min: number; max: number } | undefined;
   beds: string;
   setBeds: (v: string) => void;
   onApply: () => void;
@@ -24,6 +28,7 @@ const FilterPanel = ({
   searchInput, setSearchInput,
   priceMin, setPriceMin,
   priceMax, setPriceMax,
+  priceBounds,
   beds, setBeds,
   onApply, onReset,
 }: FilterPanelProps) => (
@@ -51,23 +56,35 @@ const FilterPanel = ({
     {/* Sale Price */}
     <div>
       <div className="text-[10px] font-bold uppercase tracking-widest text-muted mb-2">Sale Price Range (₦)</div>
-      <div className="grid grid-cols-[1fr_16px_1fr] items-center gap-1">
-        <input
-          type="text"
-          placeholder="Min"
-          value={priceMin}
-          onChange={(e) => setPriceMin(e.target.value)}
-          className="min-w-0 w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-teal transition-colors"
+      {priceBounds && priceBounds.max > priceBounds.min ? (
+        <PriceRangeDropdown
+          variant="inline"
+          min={priceBounds.min}
+          max={priceBounds.max}
+          valueMin={priceMin}
+          valueMax={priceMax}
+          onChangeMin={setPriceMin}
+          onChangeMax={setPriceMax}
         />
-        <span className="text-muted text-xs text-center">–</span>
-        <input
-          type="text"
-          placeholder="Max"
-          value={priceMax}
-          onChange={(e) => setPriceMax(e.target.value)}
-          className="min-w-0 w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-teal transition-colors"
-        />
-      </div>
+      ) : (
+        <div className="grid grid-cols-[1fr_16px_1fr] items-center gap-1">
+          <input
+            type="text"
+            placeholder="Min"
+            value={priceMin}
+            onChange={(e) => setPriceMin(e.target.value)}
+            className="min-w-0 w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-teal transition-colors"
+          />
+          <span />
+          <input
+            type="text"
+            placeholder="Max"
+            value={priceMax}
+            onChange={(e) => setPriceMax(e.target.value)}
+            className="min-w-0 w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-teal transition-colors"
+          />
+        </div>
+      )}
     </div>
 
     {/* Bedrooms */}
@@ -100,42 +117,62 @@ const FilterPanel = ({
 export const SoldPropertiesPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { data: savedContent } = useGetContentQuery('sold');
+  const content = { ...PAGE_CONTENT.sold.defaults, ...savedContent };
 
-  const [search, setSearch] = useState(searchParams.get('search') ?? '');
   const [searchInput, setSearchInput] = useState(searchParams.get('search') ?? '');
+  const [debouncedSearch, setDebouncedSearch] = useState(searchInput);
   const [beds, setBeds] = useState('Any');
   const [priceMin, setPriceMin] = useState('');
   const [priceMax, setPriceMax] = useState('');
+  const [debouncedPriceMin, setDebouncedPriceMin] = useState('');
+  const [debouncedPriceMax, setDebouncedPriceMax] = useState('');
   const [page, setPage] = useState(1);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const LIMIT = 12;
 
+  // Live search: debounce free-text inputs so results populate as the user types
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setDebouncedSearch(searchInput);
+      setDebouncedPriceMin(priceMin);
+      setDebouncedPriceMax(priceMax);
+      setPage(1);
+    }, 350);
+    return () => clearTimeout(timeout);
+  }, [searchInput, priceMin, priceMax]);
+
   const { data, isLoading } = useGetPublicSoldPropertiesQuery({
-    search: search || undefined,
+    search: debouncedSearch || undefined,
     beds: beds !== 'Any' ? (beds === '5+' ? 5 : Number(beds)) : undefined,
-    priceMin: priceMin ? Number(priceMin.replace(/,/g, '')) : undefined,
-    priceMax: priceMax ? Number(priceMax.replace(/,/g, '')) : undefined,
+    priceMin: debouncedPriceMin ? Number(debouncedPriceMin.replace(/,/g, '')) : undefined,
+    priceMax: debouncedPriceMax ? Number(debouncedPriceMax.replace(/,/g, '')) : undefined,
     page,
     limit: LIMIT,
   });
+  const { data: priceBounds } = useGetPropertiesPriceRangeQuery({ sold: true });
 
   const properties = data?.data ?? [];
   const total = data?.total ?? 0;
   const totalPages = data?.totalPages ?? 1;
 
   const handleApply = () => {
-    setSearch(searchInput);
+    setDebouncedSearch(searchInput);
+    setDebouncedPriceMin(priceMin);
+    setDebouncedPriceMax(priceMax);
     setPage(1);
     setSidebarOpen(false);
   };
 
   const handleReset = () => {
-    setSearch('');
     setSearchInput('');
+    setDebouncedSearch('');
     setBeds('Any');
     setPriceMin('');
     setPriceMax('');
+    setDebouncedPriceMin('');
+    setDebouncedPriceMax('');
     setPage(1);
   };
 
@@ -143,6 +180,7 @@ export const SoldPropertiesPage = () => {
     searchInput, setSearchInput,
     priceMin, setPriceMin,
     priceMax, setPriceMax,
+    priceBounds,
     beds, setBeds,
     onApply: handleApply,
     onReset: handleReset,
@@ -154,8 +192,8 @@ export const SoldPropertiesPage = () => {
       <div className="bg-navy py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <span className="text-[10px] font-bold uppercase tracking-widest text-gold">Sold Projects</span>
-          <h1 className="font-display text-3xl sm:text-4xl text-white mt-1">Sold Properties</h1>
-          <p className="text-white/50 text-sm mt-2">Properties successfully sold through Owkaz</p>
+          <h1 className="font-display text-3xl sm:text-4xl text-white mt-1">{content.heroTitle}</h1>
+          <p className="text-white/50 text-sm mt-2">{content.heroSubtitle}</p>
         </div>
       </div>
 

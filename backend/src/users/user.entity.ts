@@ -6,6 +6,7 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from 'typeorm';
+import { Exclude } from 'class-transformer';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -31,6 +32,7 @@ export class User {
   @Column({ unique: true })
   email: string;
 
+  @Exclude()
   @Column()
   passwordHash: string;
 
@@ -40,11 +42,17 @@ export class User {
   @Column({ type: 'varchar', nullable: true })
   agency: string | null;
 
+  @Column({ type: 'varchar', nullable: true })
+  phone: string | null;
+
   @Column({ type: 'enum', enum: UserStatus, default: UserStatus.ACTIVE })
   status: UserStatus;
 
   @Column({ type: 'varchar', nullable: true })
   avatarUrl: string | null;
+
+  @Column({ default: false })
+  isBot: boolean;
 
   @Column('uuid', { array: true, default: [] })
   savedPropertyIds: string[];
@@ -52,12 +60,15 @@ export class User {
   @Column({ type: 'varchar', nullable: true })
   roleRequest: string | null;
 
+  @Exclude()
   @Column({ type: 'varchar', nullable: true })
   refreshTokenHash: string | null;
 
+  @Exclude()
   @Column({ type: 'varchar', nullable: true })
   passwordResetToken: string | null;
 
+  @Exclude()
   @Column({ type: 'timestamp', nullable: true })
   passwordResetExpiry: Date | null;
 

@@ -199,7 +199,7 @@ export const ProjectDetailModal = ({ project, onClose }: ProjectDetailModalProps
               <div className="text-[10px] text-muted">Price from</div>
               <div className="font-display text-xl text-navy">
                 {project.priceFrom
-                  ? `${formatPrice(project.priceFrom)}${project.priceTo ? ` – ${formatPrice(project.priceTo)}` : '+'}`
+                  ? `${formatPrice(project.priceFrom)}${project.priceTo ? ` to ${formatPrice(project.priceTo)}` : '+'}`
                   : 'Contact for pricing'}
               </div>
             </div>

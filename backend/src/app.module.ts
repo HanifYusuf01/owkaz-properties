@@ -9,6 +9,11 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { UploadModule } from './upload/upload.module';
 import { ProjectsModule } from './projects/projects.module';
 import { ContactModule } from './contact/contact.module';
+import { StatsModule } from './stats/stats.module';
+import { ContentModule } from './content/content.module';
+import { PartnersModule } from './partners/partners.module';
+import { LocationsModule } from './locations/locations.module';
+import { HeroSlidesModule } from './hero-slides/hero-slides.module';
 
 @Module({
   imports: [
@@ -36,6 +41,11 @@ import { ContactModule } from './contact/contact.module';
     UploadModule,
     ProjectsModule,
     ContactModule,
+    StatsModule,
+    ContentModule,
+    PartnersModule,
+    LocationsModule,
+    HeroSlidesModule,
   ],
 })
 export class AppModule {}

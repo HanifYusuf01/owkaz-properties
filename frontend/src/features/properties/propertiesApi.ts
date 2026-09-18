@@ -33,6 +33,14 @@ export const propertiesApi = baseApi.injectEndpoints({
       query: () => '/properties/featured',
       providesTags: ['Property'],
     }),
+    getPropertiesPriceRange: builder.query<{ min: number; max: number }, { sold?: boolean } | void>({
+      query: (args) => ({ url: '/properties/price-range', params: args?.sold ? { status: 'sold' } : undefined }),
+      providesTags: ['Property'],
+    }),
+    getPropertiesStateCounts: builder.query<{ state: string; count: number }[], void>({
+      query: () => '/properties/state-counts',
+      providesTags: ['Property'],
+    }),
     getPublicSoldProperties: builder.query<PaginatedResponse<Property>, PropertyFilters>({
       query: (params) => ({ url: '/properties/sold', params }),
       providesTags: ['Property'],
@@ -114,6 +122,8 @@ export const {
   useGetAdminPropertiesQuery,
   useGetSoldPropertiesQuery,
   useGetFeaturedPropertiesQuery,
+  useGetPropertiesPriceRangeQuery,
+  useGetPropertiesStateCountsQuery,
   useGetPublicSoldPropertiesQuery,
   useGetMyPropertiesQuery,
   useGetPropertyByIdQuery,

@@ -79,7 +79,7 @@ export const ProjectDetailPage = () => {
             <img
               key={activeImg}
               src={getImageUrl(images[activeImg])}
-              alt={`${project.name} — image ${activeImg + 1}`}
+              alt={`${project.name} image ${activeImg + 1}`}
               className="w-full h-full object-cover transition-opacity duration-200"
             />
           ) : (

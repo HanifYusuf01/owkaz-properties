@@ -1,6 +1,6 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { ValidationPipe } from '@nestjs/common';
+import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { join } from 'path';
@@ -23,6 +23,10 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  // Strips @Exclude() fields (e.g. User.passwordHash) from every response,
+  // including entities nested via eager relations (Property.submittedBy, etc.)
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
   app.enableCors({
     origin: [

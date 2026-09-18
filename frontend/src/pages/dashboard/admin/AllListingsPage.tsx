@@ -20,6 +20,7 @@ import { getImageUrl } from '../../../utils/imageUrl';
 import { Property, PropertyStatus, PropertyType } from '../../../types';
 import { NIGERIAN_STATES } from '../../../constants/nigerianStates';
 import { Pencil, Trash2Icon } from 'lucide-react';
+import { AddressSearchInput } from '../../../components/property/AddressSearchInput';
 
 const TABS = [
   { label: 'All', value: '' },
@@ -39,6 +40,8 @@ type EditForm = {
   state: string;
   lga: string;
   area: string;
+  latitude: number | null;
+  longitude: number | null;
   description: string;
   beds: string;
   baths: string;
@@ -56,6 +59,8 @@ function propertyToEdit(p: Property): EditForm {
     state: p.state,
     lga: p.lga,
     area: p.area,
+    latitude: p.latitude ?? null,
+    longitude: p.longitude ?? null,
     description: p.description,
     beds: p.beds != null ? String(p.beds) : '',
     baths: p.baths != null ? String(p.baths) : '',
@@ -158,6 +163,8 @@ export const AllListingsPage = () => {
           state: editForm.state,
           lga: editForm.lga,
           area: editForm.area,
+          ...(editForm.latitude != null ? { latitude: editForm.latitude } : {}),
+          ...(editForm.longitude != null ? { longitude: editForm.longitude } : {}),
           description: editForm.description,
           beds: editForm.beds ? Number(editForm.beds) : undefined,
           baths: editForm.baths ? Number(editForm.baths) : undefined,
@@ -348,6 +355,12 @@ export const AllListingsPage = () => {
               />
               <Input label="Area" value={editForm.area} onChange={(e) => setField('area', e.target.value)} />
             </div>
+
+            <AddressSearchInput
+              latitude={editForm.latitude}
+              longitude={editForm.longitude}
+              onSelect={({ lat, lng }) => setEditForm((prev) => (prev ? { ...prev, latitude: lat, longitude: lng } : prev))}
+            />
 
             <div className="grid grid-cols-3 gap-3">
               <Input label="Bedrooms" type="number" value={editForm.beds} onChange={(e) => setField('beds', e.target.value)} />

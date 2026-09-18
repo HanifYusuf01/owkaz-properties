@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as crypto from 'crypto';
+import * as bcrypt from 'bcrypt';
 import { User, UserRole, UserStatus } from './user.entity';
 import { UpdateUserDto, UpdateUserRoleDto, UpdateUserStatusDto } from './dto/update-user.dto';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../notifications/notification.entity';
+
+const BOT_EMAIL = 'assistant@owkaz.ng';
 
 @Injectable()
 export class UsersService {
@@ -13,6 +17,28 @@ export class UsersService {
     private usersRepo: Repository<User>,
     private notificationsService: NotificationsService,
   ) {}
+
+  /** All non-bot admin accounts — used to fan out admin-facing notifications/emails. */
+  async findAdmins(): Promise<User[]> {
+    return this.usersRepo.find({ where: { role: UserRole.ADMIN, isBot: false } });
+  }
+
+  /** The "Owkaz Assistant" system account used to post automated welcome/AI chat replies. */
+  async getOrCreateBotUser(): Promise<User> {
+    const existing = await this.usersRepo.findOne({ where: { isBot: true } });
+    if (existing) return existing;
+
+    const passwordHash = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 10);
+    const bot = this.usersRepo.create({
+      name: 'Owkaz Assistant',
+      email: BOT_EMAIL,
+      passwordHash,
+      role: UserRole.ADMIN,
+      status: UserStatus.ACTIVE,
+      isBot: true,
+    });
+    return this.usersRepo.save(bot);
+  }
 
   async create(data: {
     name: string;

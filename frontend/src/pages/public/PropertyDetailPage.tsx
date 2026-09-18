@@ -1,16 +1,23 @@
 import { lazy, Suspense, useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Bed, Bath, Maximize, MapPin, Eye, View, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Bed, Bath, Maximize, MapPin, Eye, View, X, ChevronLeft, ChevronRight, Play, Bookmark, BookmarkCheck } from 'lucide-react';
 
 const PanoramaViewer = lazy(() =>
   import('../../components/property/PanoramaViewer').then((m) => ({ default: m.PanoramaViewer }))
 );
-import { useGetPropertyByIdQuery } from '../../features/properties/propertiesApi';
+import {
+  useGetPropertyByIdQuery,
+  useGetSavedPropertyIdsQuery,
+  useSavePropertyMutation,
+  useUnsavePropertyMutation,
+} from '../../features/properties/propertiesApi';
 import { useCreateInquiryMutation } from '../../features/inquiries/inquiriesApi';
 import { useAppSelector } from '../../store';
 import { formatPrice, formatDate } from '../../utils/format';
 import { getImageUrl } from '../../utils/imageUrl';
 import { PropertyStatus } from '../../types';
+import { googleMapsSearchUrl, googleMapsEmbedUrl } from '../../utils/googleMapsLink';
+import { INQUIRY_SUGGESTIONS } from '../../constants/inquirySuggestions';
 
 export const PropertyDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -19,6 +26,10 @@ export const PropertyDetailPage = () => {
 
   const { data: property, isLoading } = useGetPropertyByIdQuery(id!, { skip: !id });
   const [createInquiry, { isLoading: isSending }] = useCreateInquiryMutation();
+  const [saveProperty] = useSavePropertyMutation();
+  const [unsaveProperty] = useUnsavePropertyMutation();
+  const { data: savedIds = [] } = useGetSavedPropertyIdsQuery(undefined, { skip: !user });
+  const isSaved = property ? savedIds.includes(property.id) : false;
 
   const [name, setName] = useState(user?.name ?? '');
   const [phone, setPhone] = useState('');
@@ -27,6 +38,7 @@ export const PropertyDetailPage = () => {
   const [sent, setSent] = useState(false);
   const [activeImg, setActiveImg] = useState(0);
   const [showPanorama, setShowPanorama] = useState(false);
+  const [showVideo, setShowVideo] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIdx, setLightboxIdx] = useState(0);
 
@@ -49,8 +61,16 @@ export const PropertyDetailPage = () => {
   const handleInquiry = async () => {
     if (!user) { navigate('/login'); return; }
     if (!property) return;
-    await createInquiry({ propertyId: property.id, message, preferredContact: 'email' });
+    const inquiry = await createInquiry({ propertyId: property.id, message, preferredContact: 'email' }).unwrap();
     setSent(true);
+    navigate('/my-inquiries', { state: { openInquiryId: inquiry.id } });
+  };
+
+  const handleSaveToggle = async () => {
+    if (!user) { navigate('/login'); return; }
+    if (!property) return;
+    if (isSaved) await unsaveProperty(property.id);
+    else await saveProperty(property.id);
   };
 
   if (isLoading) {
@@ -79,6 +99,10 @@ export const PropertyDetailPage = () => {
 
   const images = property.images?.length ? property.images : null;
   const isSold = property.status === PropertyStatus.SOLD;
+  const mapLocation =
+    property.latitude != null && property.longitude != null
+      ? { lat: property.latitude, lng: property.longitude }
+      : [property.area, property.lga, property.state];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -219,7 +243,20 @@ export const PropertyDetailPage = () => {
             </span>
           </div>
 
-          <h1 className="font-display text-2xl sm:text-3xl text-navy mb-3">{property.title}</h1>
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <h1 className="font-display text-2xl sm:text-3xl text-navy">{property.title}</h1>
+            <button
+              onClick={handleSaveToggle}
+              className={`flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2.5 rounded-lg border transition-colors flex-shrink-0 ${
+                isSaved
+                  ? 'bg-teal/10 border-teal/30 text-teal'
+                  : 'border-border text-muted hover:border-navy hover:text-navy'
+              }`}
+            >
+              {isSaved ? <BookmarkCheck size={15} /> : <Bookmark size={15} />}
+              {isSaved ? 'Saved' : 'Save'}
+            </button>
+          </div>
 
           <div className="flex items-center gap-1.5 text-sm text-muted mb-5">
             <MapPin size={15} />
@@ -301,6 +338,70 @@ export const PropertyDetailPage = () => {
               </div>
             </div>
           )}
+
+          {/* Property video */}
+          {property.videoUrl && (
+            <div className="mb-8">
+              {showVideo ? (
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="font-display text-xl text-navy flex items-center gap-2">
+                      <Play size={18} className="text-teal" /> Property Video
+                    </h2>
+                    <button onClick={() => setShowVideo(false)} className="text-xs text-muted hover:text-navy">
+                      Hide
+                    </button>
+                  </div>
+                  <video
+                    src={getImageUrl(property.videoUrl)}
+                    controls
+                    autoPlay
+                    className="w-full rounded-2xl border border-border bg-black max-h-80"
+                  />
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowVideo(true)}
+                  className="w-full flex items-center gap-3 p-4 bg-navy rounded-2xl hover:bg-navy-mid transition-colors"
+                >
+                  <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
+                    <Play size={16} className="text-white ml-0.5" />
+                  </div>
+                  <div className="text-left">
+                    <div className="text-white font-semibold text-sm">Watch Property Video</div>
+                    <div className="text-white/50 text-xs">See a walkthrough of this property</div>
+                  </div>
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Location */}
+          <div className="mb-8">
+            <h2 className="font-display text-xl text-navy mb-3">Location</h2>
+            <div className="rounded-2xl border border-border overflow-hidden">
+              <div className="flex items-center justify-between gap-3 p-4 bg-cream">
+                <div className="flex items-center gap-1.5 text-sm text-ink min-w-0">
+                  <MapPin size={15} className="text-teal flex-shrink-0" />
+                  <span className="truncate">{property.area}, {property.lga}, {property.state}</span>
+                </div>
+                <a
+                  href={googleMapsSearchUrl(mapLocation)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-navy text-white text-xs font-semibold hover:bg-navy-mid transition-colors flex-shrink-0"
+                >
+                  Open in Google Maps
+                </a>
+              </div>
+              <iframe
+                title="Property location"
+                src={googleMapsEmbedUrl(mapLocation)}
+                className="w-full h-64 border-0"
+                loading="lazy"
+              />
+            </div>
+          </div>
 
           {/* Property details table */}
           <div className="mb-8">
@@ -408,6 +509,18 @@ export const PropertyDetailPage = () => {
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-muted mb-1">Message</label>
+                    <div className="flex flex-wrap gap-1.5 mb-2">
+                      {INQUIRY_SUGGESTIONS.map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => setMessage(s)}
+                          className="px-2.5 py-1 rounded-full border border-border text-[11px] text-muted hover:border-teal hover:text-teal transition-colors"
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
                     <textarea
                       rows={3}
                       value={message}

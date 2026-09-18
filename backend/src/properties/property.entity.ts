@@ -53,6 +53,12 @@ export class Property {
   @Column()
   area: string;
 
+  @Column({ type: 'decimal', precision: 10, scale: 7, nullable: true })
+  latitude: number | null;
+
+  @Column({ type: 'decimal', precision: 10, scale: 7, nullable: true })
+  longitude: number | null;
+
   @Column({ nullable: true })
   beds: number;
 
@@ -76,6 +82,9 @@ export class Property {
 
   @Column({ type: 'varchar', nullable: true })
   panoramaUrl: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  videoUrl: string | null;
 
   @Column({ default: false })
   featured: boolean;

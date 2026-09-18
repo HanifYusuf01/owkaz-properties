@@ -3,11 +3,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate, Link } from 'react-router-dom';
-import { useRegisterMutation } from '../features/auth/authApi';
+import { useRegisterMutation, useGoogleLoginMutation } from '../features/auth/authApi';
 import { useAppDispatch } from '../store';
-import { setCredentials } from '../features/auth/authSlice';
+import { setCredentials, setUser } from '../features/auth/authSlice';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
+import { GoogleSignInButton } from '../components/auth/GoogleSignInButton';
 import { UserRole, AuthTokens } from '../types';
 
 const schema = z.object({
@@ -34,6 +35,8 @@ export const RegisterPage = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [register, { isLoading, error }] = useRegisterMutation();
+  const [googleLogin, { isLoading: isGoogleLoading }] = useGoogleLoginMutation();
+  const [googleError, setGoogleError] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<UserRole>(UserRole.BUYER);
   const [pendingApproval, setPendingApproval] = useState(false);
 
@@ -59,6 +62,22 @@ export const RegisterPage = () => {
       }
     } catch {
       // handled via RTK state
+    }
+  };
+
+  const handleGoogleCredential = async (idToken: string) => {
+    setGoogleError(null);
+    try {
+      const result = await googleLogin({ idToken }).unwrap();
+      dispatch(setCredentials({ accessToken: result.accessToken, refreshToken: result.refreshToken }));
+      dispatch(setUser(result.user));
+      navigate(result.user.role === UserRole.BUYER ? '/' : '/dashboard');
+    } catch (err) {
+      const message = err && typeof err === 'object' && 'data' in err
+        && typeof (err as { data?: unknown }).data === 'object' && (err as { data?: { message?: string } }).data?.message
+        ? (err as { data: { message: string } }).data.message
+        : 'Could not sign up with Google. Please try again.';
+      setGoogleError(message);
     }
   };
 
@@ -139,6 +158,25 @@ export const RegisterPage = () => {
               Create Account
             </Button>
           </form>
+
+          {Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID) && (
+            <>
+              <div className="flex items-center gap-3 my-6">
+                <div className="flex-1 h-px bg-border" />
+                <span className="text-xs text-muted uppercase tracking-wide">or</span>
+                <div className="flex-1 h-px bg-border" />
+              </div>
+
+              {googleError && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+                  {googleError}
+                </div>
+              )}
+              <div className={isGoogleLoading ? 'opacity-60 pointer-events-none' : ''}>
+                <GoogleSignInButton onCredential={handleGoogleCredential} />
+              </div>
+            </>
+          )}
 
           <p className="text-center text-sm text-muted mt-6">
             Already have an account?{' '}

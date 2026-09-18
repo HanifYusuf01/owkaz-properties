@@ -8,6 +8,7 @@ import {
 import { useAppDispatch, useAppSelector } from '../../store';
 import { logout } from '../../features/auth/authSlice';
 import { UserRole } from '../../types';
+import { Avatar } from '../ui/Avatar';
 
 const navLinks = [
   { label: 'Home', path: '/' },
@@ -52,14 +53,20 @@ export const PublicNavbar = () => {
     }
   }, [user?.role]);
 
-  // Lock body scroll when either drawer is open
+  // Lock body scroll when either drawer is open as a mobile overlay — the buyer sidebar
+  // is permanently docked (not an overlay) from the md breakpoint up, so it must never
+  // lock scrolling there, even though `sidebarOpen` itself stays true for buyers always.
   useEffect(() => {
-    if (sidebarOpen || publicNavOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
+    const updateScrollLock = () => {
+      const isMobileViewport = window.innerWidth < 768;
+      document.body.style.overflow = ((sidebarOpen && isMobileViewport) || publicNavOpen) ? 'hidden' : '';
+    };
+    updateScrollLock();
+    window.addEventListener('resize', updateScrollLock);
+    return () => {
+      window.removeEventListener('resize', updateScrollLock);
       document.body.style.overflow = '';
-    }
-    return () => { document.body.style.overflow = ''; };
+    };
   }, [sidebarOpen, publicNavOpen]);
 
   // Close staff dropdown on outside click
@@ -86,17 +93,17 @@ export const PublicNavbar = () => {
       {/* ── BUYER SIDEBAR ── */}
       {isBuyer && (
         <>
-          {/* Overlay */}
+          {/* Overlay (mobile only — the sidebar is permanently docked on desktop) */}
           {sidebarOpen && (
             <div
-              className="fixed inset-0 bg-navy/30 z-40"
+              className="md:hidden fixed inset-0 bg-navy/30 z-40"
               onClick={() => setSidebarOpen(false)}
             />
           )}
 
           {/* Sidebar panel */}
           <aside
-            className={`fixed left-0 top-0 h-screen w-64 bg-navy flex flex-col z-50 transition-transform duration-300 ${
+            className={`fixed left-0 top-0 h-screen w-64 bg-navy flex flex-col z-50 transition-transform duration-300 md:translate-x-0 ${
               sidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
             }`}
           >
@@ -111,7 +118,7 @@ export const PublicNavbar = () => {
 
               <button
                 onClick={() => setSidebarOpen(false)}
-                className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/20 transition-colors"
+                className="md:hidden w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/20 transition-colors"
               >
                 <X size={16} />
               </button>
@@ -172,9 +179,7 @@ export const PublicNavbar = () => {
 
             {/* Footer */}
             <div className="px-5 py-4 border-t border-white/10 flex items-center gap-3 flex-shrink-0">
-              <div className="w-9 h-9 rounded-full bg-teal flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-                {user?.name?.charAt(0).toUpperCase()}
-              </div>
+              <Avatar name={user?.name} avatarUrl={user?.avatarUrl} className="w-9 h-9 text-sm" />
               <div className="flex-1 min-w-0">
                 <div className="text-white text-xs font-semibold truncate">{user?.name}</div>
                 <div className="text-white/40 text-[10px] truncate">{user?.email}</div>
@@ -280,9 +285,7 @@ export const PublicNavbar = () => {
               </div>
             ) : (
               <div className="px-5 py-4 border-t border-white/10 flex items-center gap-3 flex-shrink-0">
-                <div className="w-9 h-9 rounded-full bg-teal flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-                  {user.name?.charAt(0).toUpperCase()}
-                </div>
+                <Avatar name={user.name} avatarUrl={user.avatarUrl} className="w-9 h-9 text-sm" />
                 <div className="flex-1 min-w-0">
                   <div className="text-white text-xs font-semibold truncate">{user.name}</div>
                   <div className="text-white/40 text-[10px] truncate capitalize">{user.role}</div>
@@ -309,7 +312,7 @@ export const PublicNavbar = () => {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => (isBuyer ? setSidebarOpen(true) : setPublicNavOpen(true))}
-                className={`${isBuyer ? '' : 'md:hidden'} w-9 h-9 flex flex-col items-center justify-center gap-1.5 rounded-lg bg-navy hover:bg-navy-mid transition-colors flex-shrink-0`}
+                className="md:hidden w-9 h-9 flex flex-col items-center justify-center gap-1.5 rounded-lg bg-navy hover:bg-navy-mid transition-colors flex-shrink-0"
                 aria-label="Open menu"
               >
                 <span className="w-4 h-0.5 bg-white rounded-full" />
@@ -317,7 +320,7 @@ export const PublicNavbar = () => {
                 <span className="w-4 h-0.5 bg-white rounded-full" />
               </button>
               <Link to="/" className="flex items-center gap-2.5 flex-shrink-0">
-             <img src='/OWKAZ LOGO.png' alt='owkaz' className="h-8"/>
+             <img src='/OWKAZ LOGO.png' alt='owkaz' className="h-11"/>
               </Link>
             </div>
 
@@ -357,9 +360,7 @@ export const PublicNavbar = () => {
                 /* Buyer: Hello chip + Sign Out */
                 <>
                   <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-teal/10 border border-teal/20">
-                    <div className="w-6 h-6 rounded-full bg-teal flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
-                      {user.name?.slice(0, 2).toUpperCase()}
-                    </div>
+                    <Avatar name={user.name} avatarUrl={user.avatarUrl} className="w-6 h-6 text-[10px]" initialsLength={2} />
                     <span className="text-xs font-semibold text-navy">
                       Hello, {user.name?.split(' ')[0]}
                     </span>
@@ -389,9 +390,7 @@ export const PublicNavbar = () => {
                       onClick={() => setDropdownOpen(!dropdownOpen)}
                       className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-navy/5 border border-border hover:bg-navy/10 transition-colors"
                     >
-                      <div className="w-7 h-7 rounded-full bg-teal flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                        {user?.name?.charAt(0).toUpperCase()}
-                      </div>
+                      <Avatar name={user?.name} avatarUrl={user?.avatarUrl} className="w-7 h-7 text-xs" />
                       <span className="text-sm font-semibold text-navy max-w-[90px] truncate hidden sm:block">
                         {user?.name?.split(' ')[0]}
                       </span>

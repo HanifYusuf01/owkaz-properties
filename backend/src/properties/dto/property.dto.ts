@@ -44,6 +44,18 @@ export class CreatePropertyDto {
   @IsOptional()
   @IsNumber()
   @Type(() => Number)
+  latitude?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  longitude?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
   beds?: number;
 
   @ApiPropertyOptional()
@@ -85,6 +97,11 @@ export class CreatePropertyDto {
   @IsOptional()
   @IsString()
   panoramaUrl?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  videoUrl?: string;
 }
 
 export class UpdatePropertyDto {
@@ -118,6 +135,18 @@ export class UpdatePropertyDto {
   @IsOptional()
   @IsString()
   area?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  latitude?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  longitude?: number;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -158,6 +187,11 @@ export class UpdatePropertyDto {
   @IsOptional()
   @IsString()
   panoramaUrl?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  videoUrl?: string;
 }
 
 export class RejectPropertyDto {

@@ -13,6 +13,8 @@
     "@hookform/resolvers": "^5.2.2",
     "@reduxjs/toolkit": "^2.11.2",
     "axios": "^1.14.0",
+    "d3-geo": "^3.1.1",
+    "geojson-rewind": "^0.3.1",
     "lucide-react": "^1.7.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
@@ -24,6 +26,8 @@
   "devDependencies": {
     "@eslint/js": "^9.39.4",
     "@tailwindcss/vite": "^4.2.2",
+    "@types/d3-geo": "^3.1.1",
+    "@types/google.maps": "^3.66.3",
     "@types/node": "^24.12.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",

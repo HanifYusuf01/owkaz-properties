@@ -11,6 +11,7 @@ import {
   useSavePropertyMutation,
   useUnsavePropertyMutation,
 } from '../../features/properties/propertiesApi';
+import { INQUIRY_SUGGESTIONS } from '../../constants/inquirySuggestions';
 
 interface PropertyDetailModalProps {
   property: Property;
@@ -35,8 +36,10 @@ export const PropertyDetailModal = ({ property, onClose }: PropertyDetailModalPr
 
   const handleInquiry = async () => {
     if (!user) { navigate('/login'); return; }
-    await createInquiry({ propertyId: property.id, message, preferredContact: 'email' });
+    const inquiry = await createInquiry({ propertyId: property.id, message, preferredContact: 'email' }).unwrap();
     setSent(true);
+    onClose();
+    navigate('/my-inquiries', { state: { openInquiryId: inquiry.id } });
   };
 
   const handleSaveToggle = async () => {
@@ -197,12 +200,26 @@ export const PropertyDetailModal = ({ property, onClose }: PropertyDetailModalPr
                 <p className="text-xs text-muted mt-0.5">We'll follow up within 24 hours.</p>
               </div>
             ) : (
-              <textarea
-                rows={3}
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                className="w-full border border-border rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-teal transition-colors resize-none"
-              />
+              <>
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {INQUIRY_SUGGESTIONS.map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setMessage(s)}
+                      className="px-2.5 py-1 rounded-full border border-border text-[10px] text-muted hover:border-teal hover:text-teal transition-colors"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+                <textarea
+                  rows={3}
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  className="w-full border border-border rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-teal transition-colors resize-none"
+                />
+              </>
             )}
           </div>
 

@@ -21,6 +21,7 @@ import { getImageUrl } from '../../../utils/imageUrl';
 import { Property, PropertyStatus, PropertyType } from '../../../types';
 import { NIGERIAN_STATES } from '../../../constants/nigerianStates';
 import { useAppSelector } from '../../../store';
+import { AddressSearchInput } from '../../../components/property/AddressSearchInput';
 
 const AMENITIES = ['Pool', 'BQ', 'Generator', 'CCTV', 'Gym', 'Elevator', 'Concierge', 'Smart Home', 'Security', 'Parking'];
 
@@ -31,6 +32,8 @@ type ReviewForm = {
   state: string;
   lga: string;
   area: string;
+  latitude: number | null;
+  longitude: number | null;
   description: string;
   beds: string;
   baths: string;
@@ -47,6 +50,8 @@ function propertyToForm(p: Property): ReviewForm {
     state: p.state,
     lga: p.lga,
     area: p.area,
+    latitude: p.latitude ?? null,
+    longitude: p.longitude ?? null,
     description: p.description,
     beds: p.beds != null ? String(p.beds) : '',
     baths: p.baths != null ? String(p.baths) : '',
@@ -74,7 +79,7 @@ const PropertyNotesSection = ({ propertyId }: { propertyId: string }) => {
   return (
     <div className="mt-4 border border-border rounded-xl overflow-hidden">
       <div className="bg-navy/5 px-4 py-2.5 border-b border-border">
-        <h4 className="text-xs font-bold uppercase tracking-wide text-navy">Agent–Admin Notes</h4>
+        <h4 className="text-xs font-bold uppercase tracking-wide text-navy">Agent-Admin Notes</h4>
       </div>
       <div className="max-h-48 overflow-y-auto p-3 space-y-2 bg-white">
         {isLoading && <p className="text-xs text-muted text-center py-3">Loading notes...</p>}
@@ -178,6 +183,8 @@ export const ApprovalQueuePage = () => {
           state: reviewForm.state,
           lga: reviewForm.lga,
           area: reviewForm.area,
+          ...(reviewForm.latitude != null ? { latitude: reviewForm.latitude } : {}),
+          ...(reviewForm.longitude != null ? { longitude: reviewForm.longitude } : {}),
           description: reviewForm.description,
           beds: reviewForm.beds ? Number(reviewForm.beds) : undefined,
           baths: reviewForm.baths ? Number(reviewForm.baths) : undefined,
@@ -339,7 +346,7 @@ export const ApprovalQueuePage = () => {
                 </div>
               </div>
 
-              <p className="text-xs text-muted font-semibold uppercase tracking-wide">— You may edit fields below before approving —</p>
+              <p className="text-xs text-muted font-semibold uppercase tracking-wide">You may edit fields below before approving</p>
 
               {/* Editable type */}
               <div>
@@ -381,6 +388,12 @@ export const ApprovalQueuePage = () => {
                 />
                 <Input label="Area" value={reviewForm.area} onChange={(e) => setForm('area', e.target.value)} />
               </div>
+
+              <AddressSearchInput
+                latitude={reviewForm.latitude}
+                longitude={reviewForm.longitude}
+                onSelect={({ lat, lng }) => setReviewForm((prev) => (prev ? { ...prev, latitude: lat, longitude: lng } : prev))}
+              />
 
               <div className="grid grid-cols-3 gap-3 sm:gap-4">
                 <Input label="Bedrooms" type="number" value={reviewForm.beds} onChange={(e) => setForm('beds', e.target.value)} />

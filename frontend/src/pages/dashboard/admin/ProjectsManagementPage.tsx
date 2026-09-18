@@ -473,7 +473,7 @@ export const ProjectsManagementPage = () => {
               >
                 <div className="text-3xl mb-1">📷</div>
                 <p className="text-sm text-muted font-medium">Click to upload images (max 20)</p>
-                <p className="text-xs text-muted mt-0.5">JPG, PNG, WEBP — max 10 MB each</p>
+                <p className="text-xs text-muted mt-0.5">JPG, PNG, WEBP (max 10 MB each)</p>
               </div>
               <input
                 ref={fileInputRef}
@@ -547,7 +547,7 @@ export const ProjectsManagementPage = () => {
                 >
                   <div className="text-2xl mb-1">🎬</div>
                   <p className="text-sm text-muted font-medium">Click to upload a status video</p>
-                  <p className="text-xs text-muted mt-0.5">MP4, WebM, MOV — max 200 MB</p>
+                  <p className="text-xs text-muted mt-0.5">MP4, WebM, MOV (max 200 MB)</p>
                 </div>
               )}
               <input
@@ -622,7 +622,7 @@ export const ProjectsManagementPage = () => {
                 <p className="text-[10px] font-bold uppercase tracking-widest text-muted mb-0.5">Price Range</p>
                 <p className="font-semibold text-navy">
                   {form.priceFrom ? formatPrice(Number(form.priceFrom)) : '—'}
-                  {form.priceTo ? ` – ${formatPrice(Number(form.priceTo))}` : ''}
+                  {form.priceTo ? ` to ${formatPrice(Number(form.priceTo))}` : ''}
                 </p>
               </div>
               <div>

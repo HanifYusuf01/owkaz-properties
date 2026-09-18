@@ -1,7 +1,14 @@
 import { useState } from 'react';
-import { useGetPropertiesQuery } from '../../../features/properties/propertiesApi';
+import {
+  useGetPropertiesQuery,
+  useGetPropertiesPriceRangeQuery,
+  useGetSavedPropertyIdsQuery,
+  useSavePropertyMutation,
+  useUnsavePropertyMutation,
+} from '../../../features/properties/propertiesApi';
 import { PropertyCard } from '../../../components/property/PropertyCard';
 import { PropertyDetailModal } from '../../../components/property/PropertyDetailModal';
+import { PriceRangeDropdown } from '../../../components/property/PriceRangeDropdown';
 import { Input } from '../../../components/ui/Input';
 import { Select } from '../../../components/ui/Select';
 import { Button } from '../../../components/ui/Button';
@@ -10,13 +17,23 @@ import { Property, PropertyType } from '../../../types';
 export const BrowsePage = () => {
   const [search, setSearch] = useState('');
   const [type, setType] = useState('');
+  const [priceMin, setPriceMin] = useState('');
   const [priceMax, setPriceMax] = useState('');
   const [page, setPage] = useState(1);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
 
+  const { data: priceBounds } = useGetPropertiesPriceRangeQuery();
+  const { data: savedIds = [] } = useGetSavedPropertyIdsQuery();
+  const [saveProperty] = useSavePropertyMutation();
+  const [unsaveProperty] = useUnsavePropertyMutation();
+  const handleToggleSave = (property: Property) => {
+    if (savedIds.includes(property.id)) unsaveProperty(property.id);
+    else saveProperty(property.id);
+  };
   const { data, isLoading } = useGetPropertiesQuery({
     search: search || undefined,
     type: type as PropertyType || undefined,
+    priceMin: priceMin ? Number(priceMin) : undefined,
     priceMax: priceMax ? Number(priceMax) : undefined,
     page,
     limit: 12,
@@ -27,37 +44,44 @@ export const BrowsePage = () => {
   return (
     <div className="space-y-5">
       {/* Filters */}
-      <div className="bg-white border border-border rounded-xl p-4 flex gap-3 flex-wrap items-end">
-        <div className="flex-1 min-w-[180px]">
-          <Input
-            placeholder="🔍 Search by name or area..."
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          />
+      <div className="bg-white border border-border rounded-xl p-4 space-y-4">
+        <div className="flex gap-3 flex-wrap items-end">
+          <div className="flex-1 min-w-[180px]">
+            <Input
+              placeholder="🔍 Search by name or area..."
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            />
+          </div>
+          <div className="w-40">
+            <Select
+              placeholder="All Types"
+              options={Object.values(PropertyType).map((t) => ({ value: t, label: t }))}
+              value={type}
+              onChange={(e) => { setType(e.target.value); setPage(1); }}
+            />
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => { setSearch(''); setType(''); setPriceMin(''); setPriceMax(''); setPage(1); }}
+          >
+            Clear
+          </Button>
         </div>
-        <div className="w-40">
-          <Select
-            placeholder="All Types"
-            options={Object.values(PropertyType).map((t) => ({ value: t, label: t }))}
-            value={type}
-            onChange={(e) => { setType(e.target.value); setPage(1); }}
-          />
-        </div>
-        <div className="w-40">
-          <Select
-            placeholder="Any Price"
-            options={[
-              { value: '50000000', label: 'Under ₦50M' },
-              { value: '100000000', label: 'Under ₦100M' },
-              { value: '200000000', label: 'Under ₦200M' },
-            ]}
-            value={priceMax}
-            onChange={(e) => { setPriceMax(e.target.value); setPage(1); }}
-          />
-        </div>
-        <Button variant="ghost" size="sm" onClick={() => { setSearch(''); setType(''); setPriceMax(''); setPage(1); }}>
-          Clear
-        </Button>
+
+        {priceBounds && priceBounds.max > priceBounds.min && (
+          <div className="max-w-sm">
+            <PriceRangeDropdown
+              min={priceBounds.min}
+              max={priceBounds.max}
+              valueMin={priceMin}
+              valueMax={priceMax}
+              onChangeMin={(v) => { setPriceMin(v); setPage(1); }}
+              onChangeMax={(v) => { setPriceMax(v); setPage(1); }}
+            />
+          </div>
+        )}
       </div>
 
       <div className="text-xs text-muted">{data?.total ?? 0} listing{(data?.total ?? 0) !== 1 ? 's' : ''} found</div>
@@ -72,6 +96,8 @@ export const BrowsePage = () => {
                 key={p.id}
                 property={p}
                 onCardClick={setSelectedProperty}
+                isSaved={savedIds.includes(p.id)}
+                onToggleSave={handleToggleSave}
               />
             ))}
           </div>

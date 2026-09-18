@@ -14,6 +14,7 @@ export enum NotificationType {
   PROPERTY_SOLD = 'property_sold',
   INQUIRY_RECEIVED = 'inquiry_received',
   INQUIRY_ASSIGNED = 'inquiry_assigned',
+  INQUIRY_MESSAGE = 'inquiry_message',
   ROLE_REQUEST = 'role_request',
 }
 

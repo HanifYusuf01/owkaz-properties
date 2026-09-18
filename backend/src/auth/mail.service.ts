@@ -60,7 +60,7 @@ export class MailService {
     await this.transporter.sendMail({
       from: `"Owkaz Properties" <${from}>`,
       to: dto.email,
-      subject: 'We received your message — Owkaz',
+      subject: 'Owkaz: We received your message',
       html: `
         <div style="font-family:sans-serif;max-width:480px;margin:0 auto;">
           <h2 style="color:#0B2540;">Hi ${dto.firstName},</h2>
@@ -77,6 +77,81 @@ export class MailService {
     });
 
     this.logger.log(`Contact form submission from ${dto.email}`);
+  }
+
+  async sendInquiryConfirmationToBuyer(dto: {
+    to: string;
+    buyerName: string;
+    propertyTitle: string;
+    message: string;
+  }): Promise<void> {
+    const from = this.configService.get('MAIL_FROM', 'noreply@owkaz.com');
+    const frontendUrl = this.configService.get('FRONTEND_URL', 'http://localhost:5173');
+
+    await this.transporter.sendMail({
+      from: `"Owkaz Properties" <${from}>`,
+      to: dto.to,
+      subject: `Owkaz: We received your enquiry about "${dto.propertyTitle}"`,
+      html: `
+        <div style="font-family:sans-serif;max-width:480px;margin:0 auto;">
+          <h2 style="color:#0B2540;">Hi ${dto.buyerName},</h2>
+          <p style="color:#6B7280;font-size:14px;line-height:1.7;">Thanks for your interest in <strong>${dto.propertyTitle}</strong>. We've received your enquiry and an Owkaz representative will follow up shortly.</p>
+          <div style="background:#F7F3ED;border-radius:8px;padding:16px;margin:20px 0;">
+            <p style="font-size:12px;color:#6B7280;margin:0 0 6px;font-weight:600;text-transform:uppercase;">Your message</p>
+            <p style="font-size:13px;color:#111827;line-height:1.6;margin:0;">${dto.message.replace(/\n/g, '<br>')}</p>
+          </div>
+          <a href="${frontendUrl}/my-inquiries"
+             style="display:inline-block;margin:8px 0 24px;padding:12px 28px;background:#2A9D8F;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">
+            View Conversation
+          </a>
+          <hr style="border:none;border-top:1px solid #eee;margin:24px 0;" />
+          <p style="color:#9CA3AF;font-size:12px;">Owkaz Properties &mdash; Nigeria's premier real estate marketplace</p>
+        </div>
+      `,
+    });
+
+    this.logger.log(`Inquiry confirmation email sent to buyer ${dto.to}`);
+  }
+
+  async sendNewInquiryAlertToAdmin(dto: {
+    to: string;
+    buyerName: string;
+    buyerEmail: string;
+    propertyTitle: string;
+    message: string;
+    inquiryId: string;
+  }): Promise<void> {
+    const from = this.configService.get('MAIL_FROM', 'noreply@owkaz.com');
+    const frontendUrl = this.configService.get('FRONTEND_URL', 'http://localhost:5173');
+
+    await this.transporter.sendMail({
+      from: `"Owkaz Properties" <${from}>`,
+      to: dto.to,
+      replyTo: dto.buyerEmail,
+      subject: `New enquiry: "${dto.propertyTitle}"`,
+      html: `
+        <div style="font-family:sans-serif;max-width:560px;margin:0 auto;">
+          <h2 style="color:#0B2540;border-bottom:2px solid #C8882A;padding-bottom:12px;">New Property Enquiry</h2>
+          <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
+            <tr><td style="padding:8px 0;color:#6B7280;font-size:13px;width:120px;">Property</td><td style="padding:8px 0;font-size:13px;font-weight:600;color:#111827;">${dto.propertyTitle}</td></tr>
+            <tr><td style="padding:8px 0;color:#6B7280;font-size:13px;">Buyer</td><td style="padding:8px 0;font-size:13px;font-weight:600;color:#111827;">${dto.buyerName}</td></tr>
+            <tr><td style="padding:8px 0;color:#6B7280;font-size:13px;">Email</td><td style="padding:8px 0;font-size:13px;"><a href="mailto:${dto.buyerEmail}" style="color:#0E7C6E;">${dto.buyerEmail}</a></td></tr>
+          </table>
+          <div style="background:#F7F3ED;border-radius:8px;padding:20px;margin-bottom:24px;">
+            <p style="font-size:13px;color:#6B7280;margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Message</p>
+            <p style="font-size:14px;color:#111827;line-height:1.7;margin:0;">${dto.message.replace(/\n/g, '<br>')}</p>
+          </div>
+          <a href="${frontendUrl}/dashboard/inquiries"
+             style="display:inline-block;margin-bottom:24px;padding:12px 28px;background:#2A9D8F;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">
+            Open in Dashboard
+          </a>
+          <hr style="border:none;border-top:1px solid #eee;margin:20px 0;" />
+          <p style="font-size:12px;color:#9CA3AF;">Owkaz Properties &mdash; Nigeria's premier real estate marketplace</p>
+        </div>
+      `,
+    });
+
+    this.logger.log(`New inquiry (${dto.inquiryId}) alert emailed to admin ${dto.to}`);
   }
 
   async sendPasswordReset(to: string, token: string): Promise<void> {

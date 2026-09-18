@@ -34,3 +34,10 @@ export class AssignInquiryDto {
   @IsUUID()
   assignedToId: string;
 }
+
+export class SendInquiryMessageDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  message: string;
+}

@@ -1,11 +1,12 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import {
   LayoutDashboard, Home, CheckSquare, MessageSquare, Users, PlusCircle,
-  Bell, User, Star, Search, Bookmark, LogOut, DollarSign, X, Building2,
+  Bell, User, Star, Search, Bookmark, LogOut, DollarSign, X, Building2, Globe, ArrowLeftCircle,
 } from 'lucide-react';
 import { UserRole } from '../../types';
 import { useAppDispatch, useAppSelector } from '../../store';
 import { logout } from '../../features/auth/authSlice';
+import { Avatar } from '../ui/Avatar';
 
 interface NavItem {
   label: string;
@@ -59,6 +60,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         title: 'Publishing',
         items: [
           { label: 'Create Listing', path: '/dashboard/create-listing', icon: <PlusCircle size={16} /> },
+          { label: 'Site Content', path: '/dashboard/site-content', icon: <Globe size={16} /> },
         ],
       },
     ],
@@ -140,7 +142,9 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       {/* Brand */}
       <div className="px-6 py-7 border-b border-white/10 flex items-start justify-between">
         <div>
-         <img src="/OWKAZ LOGO.png" alt="Owkaz" className="h-8" />
+          <Link to="/">
+            <img src="/OWKAZ LOGO.png" alt="Owkaz" className="h-8" />
+          </Link>
           <span className={`mt-2 inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${roleColors[role]}`}>
             {role}
           </span>
@@ -188,10 +192,14 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       </nav>
 
       {/* Footer */}
+      <Link
+        to="/"
+        className="px-6 py-3 border-t border-white/10 flex items-center gap-2.5 text-white/50 hover:text-white transition-colors text-xs font-semibold"
+      >
+        <ArrowLeftCircle size={16} /> Back to Website
+      </Link>
       <div className="px-6 py-4 border-t border-white/10 flex items-center gap-3">
-        <div className="w-9 h-9 rounded-full bg-teal flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-          {user?.name?.charAt(0) ?? '?'}
-        </div>
+        <Avatar name={user?.name} avatarUrl={user?.avatarUrl} className="w-9 h-9 text-sm" />
         <div className="flex-1 min-w-0">
           <div className="text-white text-xs font-semibold truncate">{user?.name}</div>
           <div className="text-white/40 text-[10px] truncate">{user?.email}</div>
