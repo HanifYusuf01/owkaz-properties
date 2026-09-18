@@ -10,6 +10,7 @@ import { UserRole } from '../types';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { GoogleSignInButton } from '../components/auth/GoogleSignInButton';
+import { useGetPublicStatsQuery } from '../features/stats/statsApi';
 
 const schema = z.object({
   email: z.string().email('Invalid email'),
@@ -24,6 +25,7 @@ export const LoginPage = () => {
   const [login, { isLoading, error }] = useLoginMutation();
   const [googleLogin, { isLoading: isGoogleLoading }] = useGoogleLoginMutation();
   const [googleError, setGoogleError] = useState<string | null>(null);
+  const { data: publicStats } = useGetPublicStatsQuery();
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -71,15 +73,15 @@ export const LoginPage = () => {
           </p>
           <div className="mt-12 flex gap-10 pt-10 border-t border-white/10">
             <div>
-              <div className="font-display text-3xl text-white">400+</div>
+              <div className="font-display text-3xl text-white">{(publicStats?.activeListings ?? 0).toLocaleString()}</div>
               <div className="text-[10px] uppercase tracking-widest text-teal-light mt-1">Listings</div>
             </div>
             <div>
-              <div className="font-display text-3xl text-white">100%</div>
-              <div className="text-[10px] uppercase tracking-widest text-teal-light mt-1">Verified</div>
+              <div className="font-display text-3xl text-white">{(publicStats?.verifiedAgents ?? 0).toLocaleString()}</div>
+              <div className="text-[10px] uppercase tracking-widest text-teal-light mt-1">Verified Agents</div>
             </div>
             <div>
-              <div className="font-display text-3xl text-white">2,400+</div>
+              <div className="font-display text-3xl text-white">{(publicStats?.happyClients ?? 0).toLocaleString()}</div>
               <div className="text-[10px] uppercase tracking-widest text-teal-light mt-1">Clients</div>
             </div>
           </div>
