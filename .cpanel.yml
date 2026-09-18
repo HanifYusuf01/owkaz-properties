@@ -2,8 +2,8 @@
 deployment:
   tasks:
     - export DEPLOYPATH=/home/neonwave/api-owkaz-git
-    - cd /home/neonwave/api-owkaz-git/backend && /home/neonwave/nodevenv/api-owkaz-git/backend/22/bin/npm install
+    - cd /home/neonwave/api-owkaz-git/backend && /home/neonwave/nodevenv/api-owkaz-git/backend/22/bin/npm ci
     - cd /home/neonwave/api-owkaz-git/backend && GOMAXPROCS=1 /home/neonwave/nodevenv/api-owkaz-git/backend/22/bin/npm run build
-    - cd /home/neonwave/api-owkaz-git/frontend && PATH="/opt/alt/alt-nodejs22/root/usr/bin:$PATH" /opt/alt/alt-nodejs22/root/usr/bin/npm install
+    - cd /home/neonwave/api-owkaz-git/frontend && PATH="/opt/alt/alt-nodejs22/root/usr/bin:$PATH" /opt/alt/alt-nodejs22/root/usr/bin/npm ci
     - cd /home/neonwave/api-owkaz-git/frontend && PATH="/opt/alt/alt-nodejs22/root/usr/bin:$PATH" GOMAXPROCS=1 /opt/alt/alt-nodejs22/root/usr/bin/npm run build
     - /bin/cp -rf /home/neonwave/api-owkaz-git/frontend/dist/. /home/neonwave/owkaz.properties.neonwave.com.ng/
