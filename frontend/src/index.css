@@ -33,6 +33,17 @@ body {
   font-family: var(--font-display);
 }
 
+/* iOS Safari auto-zooms the whole page when a focused input's font-size is
+   under 16px, and doesn't reliably zoom back out — forcing every form field
+   to at least 16px on small screens prevents that "stuck zoomed in" feel. */
+@media (max-width: 767px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
 /* Google Translate widget: keep only our own floating control visible */
 iframe.skiptranslate,
 .goog-te-banner-frame,

@@ -153,9 +153,12 @@ export const HomePage = () => {
     navigate(`/properties?${params.toString()}`);
   };
 
-  // Reveal a compact search header once the hero's own search card scrolls out of view
+  // Reveal a compact search header once the hero's own search card scrolls out of view.
+  // The sticky header (and its dropdown) is desktop-only (`hidden md:flex`), so this must
+  // stay false on mobile — otherwise a keyboard-triggered auto-scroll past 480px flips it
+  // true, hiding the hero's own live-results dropdown with no sticky one to replace it.
   useEffect(() => {
-    const onScroll = () => setStickyVisible(window.scrollY > 480);
+    const onScroll = () => setStickyVisible(window.scrollY > 480 && window.innerWidth >= 768);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
