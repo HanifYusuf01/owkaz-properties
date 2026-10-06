@@ -3,6 +3,21 @@ import { useSendContactMessageMutation } from '../../features/contact/contactApi
 import { useGetContentQuery } from '../../features/content/contentApi';
 import { PAGE_CONTENT } from '../../features/content/pageContentConfig';
 import { Locate, Phone, Mail, MessageCircleWarning } from 'lucide-react';
+import { googleMapsEmbedUrl, googleMapsSearchUrl } from '../../utils/googleMapsLink';
+
+const OFFICES = [
+  {
+    name: 'Abuja Head Office',
+    address: 'Plot 12B, Lobito Crescent, Wuse II, Abuja FCT',
+    query: ['Plot 12B, Lobito Crescent', 'Wuse II', 'Abuja'],
+  },
+  {
+    name: 'Lagos Branch',
+    address: '14 Idowu Martins Street, Victoria Island, Lagos State',
+    query: ['14 Idowu Martins Street', 'Victoria Island', 'Lagos'],
+  },
+];
+
 const SUBJECTS = [
   'General Enquiry',
   'Property Search Help',
@@ -39,6 +54,8 @@ const CONTACT_INFO = [
 ];
 
 export const ContactPage = () => {
+  const [activeOffice, setActiveOffice] = useState(0);
+  const office = OFFICES[activeOffice];
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -227,21 +244,46 @@ export const ContactPage = () => {
         </div>
       </div>
 
-      {/* Map placeholder */}
+      {/* Office map */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-14">
-        <div className="h-56 bg-gradient-to-br from-navy to-teal rounded-2xl flex flex-col items-center justify-center gap-2 relative overflow-hidden">
-          <div
-            className="absolute inset-0 opacity-[0.06]"
-            style={{
-              backgroundImage: 'linear-gradient(rgba(255,255,255,.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.5) 1px,transparent 1px)',
-              backgroundSize: '36px 36px',
-            }}
-          />
-          <div className="relative text-5xl">🗺️</div>
-          <div className="relative text-white/60 text-sm font-medium">
-            Abuja Head Office · Victoria Island, Lagos Branch
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div className="flex gap-2">
+            {OFFICES.map((o, i) => (
+              <button
+                key={o.name}
+                type="button"
+                onClick={() => setActiveOffice(i)}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold border transition-colors ${
+                  i === activeOffice
+                    ? 'bg-navy text-white border-navy'
+                    : 'bg-white text-navy border-border hover:border-navy'
+                }`}
+              >
+                {o.name}
+              </button>
+            ))}
           </div>
+          <a
+            href={googleMapsSearchUrl(office.query)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm font-semibold text-teal hover:underline"
+          >
+            Open in Google Maps ↗
+          </a>
         </div>
+        <div className="rounded-2xl overflow-hidden border border-border bg-cream">
+          <iframe
+            key={office.name}
+            title={`${office.name} map`}
+            src={googleMapsEmbedUrl(office.query)}
+            className="w-full h-72 sm:h-96 block"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            allowFullScreen
+          />
+        </div>
+        <p className="mt-3 text-sm text-muted">{office.address}</p>
       </div>
     </div>
   );
