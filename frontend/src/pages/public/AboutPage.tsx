@@ -5,6 +5,7 @@ import { PAGE_CONTENT } from '../../features/content/pageContentConfig';
 import { getImageUrl } from '../../utils/imageUrl';
 import { MultilineText } from '../../components/ui/MultilineText';
 import { Avatar } from '../../components/ui/Avatar';
+import { delay } from '../../utils/motion';
 
 const VALUES = [
   { icon: Search, title: 'Transparency', desc: 'Every listing is verified. Every agent is screened. No hidden fees, no misleading information, ever.' },
@@ -42,11 +43,11 @@ export const AboutPage = () => {
     <div>
       <div className="bg-navy py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-teal-light">Our Story</span>
-          <h1 className="font-display text-4xl sm:text-7xl text-white mt-3 leading-tight">
+          <span className="hero-in inline-block text-[10px] font-bold uppercase tracking-widest text-teal-light" style={delay(0)}>Our Story</span>
+          <h1 className="hero-in font-display text-4xl sm:text-6xl text-white mt-3 leading-[1.08]" style={delay(120)}>
             {content.heroLine1} <em className="text-gold not-italic">{content.heroHighlight}</em><br />{content.heroLine2}
           </h1>
-          <p className="text-white/60 text-base sm:text-lg mt-4 max-w-xl leading-relaxed">
+          <p className="hero-in text-white/70 text-base sm:text-lg mt-4 max-w-xl leading-relaxed" style={delay(240)}>
             {content.heroSubtitle}
           </p>
         </div>
@@ -55,7 +56,7 @@ export const AboutPage = () => {
       <section className="py-16 sm:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-14 items-center">
-            <div>
+            <div data-reveal className="reveal">
               <span className="text-[10px] font-bold uppercase tracking-widest text-teal">Our Mission</span>
               <h2 className="font-display text-3xl sm:text-4xl text-navy mt-3 leading-tight">
                 <MultilineText text={content.missionTitle} />
@@ -82,7 +83,7 @@ export const AboutPage = () => {
               </div>
             </div>
 
-            <div className="relative rounded-3xl overflow-hidden min-h-[320px]">
+            <div data-reveal style={delay(150)} className="reveal relative rounded-3xl overflow-hidden min-h-[320px]">
               <img
                 src={content.missionImage.startsWith('/uploads/') ? getImageUrl(content.missionImage) : content.missionImage}
                 alt="Owkaz Properties"
@@ -94,13 +95,18 @@ export const AboutPage = () => {
           </div>
 
           <div className="mt-20">
-            <div className="text-center mb-10">
+            <div data-reveal className="reveal text-center mb-10">
               <span className="text-[10px] font-bold uppercase tracking-widest text-teal">What Drives Us</span>
               <h2 className="font-display text-3xl sm:text-4xl text-navy mt-3">Our Core Values</h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {VALUES.map((v) => (
-                <div key={v.title} className="bg-white border border-border rounded-2xl p-6 hover:shadow-md transition-shadow">
+              {VALUES.map((v, i) => (
+                <div
+                  key={v.title}
+                  data-reveal
+                  style={delay(i * 80)}
+                  className="reveal bg-white border border-border rounded-2xl p-6 hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
+                >
                   <div className="text-teal mb-3"><v.icon size={30} strokeWidth={1.75} /></div>
                   <div className="font-semibold text-navy mb-1.5">{v.title}</div>
                   <div className="text-sm text-muted leading-relaxed">{v.desc}</div>
@@ -113,21 +119,26 @@ export const AboutPage = () => {
 
       <section className="py-16 sm:py-20 bg-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
+          <div data-reveal className="reveal text-center mb-10">
             <span className="text-[10px] font-bold uppercase tracking-widest text-teal">Client Stories</span>
             <h2 className="font-display text-3xl sm:text-4xl text-navy mt-3">
               Trusted by Clients<br />Across Nigeria
             </h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {TESTIMONIALS.map((t) => (
-              <div key={t.name} className="bg-white border border-border rounded-2xl p-6">
+            {TESTIMONIALS.map((t, i) => (
+              <div
+                key={t.name}
+                data-reveal
+                style={delay(i * 110)}
+                className="reveal bg-white border border-border rounded-2xl p-6 hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
+              >
                 <div className="flex gap-0.5 text-gold mb-3">
                   {[0, 1, 2, 3, 4].map((i) => (
                     <Star key={i} size={18} className="fill-current" />
                   ))}
                 </div>
-                <p className="text-sm text-muted leading-relaxed mb-5 italic">{t.text}</p>
+                <p className="text-sm text-muted leading-relaxed mb-5">{t.text}</p>
                 <div className="flex items-center gap-3">
                   <Avatar name={t.name} className="w-10 h-10 text-base" />
                   <div>
@@ -143,7 +154,7 @@ export const AboutPage = () => {
 
       <section className="py-10 sm:py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-navy rounded-3xl px-8 py-12 sm:px-14 sm:py-16 relative overflow-hidden text-center">
+          <div data-reveal className="reveal bg-navy rounded-3xl px-8 py-12 sm:px-14 sm:py-16 relative overflow-hidden text-center">
             <div
               className="absolute inset-0 opacity-[0.04]"
               style={{
@@ -159,7 +170,7 @@ export const AboutPage = () => {
               <div className="flex flex-wrap gap-3 justify-center">
                 <button
                   onClick={() => navigate('/properties')}
-                  className="px-6 py-3 rounded-xl bg-teal text-white font-semibold text-sm hover:bg-teal-light transition-colors"
+                  className="px-6 py-3 rounded-xl bg-teal text-white font-semibold text-sm hover:bg-teal-light hover:-translate-y-0.5 active:translate-y-0 transition-all"
                 >
                   Find a Property
                 </button>

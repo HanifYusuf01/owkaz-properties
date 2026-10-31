@@ -9,6 +9,7 @@ import { useGetContentQuery } from '../../features/content/contentApi';
 import { PAGE_CONTENT } from '../../features/content/pageContentConfig';
 import { useAppSelector } from '../../store';
 import { UserRole } from '../../types';
+import { useScrollReveal } from '../../hooks/useScrollReveal';
 
 const SOCIAL_PLATFORMS = [
   { key: 'facebookUrl', label: 'Facebook' },
@@ -18,6 +19,7 @@ const SOCIAL_PLATFORMS = [
 ] as const;
 
 export const PublicLayout = () => {
+  useScrollReveal();
   const { data: footerContent } = useGetContentQuery('footer');
   const social = { ...PAGE_CONTENT.footer.defaults, ...footerContent };
   const whatsappUrl = social.whatsappNumber ? `https://wa.me/${social.whatsappNumber.replace(/\D/g, '')}` : '';

@@ -4,6 +4,7 @@ import { Property } from '../../types';
 import { formatPrice } from '../../utils/format';
 import { getImageUrl } from '../../utils/imageUrl';
 import { Badge } from '../ui/Badge';
+import { delay } from '../../utils/motion';
 
 interface PropertyCardProps {
   property: Property;
@@ -12,19 +13,21 @@ interface PropertyCardProps {
   onCardClick?: (property: Property) => void;
   isSaved?: boolean;
   onToggleSave?: (property: Property) => void;
+  revealDelay?: number;
 }
 
-export const PropertyCard = ({ property, showStatus = false, actions, onCardClick, isSaved, onToggleSave }: PropertyCardProps) => {
+export const PropertyCard = ({ property, showStatus = false, actions, onCardClick, isSaved, onToggleSave, revealDelay }: PropertyCardProps) => {
   const navigate = useNavigate();
 
   return (
     <div
-      className="bg-white border border-border rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all duration-200"
+      {...(revealDelay !== undefined ? { 'data-reveal': true, style: delay(revealDelay) } : {})}
+      className={`group bg-white border border-border rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all duration-200 ${revealDelay !== undefined ? 'reveal' : ''}`}
       onClick={() => onCardClick ? onCardClick(property) : navigate(`/properties/${property.id}`)}
     >
       <div className="relative h-48 bg-gray-100 overflow-hidden flex items-center justify-center">
         {property.images?.[0] ? (
-          <img src={getImageUrl(property.images[0])} alt={property.title} className="w-full h-full object-cover" />
+          <img src={getImageUrl(property.images[0])} alt={property.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
         ) : (
           <Home size={60} className="text-navy opacity-20" />
         )}

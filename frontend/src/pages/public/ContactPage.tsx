@@ -4,6 +4,7 @@ import { useGetContentQuery } from '../../features/content/contentApi';
 import { PAGE_CONTENT } from '../../features/content/pageContentConfig';
 import { Locate, Phone, Mail, MessageCircleWarning, CheckCircle2 } from 'lucide-react';
 import { googleMapsEmbedUrl, googleMapsSearchUrl } from '../../utils/googleMapsLink';
+import { delay } from '../../utils/motion';
 
 const OFFICES = [
   {
@@ -84,8 +85,8 @@ export const ContactPage = () => {
     <div>
       <div className="bg-navy py-16 sm:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-teal-light">Get In Touch</span>
-          <h1 className="font-display text-4xl sm:text-5xl text-white mt-3 leading-tight">
+          <span className="hero-in inline-block text-[10px] font-bold uppercase tracking-widest text-teal-light" style={delay(0)}>Get In Touch</span>
+          <h1 className="hero-in font-display text-4xl sm:text-5xl text-white mt-3 leading-[1.08]" style={delay(120)}>
             {content.heroLine1}<br />{content.heroLine2}
           </h1>
         </div>
@@ -94,7 +95,7 @@ export const ContactPage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
         <div className="grid lg:grid-cols-2 gap-12">
 
-          <div>
+          <div data-reveal className="reveal">
             <h2 className="font-display text-3xl text-navy mb-2">Let's Have a<br />Conversation</h2>
             <p className="text-muted text-sm leading-relaxed mb-8">
               Whether you have questions about a listing, need guidance on buying or selling, or want to partner with us, our team is ready to help.
@@ -122,7 +123,7 @@ export const ContactPage = () => {
             </div>
           </div>
 
-          <div className="bg-white border border-border rounded-2xl p-6 sm:p-8 shadow-sm">
+          <div data-reveal style={delay(150)} className="reveal bg-white border border-border rounded-2xl p-6 sm:p-8 shadow-sm">
             {sent ? (
               <div className="text-center py-10">
                 <CheckCircle2 size={48} className="mx-auto mb-4 text-teal" />
@@ -240,7 +241,7 @@ export const ContactPage = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-14">
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div data-reveal className="reveal flex flex-wrap items-center justify-between gap-3 mb-4">
           <div className="flex gap-2">
             {OFFICES.map((o, i) => (
               <button

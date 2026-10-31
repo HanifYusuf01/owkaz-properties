@@ -23,6 +23,8 @@ import { useGetHeroSlidesQuery } from '../../features/heroSlides/heroSlidesApi';
 import { useAppSelector } from '../../store';
 import { Property } from '../../types';
 import { PAGE_CONTENT } from '../../features/content/pageContentConfig';
+import { CountUp } from '../../components/ui/CountUp';
+import { delay } from '../../utils/motion';
 
 const SEARCH_TABS = ['Buy', 'Rent', 'Shortlet', 'Land'];
 
@@ -305,7 +307,7 @@ export const HomePage = () => {
             {heroSlides.map((slide, i) => (
               <div
                 key={slide.id}
-                className="absolute inset-0 bg-cover bg-center transition-opacity duration-[1500ms] ease-in-out"
+                className={`absolute inset-0 bg-cover bg-center transition-opacity duration-[1500ms] ease-in-out ${i === activeHeroSlide ? 'ken-burns' : ''}`}
                 style={{
                   backgroundImage: `url(${getImageUrl(slide.imageUrl)})`,
                   opacity: i === activeHeroSlide ? 0.5 : 0,
@@ -325,44 +327,54 @@ export const HomePage = () => {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h1 className="font-display text-4xl sm:text-6xl lg:text-7xl text-white leading-tight mb-6">
+              <div
+                className="hero-in inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/10 px-3.5 py-1.5 text-xs font-medium text-white/80 mb-6"
+                style={delay(0)}
+              >
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-teal-light opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-teal-light" />
+                </span>
+                {(publicStats?.activeListings ?? 0).toLocaleString()} listings live now
+              </div>
+              <h1 className="hero-in font-display text-4xl sm:text-5xl lg:text-6xl text-white leading-[1.08] mb-6" style={delay(120)}>
                 {content.heroLine1}{' '}
-                <span className="text-gold italic">{content.heroHighlight}</span>
+                <span className="text-gold">{content.heroHighlight}</span>
                 <br />
                 <span><MultilineText text={content.heroLine2} /></span>
               </h1>
-              <p className="text-white/60 text-xs sm:text-lg leading-relaxed mb-8 max-w-lg">
+              <p className="hero-in text-white/70 text-sm sm:text-lg leading-relaxed mb-8 max-w-lg" style={delay(240)}>
                 {content.heroSubtitle}
               </p>
-              <div className="flex flex-wrap gap-3 mb-10">
+              <div className="hero-in flex flex-wrap gap-3 mb-10" style={delay(360)}>
                 <button
                   onClick={() => navigate('/properties')}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-teal text-white font-semibold text-sm hover:bg-teal-light transition-colors"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-teal text-white font-semibold text-sm hover:bg-teal-light hover:-translate-y-0.5 active:translate-y-0 transition-all"
                 >
                   <Search size={16} /> Browse Properties
                 </button>
                 <button
                   onClick={() => navigate('/login')}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/20 text-white font-semibold text-sm hover:bg-white/10 transition-colors"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/20 text-white font-semibold text-sm hover:bg-white/10 hover:-translate-y-0.5 active:translate-y-0 transition-all"
                 >
                   List Your Property
                 </button>
               </div>
-              <div className="flex gap-10">
+              <div className="hero-in flex gap-10" style={delay(480)}>
                 {[
-                  { num: (publicStats?.activeListings ?? 0).toLocaleString(), label: 'Active Listings' },
-                  { num: (publicStats?.happyClients ?? 0).toLocaleString(), label: 'Happy Clients' },
-                  { num: (publicStats?.verifiedAgents ?? 0).toLocaleString(), label: 'Verified Agents' },
+                  { num: publicStats?.activeListings ?? 0, label: 'Active Listings' },
+                  { num: publicStats?.happyClients ?? 0, label: 'Happy Clients' },
+                  { num: publicStats?.verifiedAgents ?? 0, label: 'Verified Agents' },
                 ].map((s) => (
                   <div key={s.label}>
-                    <div className="font-display text-3xl font-bold text-white">{s.num}</div>
+                    <div className="font-display text-3xl font-bold text-white"><CountUp value={s.num} /></div>
                     <div className="text-white/50 text-xs mt-0.5">{s.label}</div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-2xl" style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)' }}>
+            <div className="hero-in bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-2xl" style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)', ...delay(300) }}>
               <div className="flex gap-1 mb-5">
                 {SEARCH_TABS.map((t) => (
                   <button
@@ -478,9 +490,9 @@ export const HomePage = () => {
       <div className="bg-surface border-y border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-            {FEATURES.map((f) => (
-              <div key={f.titleKey} className="flex flex-col items-center text-center">
-                <div className="w-14 h-14 flex items-center justify-center bg-white border border-border rounded-xl mb-4 shadow-sm">
+            {FEATURES.map((f, i) => (
+              <div key={f.titleKey} data-reveal style={delay(i * 90)} className="reveal group flex flex-col items-center text-center">
+                <div className="w-14 h-14 flex items-center justify-center bg-white border border-border rounded-xl mb-4 shadow-sm group-hover:-translate-y-1 group-hover:shadow-md transition-all duration-300">
                   {f.icon}
                 </div>
                 <div className="font-semibold text-sm text-navy mb-1">{content[f.titleKey]}</div>
@@ -494,7 +506,7 @@ export const HomePage = () => {
       <div className="bg-gradient-to-r from-navy via-navy-mid to-teal py-12 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center text-center gap-6">
-            <div>
+            <div data-reveal className="reveal">
               <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/20 border border-gold/30 text-gold text-[10px] font-bold uppercase tracking-widest mb-3">
                 <Bitcoin size={12} /> {content.cryptoBadge}
               </span>
@@ -514,10 +526,12 @@ export const HomePage = () => {
                 { icon: <Zap size={20} />, label: 'Solana', sub: 'SOL', color: 'bg-violet-500/20 border-violet-400/40 text-violet-300' },
                 { icon: <Landmark size={20} />, label: 'Bank Transfer', sub: 'NGN / USD', color: 'bg-white/10 border-white/20 text-white/70' },
                 { icon: <CreditCard size={20} />, label: 'Card', sub: 'Visa / Mastercard', color: 'bg-white/10 border-white/20 text-white/70' },
-              ] as const).map((c) => (
+              ] as const).map((c, i) => (
                 <div
                   key={c.label}
-                  className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl border text-sm font-semibold ${c.color}`}
+                  data-reveal
+                  style={delay(120 + i * 70)}
+                  className={`reveal flex items-center gap-2.5 px-4 py-2.5 rounded-xl border text-sm font-semibold hover:-translate-y-0.5 transition-transform ${c.color}`}
                 >
                   {c.icon}
                   <div className="text-left">
@@ -538,11 +552,11 @@ export const HomePage = () => {
       {partners.length > 0 && (
         <div className="py-12 sm:py-14 border-b border-border">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-8">
+            <div data-reveal className="reveal text-center mb-8">
               <span className="text-[10px] font-bold uppercase tracking-widest text-teal">Trusted By</span>
               <h2 className="font-display text-2xl sm:text-3xl text-navy mt-2">Our Partners</h2>
             </div>
-            <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-8">
+            <div data-reveal style={delay(120)} className="reveal flex flex-wrap items-center justify-center gap-x-12 gap-y-8">
               {partners.map((partner) => {
                 const logo = (
                   <img
@@ -567,7 +581,7 @@ export const HomePage = () => {
 
       <section className="py-16 sm:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+          <div data-reveal className="reveal flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
             <div>
               <span className="text-[10px] font-bold uppercase tracking-widest text-teal">Featured Listings</span>
               <h2 className="font-display text-3xl sm:text-4xl text-navy mt-2">
@@ -598,10 +612,11 @@ export const HomePage = () => {
             const colsClass = GRID_COLS_LG[Math.min(displayed.length, 4)];
             return (
               <div className={`grid grid-cols-1 sm:grid-cols-2 ${colsClass} gap-5`}>
-                {displayed.map((p) => (
+                {displayed.map((p, i) => (
                   <PropertyCard
                     key={p.id}
                     property={p}
+                    revealDelay={i * 90}
                     isSaved={savedIds.includes(p.id)}
                     onToggleSave={handleToggleSave}
                   />
@@ -615,7 +630,7 @@ export const HomePage = () => {
       {locations.length > 0 && (
         <section className="py-16 sm:py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+            <div data-reveal className="reveal flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-widest text-teal">Explore by Location</span>
                 <h2 className="font-display text-3xl sm:text-4xl text-navy mt-2">
@@ -631,11 +646,13 @@ export const HomePage = () => {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {locations.map((loc) => (
+              {locations.map((loc, i) => (
                 <button
                   key={loc.id}
+                  data-reveal
+                  style={delay(i * 70)}
                   onClick={() => navigate(`/properties?search=${loc.name}`)}
-                  className="relative rounded-2xl overflow-hidden group shadow-sm hover:shadow-xl transition-shadow duration-300 h-40"
+                  className="reveal relative rounded-2xl overflow-hidden group shadow-sm hover:shadow-xl transition-shadow duration-300 h-40"
                 >
                   <img
                     src={getImageUrl(loc.imageUrl)}
@@ -656,8 +673,10 @@ export const HomePage = () => {
               ))}
 
               <button
+                data-reveal
+                style={delay(locations.length * 70)}
                 onClick={() => navigate('/properties')}
-                className="relative rounded-2xl overflow-hidden h-40 bg-gradient-to-br from-navy to-navy-mid flex flex-col items-center justify-center gap-2 shadow-sm hover:shadow-xl hover:opacity-95 transition-all duration-300"
+                className="reveal relative rounded-2xl overflow-hidden h-40 bg-gradient-to-br from-navy to-navy-mid flex flex-col items-center justify-center gap-2 shadow-sm hover:shadow-xl hover:opacity-95 transition-all duration-300"
               >
                 <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white">
                   <ArrowRight size={18} />
@@ -671,21 +690,26 @@ export const HomePage = () => {
 
       <section className="py-16 sm:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-10">
+          <div data-reveal className="reveal mb-10">
             <span className="text-[10px] font-bold uppercase tracking-widest text-teal">Client Stories</span>
             <h2 className="font-display text-3xl sm:text-4xl text-navy mt-2">
               What Our Clients<br />Are Saying
             </h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {TESTIMONIALS.map((t) => (
-              <div key={t.name} className="bg-white border border-border rounded-2xl p-6">
+            {TESTIMONIALS.map((t, i) => (
+              <div
+                key={t.name}
+                data-reveal
+                style={delay(i * 110)}
+                className="reveal bg-white border border-border rounded-2xl p-6 hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
+              >
                 <div className="flex gap-0.5 text-gold mb-3">
                   {[0, 1, 2, 3, 4].map((i) => (
                     <Star key={i} size={18} className="fill-current" />
                   ))}
                 </div>
-                <p className="text-sm text-muted leading-relaxed mb-5 italic">{t.text}</p>
+                <p className="text-sm text-muted leading-relaxed mb-5">{t.text}</p>
                 <div className="flex items-center gap-3">
                   <Avatar name={t.name} className="w-10 h-10 text-base" />
                   <div>
@@ -701,7 +725,7 @@ export const HomePage = () => {
 
       <section className="py-10 sm:py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-navy rounded-3xl px-8 py-12 sm:px-14 sm:py-16 relative overflow-hidden">
+          <div data-reveal className="reveal bg-navy rounded-3xl px-8 py-12 sm:px-14 sm:py-16 relative overflow-hidden">
             <div
               className="absolute inset-0 opacity-[0.04]"
               style={{
@@ -711,7 +735,7 @@ export const HomePage = () => {
             />
             <div className="flex items-center flex-col">
               <span className="text-[12px] font-bold uppercase tracking-widest text-teal-light">Ready to Get Started?</span>
-              <h2 className="font-display text-3xl sm:text-6xl text-white mt-2 mb-3">
+              <h2 className="font-display text-3xl sm:text-5xl text-white mt-2 mb-3 text-center">
                 <MultilineText text={content.ctaHeading} />
               </h2>
               <p className="text-white/60 text-lg mb-8 max-w-md">
@@ -720,13 +744,13 @@ export const HomePage = () => {
               <div className="flex flex-wrap gap-3">
                 <button
                   onClick={() => navigate('/properties')}
-                  className="px-6 py-3 rounded-xl bg-teal text-white font-semibold text-sm hover:bg-teal-light transition-colors"
+                  className="px-6 py-3 rounded-xl bg-teal text-white font-semibold text-sm hover:bg-teal-light hover:-translate-y-0.5 active:translate-y-0 transition-all"
                 >
                   Find a Property
                 </button>
                 <button
                   onClick={() => navigate('/login')}
-                  className="px-6 py-3 rounded-xl border border-white/20 text-white font-semibold text-sm hover:bg-white/10 transition-colors"
+                  className="px-6 py-3 rounded-xl border border-white/20 text-white font-semibold text-sm hover:bg-white/10 hover:-translate-y-0.5 active:translate-y-0 transition-all"
                 >
                   List Yours Today
                 </button>
