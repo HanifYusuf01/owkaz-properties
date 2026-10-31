@@ -1,3 +1,4 @@
+import { CheckCircle2, Home, MapPin, Check, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 import {
   useGetAdminPropertiesQuery,
@@ -173,7 +174,6 @@ export const ApprovalQueuePage = () => {
     if (!viewProperty || !reviewForm) return;
     setIsActing(true);
     try {
-      // Save any edits first, then approve
       await updateProperty({
         id: viewProperty.id,
         data: {
@@ -224,7 +224,7 @@ export const ApprovalQueuePage = () => {
 
       {pending.length === 0 && (
         <div className="text-center py-20">
-          <div className="text-5xl mb-3">✨</div>
+          <CheckCircle2 size={40} className="mx-auto mb-3 text-muted" />
           <h3 className="font-semibold text-navy">Queue is clear!</h3>
           <p className="text-sm text-muted mt-1">All listings have been reviewed.</p>
         </div>
@@ -232,10 +232,10 @@ export const ApprovalQueuePage = () => {
 
       {pending.map((p) => (
         <div key={p.id} className="bg-white border border-border rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row gap-4 sm:items-start hover:border-teal transition-colors">
-          <div className="w-12 h-12 rounded-xl bg-cream flex items-center justify-center text-2xl flex-shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-cream flex items-center justify-center flex-shrink-0">
             {p.images?.[0]
               ? <img src={getImageUrl(p.images[0])} alt="" className="w-full h-full object-cover rounded-xl" />
-              : '🏠'}
+              : <Home size={24} className="text-muted" />}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
@@ -243,7 +243,7 @@ export const ApprovalQueuePage = () => {
               <Badge status="pending" />
             </div>
             <div className="text-xs text-muted mt-1">
-              📍 {p.area}, {p.lga} · {formatPrice(p.price)} · by {p.submittedBy?.name} · {formatDate(p.createdAt)}
+              <MapPin size={12} className="inline -mt-0.5 mr-1" />{p.area}, {p.lga} · {formatPrice(p.price)} · by {p.submittedBy?.name} · {formatDate(p.createdAt)}
             </div>
             <div className="text-xs text-muted mt-0.5">
               {p.beds} beds · {p.baths} baths · {p.sqm} m²
@@ -257,16 +257,15 @@ export const ApprovalQueuePage = () => {
               View
             </Button>
             <Button variant="success" size="sm" onClick={() => setApproveTarget({ id: p.id, title: p.title })}>
-              ✓ Approve
+              <Check size={14} className="mr-1" /> Approve
             </Button>
             <Button variant="danger" size="sm" onClick={() => setRejectModal({ id: p.id, title: p.title })}>
-              ✗ Reject
+              <X size={14} className="mr-1" /> Reject
             </Button>
           </div>
         </div>
       ))}
 
-      {/* ── View / Review Modal ── */}
       {viewProperty && reviewForm && (
         <Modal
           isOpen
@@ -285,10 +284,10 @@ export const ApprovalQueuePage = () => {
               <>
                 <Button variant="ghost" onClick={() => setViewProperty(null)} disabled={isActing}>Close</Button>
                 <Button variant="danger" onClick={() => setRejectFromView(true)} disabled={isActing}>
-                  ✗ Reject
+                  <X size={14} className="mr-1" /> Reject
                 </Button>
                 <Button variant="success" onClick={handleApproveFromView} loading={isActing}>
-                  ✓ Approve
+                  <Check size={14} className="mr-1" /> Approve
                 </Button>
               </>
             )
@@ -306,7 +305,6 @@ export const ApprovalQueuePage = () => {
             </div>
           ) : (
             <div className="space-y-5">
-              {/* Image gallery */}
               {reviewForm.images.length > 0 && (
                 <div>
                   <div className="aspect-video rounded-xl overflow-hidden bg-gray-100 mb-2">
@@ -332,10 +330,8 @@ export const ApprovalQueuePage = () => {
                 </div>
               )}
 
-              {/* Supporting documents */}
               <DocumentViewer documents={viewProperty.documents ?? []} />
 
-              {/* Submitted by */}
               <div className="flex items-center gap-3 p-3 bg-surface rounded-lg">
                 <div className="w-8 h-8 rounded-full bg-teal flex items-center justify-center text-white text-xs font-bold">
                   {viewProperty.submittedBy?.name?.charAt(0)}
@@ -348,7 +344,6 @@ export const ApprovalQueuePage = () => {
 
               <p className="text-xs text-muted font-semibold uppercase tracking-wide">You may edit fields below before approving</p>
 
-              {/* Editable type */}
               <div>
                 <label className="text-xs font-semibold uppercase tracking-wide text-navy block mb-2">Property Type</label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -427,14 +422,12 @@ export const ApprovalQueuePage = () => {
                 </div>
               </div>
 
-              {/* Agent–Admin notes */}
               <PropertyNotesSection propertyId={viewProperty.id} />
             </div>
           )}
         </Modal>
       )}
 
-      {/* Approve Confirm (from list) */}
       <ConfirmModal
         isOpen={!!approveTarget}
         onClose={() => setApproveTarget(null)}
@@ -446,7 +439,6 @@ export const ApprovalQueuePage = () => {
         variant="success"
       />
 
-      {/* Reject Modal (from list) */}
       <Modal
         isOpen={!!rejectModal}
         onClose={() => setRejectModal(null)}

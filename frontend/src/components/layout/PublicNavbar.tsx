@@ -46,16 +46,12 @@ export const PublicNavbar = () => {
   const [publicNavOpen, setPublicNavOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  // Sidebar is open by default for buyers (opens as soon as the buyer identity is known)
   useEffect(() => {
     if (user?.role === UserRole.BUYER) {
       setSidebarOpen(true);
     }
   }, [user?.role]);
 
-  // Lock body scroll when either drawer is open as a mobile overlay — the buyer sidebar
-  // is permanently docked (not an overlay) from the md breakpoint up, so it must never
-  // lock scrolling there, even though `sidebarOpen` itself stays true for buyers always.
   useEffect(() => {
     const updateScrollLock = () => {
       const isMobileViewport = window.innerWidth < 768;
@@ -69,7 +65,6 @@ export const PublicNavbar = () => {
     };
   }, [sidebarOpen, publicNavOpen]);
 
-  // Close staff dropdown on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -90,10 +85,8 @@ export const PublicNavbar = () => {
 
   return (
     <>
-      {/* ── BUYER SIDEBAR ── */}
       {isBuyer && (
         <>
-          {/* Overlay (mobile only — the sidebar is permanently docked on desktop) */}
           {sidebarOpen && (
             <div
               className="md:hidden fixed inset-0 bg-navy/30 z-40"
@@ -101,13 +94,11 @@ export const PublicNavbar = () => {
             />
           )}
 
-          {/* Sidebar panel */}
           <aside
             className={`fixed left-0 top-0 h-screen w-64 bg-navy flex flex-col z-50 transition-transform duration-300 md:translate-x-0 ${
               sidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
             }`}
           >
-            {/* Header */}
             <div className="flex items-center justify-between px-5 py-5 border-b border-white/10 flex-shrink-0">
               <div
                 className="flex items-center gap-2 cursor-pointer"
@@ -124,7 +115,6 @@ export const PublicNavbar = () => {
               </button>
             </div>
 
-            {/* Hello banner */}
             <div className="mx-4 mt-4 mb-2 bg-gradient-to-br from-teal/25 to-gold/15 border border-teal/30 rounded-xl p-4">
               <div className="text-white/50 text-xs mb-1">Hello there,</div>
               <div className="text-white font-semibold text-sm">{user?.name}</div>
@@ -133,7 +123,6 @@ export const PublicNavbar = () => {
               </span>
             </div>
 
-            {/* Navigation */}
             <nav className="flex-1 overflow-y-auto py-2">
               <div className="px-5 py-2 text-[9px] font-bold uppercase tracking-widest text-white/25">Explore</div>
               {buyerSidebarExplore.map((item) => (
@@ -177,7 +166,6 @@ export const PublicNavbar = () => {
               ))}
             </nav>
 
-            {/* Footer */}
             <div className="px-5 py-4 border-t border-white/10 flex items-center gap-3 flex-shrink-0">
               <Avatar name={user?.name} avatarUrl={user?.avatarUrl} className="w-9 h-9 text-sm" />
               <div className="flex-1 min-w-0">
@@ -196,7 +184,6 @@ export const PublicNavbar = () => {
         </>
       )}
 
-      {/* ── PUBLIC NAV DRAWER (non-buyers, mobile) ── */}
       {!isBuyer && (
         <>
           {publicNavOpen && (
@@ -210,7 +197,6 @@ export const PublicNavbar = () => {
               publicNavOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
             }`}
           >
-            {/* Header */}
             <div className="flex items-center justify-between px-5 py-5 border-b border-white/10 flex-shrink-0">
               <div
                 className="flex items-center gap-2 cursor-pointer"
@@ -227,7 +213,6 @@ export const PublicNavbar = () => {
               </button>
             </div>
 
-            {/* Navigation */}
             <nav className="flex-1 overflow-y-auto py-3">
               {navLinks.map((l) => (
                 <NavLink
@@ -273,7 +258,6 @@ export const PublicNavbar = () => {
               )}
             </nav>
 
-            {/* Footer */}
             {!user ? (
               <div className="px-5 py-4 border-t border-white/10 flex-shrink-0">
                 <button
@@ -303,12 +287,10 @@ export const PublicNavbar = () => {
         </>
       )}
 
-      {/* ── TOP BAR ── */}
       <nav className="sticky top-0 z-30 bg-surface border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 gap-3">
 
-            {/* Left: hamburger (mobile, all roles) + logo */}
             <div className="flex items-center gap-3">
               <button
                 onClick={() => (isBuyer ? setSidebarOpen(true) : setPublicNavOpen(true))}
@@ -324,7 +306,6 @@ export const PublicNavbar = () => {
               </Link>
             </div>
 
-            {/* Center nav links */}
             <div className="hidden md:flex items-center gap-1 flex-1 justify-center">
               {navLinks.map((l) => (
                 <NavLink
@@ -344,10 +325,8 @@ export const PublicNavbar = () => {
               ))}
             </div>
 
-            {/* Right: actions */}
             <div className="flex items-center gap-2 flex-shrink-0">
               {!user && (
-                /* Guest */
                 <button
                   onClick={() => navigate('/login')}
                   className="px-4 py-2 rounded-lg bg-navy text-white text-sm font-semibold hover:bg-navy-mid transition-colors"
@@ -357,7 +336,6 @@ export const PublicNavbar = () => {
               )}
 
               {isBuyer && (
-                /* Buyer: Hello chip + Sign Out */
                 <>
                   <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-teal/10 border border-teal/20">
                     <Avatar name={user.name} avatarUrl={user.avatarUrl} className="w-6 h-6 text-[10px]" initialsLength={2} />
@@ -375,7 +353,6 @@ export const PublicNavbar = () => {
               )}
 
               {isStaff && (
-                /* Agent / Owner / Admin: dropdown */
                 <>
                   {user && (
                     <button

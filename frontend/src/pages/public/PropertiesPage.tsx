@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Search, SlidersHorizontal, X, Map as MapIcon } from 'lucide-react';
+import { Search, SlidersHorizontal, X, Map as MapIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   useGetPropertiesQuery,
   useGetPropertiesPriceRangeQuery,
@@ -53,7 +53,6 @@ const FilterPanel = ({
       <button onClick={onReset} className="text-xs text-teal hover:underline">Reset All</button>
     </div>
 
-    {/* Location */}
     <div>
       <div className="text-[10px] font-bold uppercase tracking-widest text-muted mb-2">Location</div>
       <div className="relative">
@@ -74,7 +73,6 @@ const FilterPanel = ({
       </button>
     </div>
 
-    {/* Price */}
     <div>
       <div className="text-[10px] font-bold uppercase tracking-widest text-muted mb-2">Price Range (₦)</div>
       {priceBounds && priceBounds.max > priceBounds.min ? (
@@ -108,7 +106,6 @@ const FilterPanel = ({
       )}
     </div>
 
-    {/* Property Type */}
     <div>
       <div className="text-[10px] font-bold uppercase tracking-widest text-muted mb-2">Property Type</div>
       <div className="space-y-2">
@@ -126,7 +123,6 @@ const FilterPanel = ({
       </div>
     </div>
 
-    {/* Bedrooms */}
     <div>
       <div className="text-[10px] font-bold uppercase tracking-widest text-muted mb-2">Bedrooms</div>
       <div className="flex flex-wrap gap-2">
@@ -182,7 +178,6 @@ export const PropertiesPage = () => {
 
   const LIMIT = 12;
 
-  // Live search: debounce free-text inputs so results populate as the user types
   useEffect(() => {
     const timeout = setTimeout(() => {
       setDebouncedSearch(searchInput);
@@ -254,7 +249,6 @@ export const PropertiesPage = () => {
 
   return (
     <div>
-      {/* Page header */}
       <div className="bg-navy py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <span className="text-[10px] font-bold uppercase tracking-widest text-teal-light">Browse Listings</span>
@@ -265,14 +259,12 @@ export const PropertiesPage = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex gap-8">
-          {/* Desktop Sidebar */}
           <aside className="hidden lg:block w-72 flex-shrink-0">
             <div className="bg-white border border-border rounded-2xl p-5 sticky top-24">
               <FilterPanel {...filterProps} />
             </div>
           </aside>
 
-          {/* Mobile sidebar overlay */}
           {sidebarOpen && (
             <div className="lg:hidden fixed inset-0 z-50 flex">
               <div className="absolute inset-0 bg-black/40" onClick={() => setSidebarOpen(false)} />
@@ -288,9 +280,7 @@ export const PropertiesPage = () => {
             </div>
           )}
 
-          {/* Main */}
           <div className="flex-1 min-w-0">
-            {/* Toolbar */}
             <div className="flex items-center justify-between gap-3 mb-6">
               <div className="text-sm text-muted">
                 <strong className="text-navy">{total.toLocaleString()}</strong> properties found
@@ -348,7 +338,6 @@ export const PropertiesPage = () => {
               </div>
             )}
 
-            {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex items-center justify-center gap-2 mt-10">
                 <button
@@ -356,7 +345,7 @@ export const PropertiesPage = () => {
                   onClick={() => setPage(page - 1)}
                   className="px-3 py-2 rounded-lg border border-border text-sm font-semibold text-muted hover:border-navy hover:text-navy disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
-                  ←
+                  <ChevronLeft size={16} />
                 </button>
                 {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
                   const p_num = i + 1;
@@ -379,7 +368,7 @@ export const PropertiesPage = () => {
                   onClick={() => setPage(page + 1)}
                   className="px-3 py-2 rounded-lg border border-border text-sm font-semibold text-muted hover:border-navy hover:text-navy disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
-                  →
+                  <ChevronRight size={16} />
                 </button>
               </div>
             )}
@@ -387,7 +376,6 @@ export const PropertiesPage = () => {
         </div>
       </div>
 
-      {/* Map modal */}
       {mapOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/50" onClick={() => setMapOpen(false)} />

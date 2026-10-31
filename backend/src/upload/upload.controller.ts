@@ -31,7 +31,6 @@ export class UploadController {
     FilesInterceptor('files', 20, {
       storage,
       fileFilter: (_req, file, cb) => {
-        // Silently reject — controller validates below
         cb(null, !!file.mimetype.match(/\/(jpg|jpeg|png|webp)$/));
       },
       limits: { fileSize: 10 * 1024 * 1024 },

@@ -36,7 +36,6 @@ export const ProfilePage = () => {
 
   return (
     <div className="max-w-lg space-y-6">
-      {/* Avatar */}
       <div className="bg-white border border-border rounded-xl p-6 flex items-center gap-4">
         <div className="relative flex-shrink-0">
           {avatarUrl ? (
@@ -82,7 +81,6 @@ export const ProfilePage = () => {
         </div>
       </div>
 
-      {/* Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="bg-white border border-border rounded-xl p-6 space-y-4">
         <h3 className="font-display text-lg text-navy">Update Profile</h3>
 

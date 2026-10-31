@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, SlidersHorizontal, X } from 'lucide-react';
+import { Search, SlidersHorizontal, X, Tag, Home, MapPin, BedDouble, Bath, Ruler, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useGetPublicSoldPropertiesQuery, useGetPropertiesPriceRangeQuery } from '../../features/properties/propertiesApi';
 import { formatPrice, formatDate } from '../../utils/format';
 import { getImageUrl } from '../../utils/imageUrl';
@@ -38,7 +38,6 @@ const FilterPanel = ({
       <button onClick={onReset} className="text-xs text-teal hover:underline">Reset All</button>
     </div>
 
-    {/* Location */}
     <div>
       <div className="text-[10px] font-bold uppercase tracking-widest text-muted mb-2">Location</div>
       <div className="relative">
@@ -53,7 +52,6 @@ const FilterPanel = ({
       </div>
     </div>
 
-    {/* Sale Price */}
     <div>
       <div className="text-[10px] font-bold uppercase tracking-widest text-muted mb-2">Sale Price Range (₦)</div>
       {priceBounds && priceBounds.max > priceBounds.min ? (
@@ -87,7 +85,6 @@ const FilterPanel = ({
       )}
     </div>
 
-    {/* Bedrooms */}
     <div>
       <div className="text-[10px] font-bold uppercase tracking-widest text-muted mb-2">Bedrooms</div>
       <div className="flex flex-wrap gap-2">
@@ -132,7 +129,6 @@ export const SoldPropertiesPage = () => {
 
   const LIMIT = 12;
 
-  // Live search: debounce free-text inputs so results populate as the user types
   useEffect(() => {
     const timeout = setTimeout(() => {
       setDebouncedSearch(searchInput);
@@ -188,7 +184,6 @@ export const SoldPropertiesPage = () => {
 
   return (
     <div>
-      {/* Page header */}
       <div className="bg-navy py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <span className="text-[10px] font-bold uppercase tracking-widest text-gold">Sold Projects</span>
@@ -199,14 +194,12 @@ export const SoldPropertiesPage = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex gap-8">
-          {/* Desktop Sidebar */}
           <aside className="hidden lg:block w-72 flex-shrink-0">
             <div className="bg-white border border-border rounded-2xl p-5 sticky top-24">
               <FilterPanel {...filterProps} />
             </div>
           </aside>
 
-          {/* Mobile sidebar overlay */}
           {sidebarOpen && (
             <div className="lg:hidden fixed inset-0 z-50 flex">
               <div className="absolute inset-0 bg-black/40" onClick={() => setSidebarOpen(false)} />
@@ -222,9 +215,7 @@ export const SoldPropertiesPage = () => {
             </div>
           )}
 
-          {/* Main */}
           <div className="flex-1 min-w-0">
-            {/* Toolbar */}
             <div className="flex items-center justify-between gap-3 mb-6">
               <div className="text-sm text-muted">
                 <strong className="text-navy">{total.toLocaleString()}</strong> sold properties
@@ -251,7 +242,7 @@ export const SoldPropertiesPage = () => {
               </div>
             ) : properties.length === 0 ? (
               <div className="py-20 text-center">
-                <div className="text-5xl mb-3">🏷️</div>
+                <Tag size={40} className="mx-auto mb-3 text-muted" />
                 <h3 className="font-semibold text-navy text-lg">No sold properties found</h3>
                 <p className="text-sm text-muted mt-1 mb-4">Try adjusting your filters or search terms.</p>
                 <button onClick={handleReset} className="px-5 py-2.5 rounded-xl bg-navy text-white text-sm font-semibold">
@@ -266,14 +257,12 @@ export const SoldPropertiesPage = () => {
                     className="bg-white border border-border rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all duration-200"
                     onClick={() => navigate(`/properties/${p.id}`)}
                   >
-                    {/* Image */}
                     <div className="relative h-48 bg-gradient-to-br from-navy-mid to-teal overflow-hidden flex items-center justify-center">
                       {p.images?.[0] ? (
                         <img src={getImageUrl(p.images[0])} alt={p.title} className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-6xl opacity-20">🏠</span>
+                        <Home size={64} className="text-white opacity-20" />
                       )}
-                      {/* Sold ribbon */}
                       <div className="absolute top-0 right-0 bg-gold text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-wide">
                         Sold
                       </div>
@@ -287,10 +276,9 @@ export const SoldPropertiesPage = () => {
                       </div>
                     </div>
 
-                    {/* Info */}
                     <div className="p-4">
                       <h3 className="font-semibold text-sm text-navy leading-snug mb-1">{p.title}</h3>
-                      <div className="text-xs text-muted mb-1">📍 {p.area}, {p.lga}, {p.state}</div>
+                      <div className="flex items-center gap-1 text-xs text-muted mb-1"><MapPin size={12} className="flex-shrink-0" /> {p.area}, {p.lga}, {p.state}</div>
                       {p.soldAt && (
                         <div className="text-xs text-muted mb-3">
                           Sold on <span className="font-medium text-navy">{formatDate(p.soldAt)}</span>
@@ -298,13 +286,13 @@ export const SoldPropertiesPage = () => {
                       )}
                       <div className="flex gap-4 pt-3 border-t border-border">
                         {p.beds != null && (
-                          <span className="text-xs text-muted">🛏 <strong className="text-navy">{p.beds}</strong> Beds</span>
+                          <span className="inline-flex items-center gap-1 text-xs text-muted"><BedDouble size={13} /> <strong className="text-navy">{p.beds}</strong> Beds</span>
                         )}
                         {p.baths != null && (
-                          <span className="text-xs text-muted">🚿 <strong className="text-navy">{p.baths}</strong> Baths</span>
+                          <span className="inline-flex items-center gap-1 text-xs text-muted"><Bath size={13} /> <strong className="text-navy">{p.baths}</strong> Baths</span>
                         )}
                         {p.sqm != null && (
-                          <span className="text-xs text-muted">📐 <strong className="text-navy">{p.sqm}</strong> m²</span>
+                          <span className="inline-flex items-center gap-1 text-xs text-muted"><Ruler size={13} /> <strong className="text-navy">{p.sqm}</strong> m²</span>
                         )}
                       </div>
                     </div>
@@ -313,7 +301,6 @@ export const SoldPropertiesPage = () => {
               </div>
             )}
 
-            {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex items-center justify-center gap-2 mt-10">
                 <button
@@ -321,7 +308,7 @@ export const SoldPropertiesPage = () => {
                   onClick={() => setPage(page - 1)}
                   className="px-3 py-2 rounded-lg border border-border text-sm font-semibold text-muted hover:border-navy hover:text-navy disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
-                  ←
+                  <ChevronLeft size={16} />
                 </button>
                 {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
                   const p_num = i + 1;
@@ -344,7 +331,7 @@ export const SoldPropertiesPage = () => {
                   onClick={() => setPage(page + 1)}
                   className="px-3 py-2 rounded-lg border border-border text-sm font-semibold text-muted hover:border-navy hover:text-navy disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
-                  →
+                  <ChevronRight size={16} />
                 </button>
               </div>
             )}

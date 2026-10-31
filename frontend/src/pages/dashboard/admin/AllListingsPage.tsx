@@ -19,7 +19,7 @@ import { formatPrice } from '../../../utils/format';
 import { getImageUrl } from '../../../utils/imageUrl';
 import { Property, PropertyStatus, PropertyType } from '../../../types';
 import { NIGERIAN_STATES } from '../../../constants/nigerianStates';
-import { Pencil, Trash2Icon } from 'lucide-react';
+import { Pencil, Trash2Icon, Check, X, Star } from 'lucide-react';
 import { AddressSearchInput } from '../../../components/property/AddressSearchInput';
 
 const TABS = [
@@ -204,8 +204,8 @@ export const AllListingsPage = () => {
         <div className="flex gap-1.5 flex-wrap">
           {p.status === PropertyStatus.PENDING && (
             <>
-              <Button variant="success" size="sm" onClick={() => setApproveTarget({ id: p.id, title: p.title })}>✓</Button>
-              <Button variant="danger" size="sm" onClick={() => setRejectModal({ id: p.id, title: p.title })}>✗</Button>
+              <Button variant="success" size="sm" onClick={() => setApproveTarget({ id: p.id, title: p.title })}><Check size={14} /></Button>
+              <Button variant="danger" size="sm" onClick={() => setRejectModal({ id: p.id, title: p.title })}><X size={14} /></Button>
             </>
           )}
           <Button variant="ghost" size="sm" onClick={() => openEdit(p)} title="Edit listing">
@@ -217,7 +217,7 @@ export const AllListingsPage = () => {
             onClick={() => setFeaturedTarget({ id: p.id, title: p.title, featured: p.featured })}
             title={p.featured ? 'Remove from featured' : 'Add to featured'}
           >
-            {p.featured ? '★' : '☆'}
+            <Star size={14} fill={p.featured ? 'currentColor' : 'none'} />
           </Button>
           <Button variant="danger" size="sm" onClick={() => setDeleteTarget({ id: p.id, title: p.title })}>
             <Trash2Icon size={14} />
@@ -229,7 +229,6 @@ export const AllListingsPage = () => {
 
   return (
     <div className="space-y-4">
-      {/* Tabs */}
       <div className="flex gap-1 bg-cream rounded-xl p-1 w-fit overflow-x-auto">
         {TABS.map((tab) => (
           <button
@@ -244,7 +243,6 @@ export const AllListingsPage = () => {
         ))}
       </div>
 
-      {/* Search */}
       <Input
         placeholder="Search listings..."
         value={search}
@@ -264,7 +262,6 @@ export const AllListingsPage = () => {
         emptyState={<div className="py-16 text-center text-muted text-sm bg-white border border-border rounded-xl">No listings found</div>}
       />
 
-      {/* ── Edit Modal ── */}
       {editTarget && editForm && (
         <Modal
           isOpen
@@ -279,7 +276,6 @@ export const AllListingsPage = () => {
           }
         >
           <div className="space-y-5">
-            {/* Photos */}
             <div>
               <label className="text-xs font-semibold uppercase tracking-wide text-navy block mb-2">Photos</label>
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-2">
@@ -315,7 +311,6 @@ export const AllListingsPage = () => {
               {editError && <p className="text-xs text-red-500">{editError}</p>}
             </div>
 
-            {/* Type selector */}
             <div>
               <label className="text-xs font-semibold uppercase tracking-wide text-navy block mb-2">Property Type</label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -399,7 +394,6 @@ export const AllListingsPage = () => {
         </Modal>
       )}
 
-      {/* Approve */}
       <ConfirmModal
         isOpen={!!approveTarget}
         onClose={() => setApproveTarget(null)}
@@ -411,7 +405,6 @@ export const AllListingsPage = () => {
         variant="success"
       />
 
-      {/* Delete */}
       <ConfirmModal
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
@@ -423,7 +416,6 @@ export const AllListingsPage = () => {
         variant="danger"
       />
 
-      {/* Featured toggle */}
       <ConfirmModal
         isOpen={!!featuredTarget}
         onClose={() => setFeaturedTarget(null)}
@@ -437,7 +429,6 @@ export const AllListingsPage = () => {
         variant={featuredTarget?.featured ? 'warning' : 'success'}
       />
 
-      {/* Reject */}
       <Modal
         isOpen={!!rejectModal}
         onClose={() => setRejectModal(null)}

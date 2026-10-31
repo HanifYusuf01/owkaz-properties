@@ -40,7 +40,7 @@ export const ResetPasswordPage = () => {
       setSuccess(true);
       setTimeout(() => navigate('/login'), 3000);
     } catch {
-      // error handled via RTK state
+      return;
     }
   };
 
@@ -48,7 +48,6 @@ export const ResetPasswordPage = () => {
 
   return (
     <div className="min-h-screen flex">
-      {/* Left — Brand */}
       <div className="hidden lg:flex flex-1 bg-navy flex-col justify-center px-16 relative overflow-hidden">
         <div className="absolute -top-24 -right-24 w-96 h-96 border border-gold/10 rounded-full" />
         <div className="absolute -bottom-20 -left-20 w-72 h-72 border border-teal/20 rounded-full" />
@@ -57,12 +56,11 @@ export const ResetPasswordPage = () => {
             Owkaz <span className="text-gold">Properties</span>
           </div>
           <p className="mt-4 text-white/50 font-light text-base max-w-sm leading-relaxed">
-            Nigeria's premier controlled residential real estate marketplace.
+            A residential property marketplace for Nigeria.
           </p>
         </div>
       </div>
 
-      {/* Right — Form */}
       <div className="w-full lg:w-[480px] flex items-center justify-center px-8 py-12 bg-[#FEFBEA]">
         <div className="w-full max-w-sm">
           {success ? (

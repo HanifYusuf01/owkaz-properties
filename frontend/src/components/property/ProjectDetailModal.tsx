@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, MapPin, ChevronLeft, ChevronRight, Play } from 'lucide-react';
+import { X, MapPin, ChevronLeft, ChevronRight, Play, Check } from 'lucide-react';
 import { Project } from '../../features/projects/projectsApi';
 import { formatPrice } from '../../utils/format';
 import { getImageUrl } from '../../utils/imageUrl';
@@ -47,7 +47,6 @@ export const ProjectDetailModal = ({ project, onClose }: ProjectDetailModalProps
         className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* ── Image Carousel ── */}
         <div className="relative h-60 bg-gradient-to-br from-navy to-teal overflow-hidden rounded-t-2xl flex-shrink-0">
           {hasImages ? (
             <img
@@ -65,7 +64,6 @@ export const ProjectDetailModal = ({ project, onClose }: ProjectDetailModalProps
             </div>
           )}
 
-          {/* Prev / Next arrows */}
           {hasMultiple && (
             <>
               <button
@@ -83,14 +81,12 @@ export const ProjectDetailModal = ({ project, onClose }: ProjectDetailModalProps
             </>
           )}
 
-          {/* Image counter */}
           {hasMultiple && (
             <div className="absolute top-3 right-10 bg-black/50 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-1 rounded-full">
               {activeImg + 1} / {images.length}
             </div>
           )}
 
-          {/* Dot indicators */}
           {hasMultiple && (
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
               {images.map((_, i) => (
@@ -105,12 +101,10 @@ export const ProjectDetailModal = ({ project, onClose }: ProjectDetailModalProps
             </div>
           )}
 
-          {/* Progress bar */}
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
             <div className="h-full bg-gold transition-all" style={{ width: `${project.progress}%` }} />
           </div>
 
-          {/* Video button */}
           {project.videoUrl && (
             <button
               onClick={(e) => { e.stopPropagation(); setShowVideo(true); }}
@@ -120,12 +114,10 @@ export const ProjectDetailModal = ({ project, onClose }: ProjectDetailModalProps
             </button>
           )}
 
-          {/* Status badge */}
           <div className={`absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold border ${STATUS_STYLES[project.status] ?? 'bg-surface text-muted border-border'}`}>
             {STATUS_LABELS[project.status] ?? project.status}
           </div>
 
-          {/* Close */}
           <button
             onClick={onClose}
             className="absolute top-3 right-3 w-8 h-8 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-colors"
@@ -134,7 +126,6 @@ export const ProjectDetailModal = ({ project, onClose }: ProjectDetailModalProps
           </button>
         </div>
 
-        {/* Thumbnail strip */}
         {hasMultiple && (
           <div className="flex gap-2 px-4 pt-3 overflow-x-auto scrollbar-none">
             {images.map((img, i) => (
@@ -155,7 +146,6 @@ export const ProjectDetailModal = ({ project, onClose }: ProjectDetailModalProps
           </div>
         )}
 
-        {/* Body */}
         <div className="p-5">
           <div className="text-xs text-muted mb-1">{project.type}</div>
           <h2 className="font-display text-xl text-navy leading-tight">{project.name}</h2>
@@ -164,7 +154,6 @@ export const ProjectDetailModal = ({ project, onClose }: ProjectDetailModalProps
             <span>{project.location}{project.lga ? `, ${project.lga}` : ''}, {project.state}</span>
           </div>
 
-          {/* Stats */}
           <div className="grid grid-cols-3 gap-2 mt-4">
             <div className="bg-cream rounded-xl p-3 text-center">
               <div className="font-bold text-navy text-lg">{project.totalUnits}</div>
@@ -182,7 +171,6 @@ export const ProjectDetailModal = ({ project, onClose }: ProjectDetailModalProps
             </div>
           </div>
 
-          {/* Progress bar */}
           <div className="mt-3">
             <div className="flex justify-between text-[10px] text-muted mb-1">
               <span>Construction Progress</span>
@@ -193,7 +181,6 @@ export const ProjectDetailModal = ({ project, onClose }: ProjectDetailModalProps
             </div>
           </div>
 
-          {/* Price & completion */}
           <div className="flex items-center justify-between mt-4 p-3 bg-cream rounded-xl border border-border">
             <div>
               <div className="text-[10px] text-muted">Price from</div>
@@ -211,7 +198,6 @@ export const ProjectDetailModal = ({ project, onClose }: ProjectDetailModalProps
             )}
           </div>
 
-          {/* Description */}
           {project.description && (
             <div className="mt-4">
               <h3 className="font-semibold text-sm text-navy mb-1.5">About This Project</h3>
@@ -219,7 +205,6 @@ export const ProjectDetailModal = ({ project, onClose }: ProjectDetailModalProps
             </div>
           )}
 
-          {/* Video player */}
           {project.videoUrl && (
             <div className="mt-4">
               {showVideo ? (
@@ -254,27 +239,25 @@ export const ProjectDetailModal = ({ project, onClose }: ProjectDetailModalProps
             </div>
           )}
 
-          {/* Features */}
           {project.features?.length > 0 && (
             <div className="mt-4">
               <h3 className="font-semibold text-sm text-navy mb-2">Features &amp; Facilities</h3>
               <div className="flex flex-wrap gap-1.5">
                 {project.features.map((f) => (
-                  <span key={f} className="text-[10px] bg-teal/5 border border-teal/20 text-teal px-2 py-0.5 rounded-full">
-                    ✓ {f}
+                  <span key={f} className="inline-flex items-center gap-1 text-[10px] bg-teal/5 border border-teal/20 text-teal px-2 py-0.5 rounded-full">
+                    <Check size={10} />
+                    {f}
                   </span>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Location note */}
           <div className="mt-4 flex items-center gap-2 p-3 bg-cream rounded-xl border border-border text-xs text-muted">
             <MapPin size={13} className="flex-shrink-0 text-teal" />
             {project.location}{project.lga ? `, ${project.lga}` : ''}, {project.state}
           </div>
 
-          {/* CTA */}
           <div className="flex gap-3 mt-4">
             <button
               onClick={() => { onClose(); navigate('/contact'); }}

@@ -9,8 +9,6 @@ interface AddressSearchInputProps {
   onSelect: (loc: { lat: number; lng: number; displayName: string }) => void;
 }
 
-// Address search via Google Places Autocomplete — needs a billing-enabled Google Cloud project
-// (VITE_GOOGLE_MAPS_API_KEY), but gives far better Nigerian address coverage than free alternatives.
 export const AddressSearchInput = ({ latitude, longitude, onSelect }: AddressSearchInputProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const onSelectRef = useRef(onSelect);
@@ -53,8 +51,6 @@ export const AddressSearchInput = ({ latitude, longitude, onSelect }: AddressSea
 
   const hasPin = latitude != null && longitude != null;
 
-  // Uses the browser's built-in Geolocation API — free, no key, works for brand-new areas
-  // that Google's address search hasn't indexed yet, as long as the device shares its GPS/network location.
   const handleUseMyLocation = () => {
     if (!navigator.geolocation) {
       setLocationError("Your browser doesn't support geolocation.");
@@ -75,7 +71,7 @@ export const AddressSearchInput = ({ latitude, longitude, onSelect }: AddressSea
           const { results } = await geocoder.geocode({ location: { lat, lng } });
           if (results[0]) displayName = results[0].formatted_address;
         } catch {
-          // Reverse geocoding is a nice-to-have label; the coordinates themselves are already accurate.
+          return;
         }
 
         setConfirmedName(displayName);
@@ -120,7 +116,7 @@ export const AddressSearchInput = ({ latitude, longitude, onSelect }: AddressSea
         {isLocating ? <Loader2 size={12} className="animate-spin" /> : <LocateFixed size={12} />}
         {isLocating ? 'Getting your location…' : "Can't find it? Use your current GPS location"}
       </button>
-      <p className="text-[11px] text-muted mt-0.5">Best if you're physically at the property — works even for brand-new areas not yet on the map.</p>
+      <p className="text-[11px] text-muted mt-0.5">Best if you're physically at the property. It works even for brand-new areas not yet on the map.</p>
 
       {locationError && <p className="text-xs text-red-500 mt-1">{locationError}</p>}
 

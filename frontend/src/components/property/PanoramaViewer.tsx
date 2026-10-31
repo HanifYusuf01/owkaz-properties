@@ -17,10 +17,8 @@ const PANNELLUM_CSS = 'https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannel
 
 function loadPannellum(): Promise<void> {
   return new Promise((resolve) => {
-    // Already loaded
     if ((window as any).pannellum) { resolve(); return; }
 
-    // Inject CSS
     if (!document.querySelector(`link[href="${PANNELLUM_CSS}"]`)) {
       const link = document.createElement('link');
       link.rel = 'stylesheet';
@@ -28,7 +26,6 @@ function loadPannellum(): Promise<void> {
       document.head.appendChild(link);
     }
 
-    // Inject JS
     if (!document.querySelector(`script[src="${PANNELLUM_JS}"]`)) {
       const script = document.createElement('script');
       script.src = PANNELLUM_JS;
@@ -71,32 +68,27 @@ export const PanoramaViewer = ({ src, onClose }: PanoramaViewerProps) => {
     };
   }, [src]);
 
-  // Close on Escape
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  // Lock body scroll
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = ''; };
   }, []);
 
   return (
-    /* Backdrop */
     <div
       className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-8"
       onClick={onClose}
     >
-      {/* Modal panel */}
       <div
         className="relative w-full max-w-4xl rounded-2xl overflow-hidden shadow-2xl flex flex-col"
         style={{ height: '70vh' }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Toolbar */}
         <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-3 bg-gradient-to-b from-black/70 to-transparent pointer-events-none">
           <div className="flex items-center gap-2 pointer-events-auto">
             <span className="bg-teal/90 text-white text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full">
@@ -117,14 +109,12 @@ export const PanoramaViewer = ({ src, onClose }: PanoramaViewerProps) => {
           </button>
         </div>
 
-        {/* Loading state */}
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center z-20 bg-black">
             <div className="w-10 h-10 border-4 border-teal border-t-transparent rounded-full animate-spin" />
           </div>
         )}
 
-        {/* Pannellum mounts here */}
         <div ref={containerRef} className="flex-1 w-full" />
       </div>
     </div>

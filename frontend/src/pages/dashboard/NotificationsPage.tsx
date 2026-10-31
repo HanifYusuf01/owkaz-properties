@@ -1,3 +1,4 @@
+import { Bell } from 'lucide-react';
 import {
   useGetNotificationsQuery,
   useMarkNotificationReadMutation,
@@ -26,7 +27,7 @@ export const NotificationsPage = () => {
 
       {notifications.length === 0 && (
         <div className="py-20 text-center">
-          <div className="text-5xl mb-3">🔔</div>
+          <Bell size={40} className="mx-auto mb-3 text-muted" />
           <h3 className="font-semibold text-navy">No notifications</h3>
         </div>
       )}

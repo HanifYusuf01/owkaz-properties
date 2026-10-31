@@ -35,18 +35,15 @@ export const DocumentViewer = ({ documents }: DocumentViewerProps) => {
 
             return (
               <div key={i} className="flex items-center gap-3 px-4 py-3">
-                {/* File type icon */}
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${isPdf ? 'bg-red-50' : 'bg-blue-50'}`}>
                   {isPdf ? <PdfIcon /> : <ImgIcon />}
                 </div>
 
-                {/* Name + type */}
                 <div className="flex-1 min-w-0">
                   <div className="text-xs font-semibold text-navy truncate">{filename}</div>
                   <div className="text-[10px] text-muted">{isPdf ? 'PDF Document' : 'Image'}</div>
                 </div>
 
-                {/* Actions */}
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <button
                     onClick={() => setPreview(docUrl)}
@@ -70,7 +67,6 @@ export const DocumentViewer = ({ documents }: DocumentViewerProps) => {
         </div>
       </div>
 
-      {/* Inline preview modal */}
       {preview && (
         <div
           className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
@@ -80,7 +76,6 @@ export const DocumentViewer = ({ documents }: DocumentViewerProps) => {
             className="relative bg-white rounded-2xl overflow-hidden shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
               <span className="text-sm font-semibold text-navy truncate">
                 {preview.split('/').pop()}
@@ -103,7 +98,6 @@ export const DocumentViewer = ({ documents }: DocumentViewerProps) => {
               </div>
             </div>
 
-            {/* Content */}
             <div className="flex-1 overflow-auto min-h-0">
               {preview.toLowerCase().endsWith('.pdf') ? (
                 <iframe
@@ -125,8 +119,6 @@ export const DocumentViewer = ({ documents }: DocumentViewerProps) => {
     </>
   );
 };
-
-// ── Icon helpers ───────────────────────────────────────────────────────────────
 
 function DocIcon({ className }: { className?: string }) {
   return (

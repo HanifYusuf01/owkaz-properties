@@ -1,4 +1,3 @@
-/** Generates evenly-spaced, round-numbered price points between min and max for dropdown options. */
 export function generatePriceSteps(min: number, max: number, targetSteps = 6): number[] {
   if (max <= min) return [];
   const range = max - min;

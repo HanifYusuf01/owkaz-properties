@@ -29,7 +29,6 @@ import { User, UserRole } from '../users/user.entity';
 export class PropertiesController {
   constructor(private readonly propertiesService: PropertiesService) {}
 
-  // ── Public endpoints ──
 
   @Get()
   findAll(@Query() filters: FilterPropertiesDto) {
@@ -76,7 +75,6 @@ export class PropertiesController {
     return this.propertiesService.findById(id);
   }
 
-  // ── Protected endpoints ──
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
@@ -180,7 +178,6 @@ export class PropertiesController {
     return this.propertiesService.remove(id, user);
   }
 
-  // ── Property Notes ──
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()

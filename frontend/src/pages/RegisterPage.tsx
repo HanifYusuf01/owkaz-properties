@@ -26,7 +26,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 const roleDescriptions: Record<string, string> = {
-  buyer: 'Browse curated listings and submit inquiries.',
+  buyer: 'Browse reviewed listings and submit inquiries.',
   agent: 'Submit properties for review and manage your portfolio.',
   owner: 'List your own properties for approval and sale.',
 };
@@ -61,7 +61,7 @@ export const RegisterPage = () => {
         navigate('/dashboard');
       }
     } catch {
-      // handled via RTK state
+      return;
     }
   };
 
@@ -90,7 +90,7 @@ export const RegisterPage = () => {
             Join Owkaz <span className="text-gold">Properties</span>
           </div>
           <p className="mt-4 text-white/50 font-light text-base max-w-sm leading-relaxed">
-            Create your account and start your real estate journey today.
+            Create your account and start browsing properties today.
           </p>
         </div>
       </div>

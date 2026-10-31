@@ -23,7 +23,7 @@ import { formatPrice, formatDate } from '../../../utils/format';
 import { getImageUrl } from '../../../utils/imageUrl';
 import { Property, PropertyStatus, PropertyType } from '../../../types';
 import { NIGERIAN_STATES } from '../../../constants/nigerianStates';
-import { Trash2Icon } from 'lucide-react';
+import { Trash2Icon, XCircle, Home } from 'lucide-react';
 import { useAppSelector } from '../../../store';
 import { AddressSearchInput } from '../../../components/property/AddressSearchInput';
 
@@ -264,7 +264,7 @@ export const MyListingsPage = () => {
         <>
           <div className="font-semibold text-navy">{p.title}</div>
           {p.status === PropertyStatus.REJECTED && p.rejectionReason && (
-            <div className="text-xs text-red-500 mt-0.5">❌ {p.rejectionReason}</div>
+            <div className="text-xs text-red-500 mt-0.5 flex items-center gap-1"><XCircle size={12} /> {p.rejectionReason}</div>
           )}
         </>
       ),
@@ -329,7 +329,7 @@ export const MyListingsPage = () => {
         onPageChange={setPage}
         emptyState={
           <div className="py-20 text-center">
-            <div className="text-5xl mb-3">🏠</div>
+            <Home size={40} className="mx-auto mb-3 text-muted" />
             <h3 className="font-semibold text-navy">No listings yet</h3>
             <p className="text-sm text-muted mt-1 mb-4">Submit your first property for review.</p>
             <Button onClick={() => navigate('/dashboard/submit')}>Submit Property</Button>
@@ -337,11 +337,8 @@ export const MyListingsPage = () => {
         }
       />
 
-
-      {/* ── View Modal ── */}
       {viewProperty && (
         <Modal isOpen onClose={() => setViewProperty(null)} title={viewProperty.title} size="lg">
-          {/* Image gallery */}
           {viewProperty.images?.length > 0 && (
             <div className="mb-5">
               <div className="aspect-video rounded-xl overflow-hidden bg-gray-100 mb-2">
@@ -407,12 +404,10 @@ export const MyListingsPage = () => {
             </div>
           )}
 
-          {/* Agent–Admin notes */}
           <PropertyNotesSection propertyId={viewProperty.id} />
         </Modal>
       )}
 
-      {/* ── Edit & Resubmit Modal ── */}
       {editTarget && (
         <Modal
           isOpen
@@ -427,7 +422,6 @@ export const MyListingsPage = () => {
           }
         >
           <div className="space-y-5">
-            {/* Type */}
             <div>
               <label className="text-xs font-semibold uppercase tracking-wide text-navy block mb-2">Property Type</label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -510,11 +504,9 @@ export const MyListingsPage = () => {
               </div>
             </div>
 
-            {/* Images */}
             <div>
               <label className="text-xs font-semibold uppercase tracking-wide text-navy block mb-2">Photos</label>
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-3">
-                {/* Existing images */}
                 {editForm.existingImages.map((url, i) => (
                   <div key={`e-${i}`} className="relative group aspect-square rounded-lg overflow-hidden border border-border">
                     <img src={getImageUrl(url)} alt="" className="w-full h-full object-cover" />
@@ -525,7 +517,6 @@ export const MyListingsPage = () => {
                     >×</button>
                   </div>
                 ))}
-                {/* New photos */}
                 {editForm.newPhotos.map((file, i) => (
                   <div key={`n-${i}`} className="relative group aspect-square rounded-lg overflow-hidden border border-teal/40">
                     <img src={URL.createObjectURL(file)} alt="" className="w-full h-full object-cover" />
@@ -536,7 +527,6 @@ export const MyListingsPage = () => {
                     >×</button>
                   </div>
                 ))}
-                {/* Add more */}
                 {(editForm.existingImages.length + editForm.newPhotos.length) < 20 && (
                   <button
                     type="button"
@@ -553,7 +543,6 @@ export const MyListingsPage = () => {
         </Modal>
       )}
 
-      {/* Mark Sold */}
       <Modal
         isOpen={!!soldModal}
         onClose={() => setSoldModal(null)}
@@ -575,7 +564,6 @@ export const MyListingsPage = () => {
         />
       </Modal>
 
-      {/* Delete */}
       <ConfirmModal
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}

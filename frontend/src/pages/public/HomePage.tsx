@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, CheckCircle, Users, Lock, Phone, ArrowRight, Bitcoin, Gem, CircleDollarSign, Zap, Landmark, CreditCard, MapPin, BedDouble, Building2 } from 'lucide-react';
+import { Search, CheckCircle, Users, Lock, Phone, ArrowRight, Bitcoin, Gem, CircleDollarSign, Zap, Landmark, CreditCard, MapPin, BedDouble, Building2, Home, Store, TreePine, Hotel, Star } from 'lucide-react';
 import {
   useGetFeaturedPropertiesQuery,
   useGetPropertiesQuery,
@@ -12,6 +12,7 @@ import {
 import { PropertyCard } from '../../components/property/PropertyCard';
 import { PriceRangeDropdown } from '../../components/property/PriceRangeDropdown';
 import { MultilineText } from '../../components/ui/MultilineText';
+import { Avatar } from '../../components/ui/Avatar';
 import { formatPrice, formatCompactPrice } from '../../utils/format';
 import { getImageUrl } from '../../utils/imageUrl';
 import { useGetPublicStatsQuery } from '../../features/stats/statsApi';
@@ -34,35 +35,30 @@ const FEATURES = [
 
 const TESTIMONIALS = [
   {
-    text: '"Owkaz made finding our dream home incredibly easy. The search filters are precise and the agent we connected with was professional and prompt."',
+    text: '"Owkaz made finding our home much easier. The search filters are precise and the agent we connected with was professional and prompt."',
     name: 'Chukwuemeka Okafor',
     role: 'Homebuyer · Abuja',
-    avatar: '👨🏾',
   },
   {
-    text: '"Listed my property on Owkaz and had serious inquiries within 48 hours. The platform\'s reach is unmatched. Sold in 3 weeks!"',
+    text: '"Listed my property on Owkaz and had serious inquiries within 48 hours. Sold in 3 weeks!"',
     name: 'Amaka Nwosu-Eze',
     role: 'Property Seller · Lagos',
-    avatar: '👩🏾',
   },
   {
-    text: '"As a diaspora investor, I was worried about property scams. Owkaz\'s verified listings and thorough documentation gave me peace of mind."',
+    text: '"As a diaspora investor, I was worried about property scams. Owkaz\'s verified listings and thorough documentation gave me confidence."',
     name: 'Adebayo Oluwaseun',
     role: 'Investor · London / Lagos',
-    avatar: '👨🏾‍💼',
   },
 ];
 
 const PROPERTY_TYPES = [
-  { label: 'House', emoji: '🏠' },
-  { label: 'Apartment', emoji: '🏢' },
-  { label: 'Commercial', emoji: '🏪' },
-  { label: 'Land', emoji: '🌳' },
-  { label: 'Shortlet', emoji: '🏨' },
+  { label: 'House', icon: Home },
+  { label: 'Apartment', icon: Building2 },
+  { label: 'Commercial', icon: Store },
+  { label: 'Land', icon: TreePine },
+  { label: 'Shortlet', icon: Hotel },
 ];
 
-// Keeps a property grid's column count matched to how many cards are actually shown,
-// so a partial row (e.g. 3 cards in what would otherwise be a 4-col grid) never leaves dead space.
 const GRID_COLS_LG: Record<number, string> = {
   1: 'lg:grid-cols-1',
   2: 'lg:grid-cols-2',
@@ -111,14 +107,12 @@ export const HomePage = () => {
   const { data: heroSlides = [] } = useGetHeroSlidesQuery();
   const [activeHeroSlide, setActiveHeroSlide] = useState(0);
 
-  // Auto-rotate hero background images
   useEffect(() => {
     if (heroSlides.length < 2) return;
     const interval = setInterval(() => setActiveHeroSlide((i) => (i + 1) % heroSlides.length), 6000);
     return () => clearInterval(interval);
   }, [heroSlides.length]);
 
-  // Live search: debounce so results populate under the field as the user types
   useEffect(() => {
     const timeout = setTimeout(() => setLiveQuery(searchQuery), 300);
     return () => clearTimeout(timeout);
@@ -153,10 +147,6 @@ export const HomePage = () => {
     navigate(`/properties?${params.toString()}`);
   };
 
-  // Reveal a compact search header once the hero's own search card scrolls out of view.
-  // The sticky header (and its dropdown) is desktop-only (`hidden md:flex`), so this must
-  // stay false on mobile — otherwise a keyboard-triggered auto-scroll past 480px flips it
-  // true, hiding the hero's own live-results dropdown with no sticky one to replace it.
   useEffect(() => {
     const onScroll = () => setStickyVisible(window.scrollY > 480 && window.innerWidth >= 768);
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -175,7 +165,6 @@ export const HomePage = () => {
 
   return (
     <div>
-      {/* ── STICKY SEARCH HEADER (appears once the hero scrolls out of view) ── */}
       <div
         className={`fixed top-0 left-0 right-0 z-40 bg-white border-b border-border shadow-sm transition-transform duration-300 ${
           stickyVisible ? 'translate-y-0' : '-translate-y-full pointer-events-none'
@@ -310,9 +299,7 @@ export const HomePage = () => {
         </div>
       </div>
 
-      {/* ── HERO ── */}
       <section className="bg-navy relative overflow-hidden min-h-[600px]">
-        {/* Background slider — faded so it doesn't overshadow the hero content */}
         {heroSlides.length > 0 && (
           <div className="absolute inset-0">
             {heroSlides.map((slide, i) => (
@@ -328,7 +315,6 @@ export const HomePage = () => {
             <div className="absolute inset-0 bg-navy/65" />
           </div>
         )}
-        {/* Grid overlay */}
         <div
           className="absolute inset-0 opacity-[0.04]"
           style={{
@@ -338,7 +324,6 @@ export const HomePage = () => {
         />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left */}
             <div>
               <h1 className="font-display text-4xl sm:text-6xl lg:text-7xl text-white leading-tight mb-6">
                 {content.heroLine1}{' '}
@@ -377,9 +362,7 @@ export const HomePage = () => {
               </div>
             </div>
 
-            {/* Search card — glass */}
             <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-2xl" style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)' }}>
-              {/* Tabs */}
               <div className="flex gap-1 mb-5">
                 {SEARCH_TABS.map((t) => (
                   <button
@@ -472,19 +455,18 @@ export const HomePage = () => {
                 </button>
               </div>
 
-              {/* Type chips */}
               <div className="flex flex-wrap gap-2 mt-4">
-                {PROPERTY_TYPES.map(({ label, emoji }) => (
+                {PROPERTY_TYPES.map(({ label, icon: Icon }) => (
                   <button
                     key={label}
                     onClick={() => { setActiveType(label); navigate(`/properties?search=${label}`); }}
-                    className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
                       activeType === label
                         ? 'bg-teal border-teal text-white'
                         : 'border-white/20 text-white/60 hover:border-white/40 hover:text-white'
                     }`}
                   >
-                    {emoji} {label}
+                    <Icon size={12} /> {label}
                   </button>
                 ))}
               </div>
@@ -493,7 +475,6 @@ export const HomePage = () => {
         </div>
       </section>
 
-      {/* ── FEATURES STRIP ── */}
       <div className="bg-surface border-y border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
@@ -510,11 +491,9 @@ export const HomePage = () => {
         </div>
       </div>
 
-      {/* ── PAYMENT METHODS ── */}
       <div className="bg-gradient-to-r from-navy via-navy-mid to-teal py-12 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center text-center gap-6">
-            {/* Heading */}
             <div>
               <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/20 border border-gold/30 text-gold text-[10px] font-bold uppercase tracking-widest mb-3">
                 <Bitcoin size={12} /> {content.cryptoBadge}
@@ -527,7 +506,6 @@ export const HomePage = () => {
               </p>
             </div>
 
-            {/* Coin chips */}
             <div className="flex flex-wrap justify-center gap-3">
               {([
                 { icon: <Bitcoin size={20} />, label: 'Bitcoin', sub: 'BTC', color: 'bg-orange-500/20 border-orange-400/40 text-orange-300' },
@@ -557,7 +535,6 @@ export const HomePage = () => {
         </div>
       </div>
 
-      {/* ── PARTNERS ── */}
       {partners.length > 0 && (
         <div className="py-12 sm:py-14 border-b border-border">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -588,7 +565,6 @@ export const HomePage = () => {
         </div>
       )}
 
-      {/* ── FEATURED PROPERTIES ── */}
       <section className="py-16 sm:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
@@ -614,7 +590,7 @@ export const HomePage = () => {
             if (displayed.length === 0) {
               return (
                 <div className="py-16 text-center text-muted">
-                  <div className="text-5xl mb-3">🏠</div>
+                  <Home size={40} className="mx-auto mb-3 text-muted" />
                   <p className="text-sm">No featured properties at the moment.</p>
                 </div>
               );
@@ -636,7 +612,6 @@ export const HomePage = () => {
         </div>
       </section>
 
-      {/* ── LOCATIONS ── */}
       {locations.length > 0 && (
         <section className="py-16 sm:py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -680,7 +655,6 @@ export const HomePage = () => {
                 </button>
               ))}
 
-              {/* CTA tile */}
               <button
                 onClick={() => navigate('/properties')}
                 className="relative rounded-2xl overflow-hidden h-40 bg-gradient-to-br from-navy to-navy-mid flex flex-col items-center justify-center gap-2 shadow-sm hover:shadow-xl hover:opacity-95 transition-all duration-300"
@@ -695,7 +669,6 @@ export const HomePage = () => {
         </section>
       )}
 
-      {/* ── TESTIMONIALS ── */}
       <section className="py-16 sm:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-10">
@@ -707,10 +680,14 @@ export const HomePage = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {TESTIMONIALS.map((t) => (
               <div key={t.name} className="bg-white border border-border rounded-2xl p-6">
-                <div className="text-gold text-lg mb-3">★★★★★</div>
+                <div className="flex gap-0.5 text-gold mb-3">
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <Star key={i} size={18} className="fill-current" />
+                  ))}
+                </div>
                 <p className="text-sm text-muted leading-relaxed mb-5 italic">{t.text}</p>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-cream flex items-center justify-center text-xl">{t.avatar}</div>
+                  <Avatar name={t.name} className="w-10 h-10 text-base" />
                   <div>
                     <div className="text-sm font-semibold text-navy">{t.name}</div>
                     <div className="text-xs text-muted">{t.role}</div>
@@ -722,7 +699,6 @@ export const HomePage = () => {
         </div>
       </section>
 
-      {/* ── CTA BANNER ── */}
       <section className="py-10 sm:py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-navy rounded-3xl px-8 py-12 sm:px-14 sm:py-16 relative overflow-hidden">

@@ -139,7 +139,6 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       className={`fixed left-0 top-0 h-screen w-60 bg-navy flex flex-col z-50 transition-transform duration-300
         ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}
     >
-      {/* Brand */}
       <div className="px-6 py-7 border-b border-white/10 flex items-start justify-between">
         <div>
           <Link to="/">
@@ -157,7 +156,6 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         </button>
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-4">
         {sections.map((section) => (
           <div key={section.title}>
@@ -191,7 +189,6 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         ))}
       </nav>
 
-      {/* Footer */}
       <Link
         to="/"
         className="px-6 py-3 border-t border-white/10 flex items-center gap-2.5 text-white/50 hover:text-white transition-colors text-xs font-semibold"

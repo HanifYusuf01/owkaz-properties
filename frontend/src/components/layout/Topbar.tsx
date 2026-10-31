@@ -16,7 +16,6 @@ export const Topbar = ({ title, onMenuClick }: TopbarProps) => {
 
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-border px-4 sm:px-8 py-4 flex items-center gap-3">
-      {/* Hamburger — mobile only */}
       <button
         onClick={onMenuClick}
         className="md:hidden p-1.5 -ml-1 text-muted hover:text-ink transition-colors"

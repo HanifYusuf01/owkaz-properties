@@ -1,3 +1,4 @@
+import { MapPin, Tag } from 'lucide-react';
 import { useState } from 'react';
 import { useGetSoldPropertiesQuery } from '../../../features/properties/propertiesApi';
 import { PropertyCard } from '../../../components/property/PropertyCard';
@@ -24,7 +25,7 @@ export const SoldProjectsPage = () => {
       cell: (p) => (
         <>
           <div className="font-semibold text-navy">{p.title}</div>
-          <div className="text-xs text-muted">📍 {p.area}, {p.lga}</div>
+          <div className="text-xs text-muted flex items-center gap-1"><MapPin size={12} /> {p.area}, {p.lga}</div>
         </>
       ),
     },
@@ -34,13 +35,13 @@ export const SoldProjectsPage = () => {
       key: 'sale',
       header: 'Sale Price',
       className: 'font-semibold text-blue-700',
-      cell: (p) => (p.salePrice ? formatPrice(p.salePrice) : '—'),
+      cell: (p) => (p.salePrice ? formatPrice(p.salePrice) : '-'),
     },
     {
       key: 'sold-date',
       header: 'Sold Date',
       className: 'text-muted',
-      cell: (p) => (p.soldAt ? formatDate(p.soldAt) : '—'),
+      cell: (p) => (p.soldAt ? formatDate(p.soldAt) : '-'),
     },
     { key: 'provider', header: 'Provider', className: 'text-muted', cell: (p) => p.submittedBy?.name },
     { key: 'status', header: 'Status', cell: (p) => <Badge status={p.status} /> },
@@ -48,7 +49,6 @@ export const SoldProjectsPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
         <h3 className="text-sm font-bold text-blue-800">Sold Projects</h3>
         <p className="text-xs text-blue-600 mt-0.5">
@@ -56,7 +56,6 @@ export const SoldProjectsPage = () => {
         </p>
       </div>
 
-      {/* Search */}
       <Input
         placeholder="Search sold properties..."
         value={search}
@@ -75,14 +74,13 @@ export const SoldProjectsPage = () => {
         onPageChange={setPage}
         emptyState={
           <div className="py-20 text-center bg-white border border-border rounded-xl">
-            <div className="text-4xl mb-3">🏷</div>
+            <Tag size={40} className="mx-auto mb-3 text-muted" />
             <h3 className="font-semibold text-navy">No sold properties yet</h3>
             <p className="text-sm text-muted mt-1">Properties marked as sold will appear here.</p>
           </div>
         }
       />
 
-      {/* Cards view */}
       {properties.length > 0 && (
         <div>
           <h3 className="font-display text-xl text-navy mb-4">Gallery View</h3>

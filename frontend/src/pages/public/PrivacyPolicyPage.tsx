@@ -24,7 +24,7 @@ export const PrivacyPolicyPage = () => (
       {
         heading: '3. Sharing of Information',
         body: [
-          'We share only the information necessary to complete a transaction — for example, your contact details are shared with an agent when you submit an enquiry on their listing.',
+          'We share only the information necessary to complete a transaction, for example, your contact details are shared with an agent when you submit an enquiry on their listing.',
           'We do not sell your personal information to third parties. We may share limited data with service providers who help us operate the platform (such as hosting or payment processors), under confidentiality obligations.',
         ],
       },

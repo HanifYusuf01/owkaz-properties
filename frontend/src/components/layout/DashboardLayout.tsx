@@ -29,7 +29,6 @@ export const DashboardLayout = () => {
 
   return (
     <div className="flex min-h-screen bg-cream">
-      {/* Mobile overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 md:hidden"

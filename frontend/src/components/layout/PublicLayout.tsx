@@ -27,18 +27,14 @@ export const PublicLayout = () => {
     <div className="min-h-screen flex flex-col">
       <PublicNavbar />
 
-      {/* Buyers get a permanently docked sidebar on desktop — shift the rest of the page over for it */}
       <div className={`flex-1 flex flex-col ${isBuyer ? 'md:ml-64' : ''}`}>
-      {/* Page content */}
       <main className="flex-1">
         <Outlet />
       </main>
 
-      {/* Footer */}
       <footer className="bg-navy text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
-            {/* Brand */}
             <div>
               <div className="flex items-center gap-2.5 mb-4">
                 <img src="/OWKAZ LOGO.png" alt="Owkaz" className="h-12" />
@@ -48,7 +44,6 @@ export const PublicLayout = () => {
               </p>
             </div>
 
-            {/* Properties */}
             <div>
               <div className="text-[10px] font-bold uppercase tracking-widest text-white/30 mb-4">Properties</div>
               <div className="flex flex-col gap-2.5">
@@ -60,7 +55,6 @@ export const PublicLayout = () => {
               </div>
             </div>
 
-            {/* Contact */}
             <div>
               <div className="text-[10px] font-bold uppercase tracking-widest text-white/30 mb-4">Contact Us</div>
               <div className="flex flex-col gap-3">
@@ -108,7 +102,6 @@ export const PublicLayout = () => {
               )}
             </div>
 
-            {/* Support */}
             <div>
               <div className="text-[10px] font-bold uppercase tracking-widest text-white/30 mb-4">Support</div>
               <div className="flex flex-col gap-2.5">
@@ -118,7 +111,6 @@ export const PublicLayout = () => {
             </div>
           </div>
 
-          {/* Payment icons */}
           <div className="mt-10 pt-8 border-t border-white/10">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
               <span className="text-[10px] uppercase tracking-widest text-white/30 font-semibold whitespace-nowrap">We Accept</span>
@@ -139,7 +131,6 @@ export const PublicLayout = () => {
             </div>
           </div>
 
-          {/* Date/time */}
           <div className="mt-6 pt-6 border-t border-white/10">
             <FooterClock />
           </div>

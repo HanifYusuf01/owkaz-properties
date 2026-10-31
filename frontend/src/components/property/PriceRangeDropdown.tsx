@@ -8,9 +8,7 @@ interface PriceRangeDropdownProps {
   valueMax: string;
   onChangeMin: (v: string) => void;
   onChangeMax: (v: string) => void;
-  /** Use on dark backgrounds (e.g. the homepage hero). */
   dark?: boolean;
-  /** 'stacked' = separately labeled Min/Max fields. 'inline' = one row with a "to" divider. */
   variant?: 'stacked' | 'inline';
 }
 

@@ -137,11 +137,10 @@ export class AuthService {
 
   async forgotPassword(dto: ForgotPasswordDto): Promise<void> {
     const user = await this.usersService.findByEmail(dto.email);
-    // Always return success to avoid user enumeration
     if (!user) return;
 
     const token = crypto.randomBytes(32).toString('hex');
-    const expiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    const expiry = new Date(Date.now() + 60 * 60 * 1000);
     const tokenHash = await bcrypt.hash(token, 10);
 
     await this.usersService.setPasswordResetToken(user.id, tokenHash, expiry);
@@ -149,7 +148,6 @@ export class AuthService {
   }
 
   async resetPassword(dto: ResetPasswordDto): Promise<void> {
-    // Find users with a non-expired reset token
     const user = await this.usersService.findByResetToken(dto.token);
     if (!user) throw new BadRequestException('Invalid or expired reset token');
 

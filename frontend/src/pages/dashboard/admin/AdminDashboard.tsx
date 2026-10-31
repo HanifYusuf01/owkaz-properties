@@ -1,3 +1,4 @@
+import { Home, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useGetAdminPropertiesQuery } from '../../../features/properties/propertiesApi';
 import { useGetInquiriesQuery } from '../../../features/inquiries/inquiriesApi';
@@ -37,7 +38,6 @@ export const AdminDashboard = () => {
 
   return (
     <div className="space-y-8">
-      {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Total Listings" value={properties.length} color="bg-navy" />
         <StatCard label="Published" value={approved.length} color="bg-green-500" />
@@ -45,9 +45,7 @@ export const AdminDashboard = () => {
         <StatCard label="Sold" value={sold.length} color="bg-blue-500" />
       </div>
 
-      {/* Two-col grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Pending approvals */}
         <div className="bg-white border border-border rounded-xl overflow-hidden">
           <div className="px-6 py-4 border-b border-border flex items-center justify-between">
             <h3 className="font-display text-lg text-navy">Pending Approvals</h3>
@@ -58,7 +56,7 @@ export const AdminDashboard = () => {
           <div>
             {pending.slice(0, 4).map((p) => (
               <div key={p.id} className="px-6 py-4 border-b border-border last:border-0 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-cream flex items-center justify-center text-lg">🏠</div>
+                <div className="w-8 h-8 rounded-lg bg-cream flex items-center justify-center "><Home size={16} className="text-muted" /></div>
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold text-sm text-navy truncate">{p.title}</div>
                   <div className="text-xs text-muted">{p.lga}, {p.state} · {p.submittedBy?.name}</div>
@@ -68,14 +66,13 @@ export const AdminDashboard = () => {
             ))}
             {pending.length === 0 && (
               <div className="py-12 text-center text-muted text-sm">
-                <div className="text-3xl mb-2">✨</div>
+                <CheckCircle2 size={32} className="mx-auto mb-2 text-muted" />
                 Queue is clear!
               </div>
             )}
           </div>
         </div>
 
-        {/* New inquiries */}
         <div className="bg-white border border-border rounded-xl overflow-hidden">
           <div className="px-6 py-4 border-b border-border flex items-center justify-between">
             <h3 className="font-display text-lg text-navy">New Inquiries</h3>
@@ -98,7 +95,6 @@ export const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Recent table */}
       <div>
         <h3 className="font-display text-lg text-navy mb-3">Recent Listings</h3>
         <DataTable

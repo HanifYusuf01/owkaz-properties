@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Bed, Bath, Maximize, MapPin, Bookmark, BookmarkCheck } from 'lucide-react';
+import { Bed, Bath, Maximize, MapPin, Bookmark, BookmarkCheck, Home } from 'lucide-react';
 import { Property } from '../../types';
 import { formatPrice } from '../../utils/format';
 import { getImageUrl } from '../../utils/imageUrl';
@@ -22,12 +22,11 @@ export const PropertyCard = ({ property, showStatus = false, actions, onCardClic
       className="bg-white border border-border rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all duration-200"
       onClick={() => onCardClick ? onCardClick(property) : navigate(`/properties/${property.id}`)}
     >
-      {/* Image */}
       <div className="relative h-48 bg-gray-100 overflow-hidden flex items-center justify-center">
         {property.images?.[0] ? (
           <img src={getImageUrl(property.images[0])} alt={property.title} className="w-full h-full object-cover" />
         ) : (
-          <span className="text-6xl opacity-20">🏠</span>
+          <Home size={60} className="text-navy opacity-20" />
         )}
         <div className="absolute top-3 left-3 flex gap-2">
           {property.featured && <span className="bg-gold text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Featured</span>}
@@ -49,7 +48,6 @@ export const PropertyCard = ({ property, showStatus = false, actions, onCardClic
         </div>
       </div>
 
-      {/* Info */}
       <div className="p-4">
         <div className="flex items-start justify-between gap-2 mb-2">
           <h3 className="font-semibold text-sm text-navy leading-snug">{property.title}</h3>

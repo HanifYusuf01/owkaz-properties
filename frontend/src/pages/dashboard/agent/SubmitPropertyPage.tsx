@@ -1,3 +1,4 @@
+import { Building2, Building, Home, Store, Warehouse, AlertTriangle, Camera, Globe, Film, CheckCircle2, type LucideIcon } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCreatePropertyMutation, useUploadImagesMutation, useUploadDocumentsMutation, useUploadVideoMutation } from '../../../features/properties/propertiesApi';
@@ -8,13 +9,13 @@ import { AddressSearchInput } from '../../../components/property/AddressSearchIn
 import { PropertyType } from '../../../types';
 import { NIGERIAN_STATES } from '../../../constants/nigerianStates';
 
-const PROPERTY_TYPES: { type: PropertyType; emoji: string }[] = [
-  { type: PropertyType.APARTMENT,       emoji: '🏢' },
-  { type: PropertyType.BLOCK_OF_FLATS,  emoji: '🏗️' },
-  { type: PropertyType.FULLY_DETACHED,  emoji: '🏡' },
-  { type: PropertyType.SEMI_DETACHED,   emoji: '🏘️' },
-  { type: PropertyType.TERRACED,        emoji: '🏚️' },
-  { type: PropertyType.DUPLEX,          emoji: '🏠' },
+const PROPERTY_TYPES: { type: PropertyType; icon: LucideIcon }[] = [
+  { type: PropertyType.APARTMENT,       icon: Building2 },
+  { type: PropertyType.BLOCK_OF_FLATS,  icon: Building },
+  { type: PropertyType.FULLY_DETACHED,  icon: Home },
+  { type: PropertyType.SEMI_DETACHED,   icon: Store },
+  { type: PropertyType.TERRACED,        icon: Warehouse },
+  { type: PropertyType.DUPLEX,          icon: Home },
 ];
 
 const AMENITIES = ['Pool', 'BQ', 'Generator', 'CCTV', 'Gym', 'Elevator', 'Concierge', 'Smart Home', 'Security', 'Parking'];
@@ -26,14 +27,11 @@ const STEPS = [
   { n: 4, label: 'REVIEW' },
 ];
 
-// ─── Stepper Header ───────────────────────────────────────────────────────────
-
 function StepHeader({ current }: { current: number }) {
   return (
     <div className="flex items-center justify-center mb-8 px-2">
       {STEPS.map((s, i) => (
         <div key={s.n} className="flex items-center">
-          {/* connector */}
           {i > 0 && (
             <div className={`h-px w-12 sm:w-20 ${current > s.n - 1 ? 'bg-teal' : 'bg-gray-200'}`} />
           )}
@@ -60,8 +58,6 @@ function StepHeader({ current }: { current: number }) {
     </div>
   );
 }
-
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 type FormState = {
   type: PropertyType | '';
@@ -93,9 +89,7 @@ const initial: FormState = {
   panoramaFile: null, panoramaUrl: '', videoFile: null, videoUrl: '', documents: [], documentUrls: [],
 };
 
-const MAX_VIDEO_SIZE = 15 * 1024 * 1024; // 15MB
-
-// ─── Main Component ───────────────────────────────────────────────────────────
+const MAX_VIDEO_SIZE = 15 * 1024 * 1024;
 
 export const SubmitPropertyPage = () => {
   const navigate = useNavigate();
@@ -116,7 +110,6 @@ export const SubmitPropertyPage = () => {
   const set = (field: keyof FormState, value: unknown) =>
     setForm((prev) => ({ ...prev, [field]: value }));
 
-  // ── Validation per step ──
   const validate = (s: number): Record<string, string> => {
     const e: Record<string, string> = {};
     if (s === 1 && !form.type) e.type = 'Please select a property type';
@@ -137,32 +130,27 @@ export const SubmitPropertyPage = () => {
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setErrors({});
 
-    // Upload photos, panorama, and documents when leaving step 3
     if (step === 3) {
       setUploading(true);
       try {
-        // Regular photos
         if (form.photos.length > 0 && form.photoUrls.length === 0) {
           const fd = new FormData();
           form.photos.forEach((f) => fd.append('files', f));
           const { urls } = await uploadImages(fd).unwrap();
           set('photoUrls', urls);
         }
-        // Panorama
         if (form.panoramaFile && !form.panoramaUrl) {
           const fd = new FormData();
           fd.append('files', form.panoramaFile);
           const { urls } = await uploadImages(fd).unwrap();
           set('panoramaUrl', urls[0] ?? '');
         }
-        // Property video
         if (form.videoFile && !form.videoUrl) {
           const fd = new FormData();
           fd.append('files', form.videoFile);
           const { urls } = await uploadVideo(fd).unwrap();
           set('videoUrl', urls[0] ?? '');
         }
-        // Supporting documents
         if (form.documents.length > 0 && form.documentUrls.length === 0) {
           const fd = new FormData();
           form.documents.forEach((f) => fd.append('files', f));
@@ -186,7 +174,7 @@ export const SubmitPropertyPage = () => {
     if (!files) return;
     const arr = Array.from(files).filter((f) => f.type.startsWith('image/'));
     set('photos', [...form.photos, ...arr].slice(0, 20));
-    set('photoUrls', []); // reset URLs so they re-upload on next advance
+    set('photoUrls', []);
   };
 
   const removePhoto = (i: number) => {
@@ -227,11 +215,8 @@ export const SubmitPropertyPage = () => {
     }
   };
 
-  // ─────────────────────────────────────────────────────────────────────────────
-
   return (
     <div className="max-w-2xl mx-auto">
-      {/* Agency fee disclaimer */}
       <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5 flex gap-3">
         <span className="text-amber-500 mt-0.5 flex-shrink-0">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -246,14 +231,13 @@ export const SubmitPropertyPage = () => {
 
       <StepHeader current={step} />
 
-      {/* ── Step 1: Type ── */}
       {step === 1 && (
         <div className="bg-white border border-border rounded-2xl overflow-hidden">
           <div className="px-6 py-5 border-b border-border">
             <h3 className="font-display text-xl text-navy">Select Property Type</h3>
           </div>
           <div className="p-6 grid grid-cols-2 sm:grid-cols-3 gap-4">
-            {PROPERTY_TYPES.map(({ type, emoji }) => (
+            {PROPERTY_TYPES.map(({ type, icon: TypeIcon }) => (
               <button
                 key={type}
                 type="button"
@@ -264,7 +248,7 @@ export const SubmitPropertyPage = () => {
                     : 'border-border hover:border-teal/40 bg-white'
                   }`}
               >
-                <span className="text-4xl">{emoji}</span>
+                <TypeIcon size={40} className="text-muted" />
                 <span className="font-semibold text-sm text-navy leading-tight">{type}</span>
               </button>
             ))}
@@ -276,7 +260,6 @@ export const SubmitPropertyPage = () => {
         </div>
       )}
 
-      {/* ── Step 2: Details ── */}
       {step === 2 && (
         <div className="bg-white border border-border rounded-2xl overflow-hidden">
           <div className="px-6 py-5 border-b border-border">
@@ -348,7 +331,7 @@ export const SubmitPropertyPage = () => {
               {errors.description && <p className="text-xs text-red-500 mt-1">{errors.description}</p>}
             </div>
             <div className="flex items-start gap-3 p-4 bg-red-50 border-l-4 border-red-400 rounded-lg">
-              <span className="text-red-500 mt-0.5">⚠️</span>
+              <AlertTriangle size={18} className="text-red-500 mt-0.5 flex-shrink-0" />
               <div>
                 <p className="text-xs font-bold uppercase tracking-wide text-red-700 mb-0.5">Important</p>
                 <p className="text-xs text-red-700">Do NOT include any phone numbers, email addresses, or WhatsApp links anywhere in your listing. Violations will result in immediate rejection.</p>
@@ -362,7 +345,6 @@ export const SubmitPropertyPage = () => {
         </div>
       )}
 
-      {/* ── Step 3: Specs & Media ── */}
       {step === 3 && (
         <div className="bg-white border border-border rounded-2xl overflow-hidden">
           <div className="px-6 py-5 border-b border-border">
@@ -398,13 +380,12 @@ export const SubmitPropertyPage = () => {
             <div>
               <label className="text-xs font-semibold uppercase tracking-wide text-navy block mb-3">Photos</label>
 
-              {/* Upload zone */}
               <div
                 onClick={() => fileInputRef.current?.click()}
                 className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors hover:border-teal/60
                   ${errors.photos ? 'border-red-400 bg-red-50' : 'border-gray-300 bg-gray-50 hover:bg-teal/5'}`}
               >
-                <div className="text-4xl mb-2">📷</div>
+                <Camera size={40} className="mx-auto mb-2 text-muted" />
                 <p className="text-sm text-muted font-medium">Click to upload images (min. 1, max. 20)</p>
                 <p className="text-xs text-muted mt-1">JPG, PNG (max 5 MB per image)</p>
               </div>
@@ -418,7 +399,6 @@ export const SubmitPropertyPage = () => {
               />
               {errors.photos && <p className="text-xs text-red-500 mt-1">{errors.photos}</p>}
 
-              {/* Photo previews */}
               {form.photos.length > 0 && (
                 <div className="mt-4 grid grid-cols-3 sm:grid-cols-4 gap-3">
                   {form.photos.map((file, i) => (
@@ -450,7 +430,6 @@ export const SubmitPropertyPage = () => {
               )}
             </div>
 
-            {/* 360° Panorama upload */}
             <div className="border-t border-border pt-6">
               <div className="flex items-center gap-2 mb-3">
                 <label className="text-xs font-semibold uppercase tracking-wide text-navy">360° Panorama Image</label>
@@ -477,7 +456,7 @@ export const SubmitPropertyPage = () => {
                   onClick={() => panoramaInputRef.current?.click()}
                   className="border-2 border-dashed border-gray-300 rounded-xl p-5 text-center cursor-pointer hover:border-teal/60 hover:bg-teal/5 transition-colors"
                 >
-                  <div className="text-2xl mb-1">🌐</div>
+                  <Globe size={24} className="mx-auto mb-1 text-muted" />
                   <p className="text-sm text-muted font-medium">Click to upload panorama image</p>
                   <p className="text-xs text-muted mt-0.5">Equirectangular JPG/PNG (max 20 MB)</p>
                 </div>
@@ -494,7 +473,6 @@ export const SubmitPropertyPage = () => {
               />
             </div>
 
-            {/* Property Video */}
             <div className="border-t border-border pt-6">
               <div className="flex items-center gap-2 mb-3">
                 <label className="text-xs font-semibold uppercase tracking-wide text-navy">Property Video</label>
@@ -519,7 +497,7 @@ export const SubmitPropertyPage = () => {
                   onClick={() => videoInputRef.current?.click()}
                   className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-colors hover:border-teal/60 hover:bg-teal/5 ${errors.video ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
                 >
-                  <div className="text-2xl mb-1">🎬</div>
+                  <Film size={24} className="mx-auto mb-1 text-muted" />
                   <p className="text-sm text-muted font-medium">Click to upload a property video</p>
                   <p className="text-xs text-muted mt-0.5">MP4, WebM, MOV (max 15 MB)</p>
                 </div>
@@ -534,7 +512,7 @@ export const SubmitPropertyPage = () => {
                   const file = e.target.files?.[0];
                   if (!file) return;
                   if (file.size > MAX_VIDEO_SIZE) {
-                    setErrors((prev) => ({ ...prev, video: `Video is ${(file.size / (1024 * 1024)).toFixed(1)} MB — max size is 15 MB.` }));
+                    setErrors((prev) => ({ ...prev, video: `Video is ${(file.size / (1024 * 1024)).toFixed(1)} MB. Max size is 15 MB.` }));
                     if (videoInputRef.current) videoInputRef.current.value = '';
                     return;
                   }
@@ -545,7 +523,6 @@ export const SubmitPropertyPage = () => {
               />
             </div>
 
-            {/* Supporting Documents */}
             <div className="border-t border-border pt-6">
               <div className="flex items-center gap-2 mb-1">
                 <label className="text-xs font-semibold uppercase tracking-wide text-navy">Supporting Documents</label>
@@ -602,7 +579,6 @@ export const SubmitPropertyPage = () => {
         </div>
       )}
 
-      {/* ── Step 4: Review ── */}
       {step === 4 && (
         <div className="bg-white border border-border rounded-2xl overflow-hidden">
           <div className="px-6 py-5 border-b border-border">
@@ -617,9 +593,9 @@ export const SubmitPropertyPage = () => {
               <ReviewField label="LGA" value={form.lga} />
               <ReviewField label="Exact Location" value={form.latitude != null ? 'Pinned' : 'Not pinned'} />
               <ReviewField label="Video" value={form.videoFile ? 'Attached' : 'None'} />
-              <ReviewField label="Size" value={form.sqm ? `${form.sqm} m²` : '—'} />
-              <ReviewField label="Bedrooms" value={form.beds || '—'} />
-              <ReviewField label="Bathrooms" value={form.baths || '—'} />
+              <ReviewField label="Size" value={form.sqm ? `${form.sqm} m²` : '-'} />
+              <ReviewField label="Bedrooms" value={form.beds || '-'} />
+              <ReviewField label="Bathrooms" value={form.baths || '-'} />
             </div>
 
             {form.amenities.length > 0 && (
@@ -666,7 +642,7 @@ export const SubmitPropertyPage = () => {
             )}
 
             <div className="mt-5 flex items-start gap-3 p-4 bg-green-50 border-l-4 border-green-400 rounded-lg">
-              <span className="text-lg">✅</span>
+              <CheckCircle2 size={20} className="text-green-600 flex-shrink-0" />
               <div>
                 <p className="text-xs font-bold uppercase tracking-wide text-green-800 mb-0.5">What Happens Next</p>
                 <p className="text-xs text-green-700">After submission, your listing enters our review queue. The Owkaz team will review within 24–48 hours. You'll be notified when it's approved or if any changes are needed.</p>
@@ -680,7 +656,7 @@ export const SubmitPropertyPage = () => {
           <div className="px-6 pb-6 flex justify-between">
             <Button variant="ghost" onClick={back}>← Back</Button>
             <Button variant="gold" onClick={onSubmit} loading={submitting} size="lg">
-              Submit for Approval ✓
+              Submit for Approval
             </Button>
           </div>
         </div>

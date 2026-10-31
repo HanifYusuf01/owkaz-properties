@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search } from 'lucide-react';
+import { Search, Building2 } from 'lucide-react';
 import { useGetProjectsQuery } from '../../features/projects/projectsApi';
 import { formatPrice } from '../../utils/format';
 import { getImageUrl } from '../../utils/imageUrl';
@@ -49,7 +49,6 @@ export const ProjectsPage = () => {
   const { data: projectsData, isLoading } = useGetProjectsQuery({ search: search || undefined, limit: 1000 });
   const projects = projectsData?.data ?? [];
 
-  // Real-time stats derived from the whole project portfolio, not just the (possibly search-filtered) list above
   const { data: allProjectsData } = useGetProjectsQuery({ limit: 1000 }, { skip: !search });
   const allProjects = search ? (allProjectsData?.data ?? []) : projects;
 
@@ -71,7 +70,6 @@ export const ProjectsPage = () => {
 
   return (
     <div>
-      {/* Hero */}
       <div className="bg-navy py-16 sm:py-24 relative overflow-hidden">
         <div
           className="absolute inset-0 opacity-[0.04]"
@@ -99,7 +97,6 @@ export const ProjectsPage = () => {
         </div>
       </div>
 
-      {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
@@ -107,7 +104,6 @@ export const ProjectsPage = () => {
             <h2 className="font-display text-2xl sm:text-3xl text-navy mt-1">Current & Upcoming Developments</h2>
           </div>
           <div className="flex gap-3">
-            {/* Search */}
             <div className="relative">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
               <input
@@ -142,7 +138,7 @@ export const ProjectsPage = () => {
           </div>
         ) : projects.length === 0 ? (
           <div className="py-24 text-center">
-            <div className="text-5xl mb-3">🏗️</div>
+            <Building2 size={40} className="mx-auto mb-3 text-muted" />
             <h3 className="font-semibold text-navy text-lg">No projects found</h3>
             <p className="text-sm text-muted mt-1">
               {search ? 'Try a different search term.' : 'Check back soon. New developments are coming.'}
@@ -161,7 +157,6 @@ export const ProjectsPage = () => {
                 onClick={() => navigate(`/projects/${project.id}`)}
                 className="bg-white border border-border rounded-2xl overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-200 cursor-pointer"
               >
-                {/* Image / gradient */}
                 <div className={`h-48 bg-gradient-to-br ${CARD_GRADS[idx % CARD_GRADS.length]} relative overflow-hidden`}>
                   {project.images?.[0] ? (
                     <img
@@ -174,17 +169,14 @@ export const ProjectsPage = () => {
                       <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5"><path strokeLinecap="round" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                     </div>
                   )}
-                  {/* Status badge */}
                   <div className={`absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold border ${STATUS_STYLES[project.status] ?? 'bg-surface text-muted border-border'}`}>
                     {STATUS_LABELS[project.status] ?? project.status}
                   </div>
-                  {/* Progress bar */}
                   <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/20">
                     <div className="h-full bg-gold transition-all" style={{ width: `${project.progress}%` }} />
                   </div>
                 </div>
 
-                {/* Content */}
                 <div className="p-5">
                   <div className="text-[10px] font-bold uppercase tracking-widest text-teal mb-1">{project.type}</div>
                   <h3 className="font-display text-lg text-navy leading-tight mb-1">{project.name}</h3>
@@ -193,7 +185,6 @@ export const ProjectsPage = () => {
                     {project.location}, {project.state}
                   </div>
 
-                  {/* Progress label */}
                   <div className="mb-4">
                     <div className="flex justify-between text-[10px] text-muted mb-1">
                       <span>Progress</span>
@@ -204,7 +195,6 @@ export const ProjectsPage = () => {
                     </div>
                   </div>
 
-                  {/* Price + View button */}
                   <div className="flex items-end justify-between">
                     <div>
                       <div className="text-[10px] text-muted">
@@ -231,7 +221,6 @@ export const ProjectsPage = () => {
         )}
       </div>
 
-      {/* Developer CTA */}
       <section className="py-10 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-navy rounded-3xl px-8 py-12 sm:px-14 sm:py-16 relative overflow-hidden">
@@ -249,7 +238,7 @@ export const ProjectsPage = () => {
                   Are You a Developer<br />or Estate Builder?
                 </h2>
                 <p className="text-white/60 text-sm leading-relaxed">
-                  Partner with Owkaz to market and sell your residential or commercial development projects. Reach thousands of serious buyers across Nigeria and the diaspora.
+                  Partner with Owkaz to market and sell your residential or commercial development projects. Reach buyers across Nigeria and the diaspora.
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-3 lg:justify-end">

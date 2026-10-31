@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useSendContactMessageMutation } from '../../features/contact/contactApi';
 import { useGetContentQuery } from '../../features/content/contentApi';
 import { PAGE_CONTENT } from '../../features/content/pageContentConfig';
-import { Locate, Phone, Mail, MessageCircleWarning } from 'lucide-react';
+import { Locate, Phone, Mail, MessageCircleWarning, CheckCircle2 } from 'lucide-react';
 import { googleMapsEmbedUrl, googleMapsSearchUrl } from '../../utils/googleMapsLink';
 
 const OFFICES = [
@@ -82,7 +82,6 @@ export const ContactPage = () => {
 
   return (
     <div>
-      {/* Hero */}
       <div className="bg-navy py-16 sm:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <span className="text-[10px] font-bold uppercase tracking-widest text-teal-light">Get In Touch</span>
@@ -92,11 +91,9 @@ export const ContactPage = () => {
         </div>
       </div>
 
-      {/* Main grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
         <div className="grid lg:grid-cols-2 gap-12">
 
-          {/* Left — contact info */}
           <div>
             <h2 className="font-display text-3xl text-navy mb-2">Let's Have a<br />Conversation</h2>
             <p className="text-muted text-sm leading-relaxed mb-8">
@@ -118,7 +115,6 @@ export const ContactPage = () => {
               ))}
             </div>
 
-            {/* Lagos branch */}
             <div className="mt-8 p-5 bg-cream border border-border rounded-2xl">
               <div className="font-semibold text-navy mb-1">Lagos Branch Office</div>
               <div className="text-sm text-muted leading-relaxed">14 Idowu Martins Street, Victoria Island, Lagos State</div>
@@ -126,11 +122,10 @@ export const ContactPage = () => {
             </div>
           </div>
 
-          {/* Right — form */}
           <div className="bg-white border border-border rounded-2xl p-6 sm:p-8 shadow-sm">
             {sent ? (
               <div className="text-center py-10">
-                <div className="text-5xl mb-4">✅</div>
+                <CheckCircle2 size={48} className="mx-auto mb-4 text-teal" />
                 <h3 className="font-display text-2xl text-navy mb-2">Message Sent!</h3>
                 <p className="text-sm text-muted">
                   Thanks for reaching out. We'll get back to you within 24 hours.
@@ -244,7 +239,6 @@ export const ContactPage = () => {
         </div>
       </div>
 
-      {/* Office map */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-14">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <div className="flex gap-2">

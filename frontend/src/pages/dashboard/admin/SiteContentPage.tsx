@@ -24,7 +24,6 @@ import { getImageUrl } from '../../../utils/imageUrl';
 
 const PAGE_KEYS = Object.keys(PAGE_CONTENT);
 
-// Only backend uploads (/uploads/...) need API-origin resolution; frontend static assets (e.g. /owkaz-building.jpg) don't.
 const resolveImg = (path: string) => (path?.startsWith('/uploads/') ? getImageUrl(path) : path);
 
 const PageEditor = ({ page }: { page: string }) => {
@@ -120,7 +119,7 @@ const PageEditor = ({ page }: { page: string }) => {
           <Save size={16} /> Save Changes
         </Button>
         {savedAt && Date.now() - savedAt < 4000 && (
-          <span className="text-xs text-green-600 font-medium">Saved — live on the site now.</span>
+          <span className="text-xs text-green-600 font-medium">Saved. Live on the site now.</span>
         )}
       </div>
     </div>

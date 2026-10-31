@@ -18,12 +18,10 @@ export class UsersService {
     private notificationsService: NotificationsService,
   ) {}
 
-  /** All non-bot admin accounts — used to fan out admin-facing notifications/emails. */
   async findAdmins(): Promise<User[]> {
     return this.usersRepo.find({ where: { role: UserRole.ADMIN, isBot: false } });
   }
 
-  /** The "Owkaz Assistant" system account used to post automated welcome/AI chat replies. */
   async getOrCreateBotUser(): Promise<User> {
     const existing = await this.usersRepo.findOne({ where: { isBot: true } });
     if (existing) return existing;
@@ -100,10 +98,8 @@ export class UsersService {
   }
 
   async requestRole(user: User, requestedRole: 'agent' | 'owner'): Promise<{ message: string }> {
-    // Save request on user record
     await this.usersRepo.update(user.id, { roleRequest: requestedRole });
 
-    // Notify all admins
     const admins = await this.usersRepo.find({ where: { role: UserRole.ADMIN } });
     await Promise.all(
       admins.map((admin) =>

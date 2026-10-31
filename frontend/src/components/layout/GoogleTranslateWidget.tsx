@@ -1,9 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronDown, Languages } from 'lucide-react';
 
-// Google Translate's widget mutates text nodes directly, which can clash with React's own
-// reconciliation (removeChild/insertBefore on nodes GT has already rearranged). This patches
-// both to fail softly instead of throwing, which is the standard mitigation for this combo.
 function patchDomForGoogleTranslate() {
   if ((window as { __gtDomPatched?: boolean }).__gtDomPatched) return;
   (window as { __gtDomPatched?: boolean }).__gtDomPatched = true;
@@ -28,11 +25,11 @@ function patchDomForGoogleTranslate() {
 }
 
 const LANGUAGES = [
-  { code: 'en', label: 'English', flag: '🇬🇧' },
-  { code: 'ha', label: 'Hausa', flag: '🇳🇬' },
-  { code: 'yo', label: 'Yorùbá', flag: '🇳🇬' },
-  { code: 'ig', label: 'Igbo', flag: '🇳🇬' },
-  { code: 'pcm', label: 'Pidgin', flag: '🇳🇬' },
+  { code: 'en', label: 'English' },
+  { code: 'ha', label: 'Hausa' },
+  { code: 'yo', label: 'Yorùbá' },
+  { code: 'ig', label: 'Igbo' },
+  { code: 'pcm', label: 'Pidgin' },
 ];
 
 const COOKIE_NAME = 'googtrans';
@@ -104,7 +101,6 @@ export const GoogleTranslateWidget = () => {
 
   return (
     <>
-      {/* Hidden Google widget the custom UI below drives */}
       <div id="google_translate_element" style={{ display: 'none' }} />
 
       <div ref={ref} className="fixed bottom-5 right-5 z-[100] notranslate" translate="no">
@@ -116,7 +112,7 @@ export const GoogleTranslateWidget = () => {
           className="flex items-center gap-2 pl-3 pr-2.5 py-2.5 rounded-full bg-navy text-white shadow-xl border border-white/10 hover:bg-navy-mid transition-colors disabled:opacity-60"
         >
           <Languages size={16} />
-          <span className="text-xs font-semibold">{active.flag} {active.label}</span>
+          <span className="text-xs font-semibold">{active.label}</span>
           <ChevronDown size={13} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
         </button>
 
@@ -131,7 +127,7 @@ export const GoogleTranslateWidget = () => {
                   l.code === current ? 'bg-cream text-navy font-semibold' : 'text-ink hover:bg-cream'
                 }`}
               >
-                <span>{l.flag}</span> {l.label}
+                {l.label}
               </button>
             ))}
           </div>

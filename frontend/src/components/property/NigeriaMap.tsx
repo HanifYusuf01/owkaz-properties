@@ -16,13 +16,6 @@ interface NigeriaMapProps {
 const WIDTH = 620;
 const HEIGHT = 620;
 
-/**
- * The geoBoundaries dataset traces back to Esri shapefiles, which wind polygon rings
- * clockwise — the opposite of the GeoJSON RFC7946 (and d3-geo) convention. Left as-is,
- * d3 reads each state as "the whole globe minus this shape" (geoArea ≈ 4π), so every
- * path's bounds collapse to the full canvas and only the last-painted state is visible.
- * Detect that (area > half the sphere) and reverse the rings to fix it.
- */
 function fixRingWinding(features: StateFeature[]): StateFeature[] {
   return features.map((f) => {
     if (geoArea(f as unknown as GeoPermissibleObjects) <= Math.PI) return f;
@@ -98,7 +91,7 @@ export const NigeriaMap = ({ stateCounts, onSelectState }: NigeriaMapProps) => {
               onMouseLeave={() => setHovered(null)}
               onClick={() => onSelectState(name)}
             >
-              <title>{name}{hasListings ? ` — ${count} listing${count !== 1 ? 's' : ''}` : ' — no listings yet'}</title>
+              <title>{name}{hasListings ? `: ${count} listing${count !== 1 ? 's' : ''}` : ': no listings yet'}</title>
             </path>
           );
         })}

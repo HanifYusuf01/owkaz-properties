@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, MapPin, Eye, Bed, Bath, Maximize, Bookmark, BookmarkCheck } from 'lucide-react';
+import { X, MapPin, Eye, Bed, Bath, Maximize, Bookmark, BookmarkCheck, Home, MessageCircle, CheckCircle2, Check } from 'lucide-react';
 import { Property } from '../../types';
 import { formatPrice } from '../../utils/format';
 import { getImageUrl } from '../../utils/imageUrl';
@@ -60,7 +60,6 @@ export const PropertyDetailModal = ({ property, onClose }: PropertyDetailModalPr
         className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Image */}
         <div className="relative h-52 bg-gray-100 overflow-hidden rounded-t-2xl flex-shrink-0">
           {images ? (
             <img
@@ -70,10 +69,9 @@ export const PropertyDetailModal = ({ property, onClose }: PropertyDetailModalPr
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <span className="text-6xl opacity-20">🏠</span>
+              <Home size={60} className="text-navy opacity-20" />
             </div>
           )}
-          {/* Thumbnails row */}
           {images && images.length > 1 && (
             <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
               {images.slice(0, 5).map((_, i) => (
@@ -85,29 +83,24 @@ export const PropertyDetailModal = ({ property, onClose }: PropertyDetailModalPr
               ))}
             </div>
           )}
-          {/* Close */}
           <button
             onClick={onClose}
             className="absolute top-3 right-3 w-8 h-8 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-colors"
           >
             <X size={15} />
           </button>
-          {/* Brand */}
           <div className="absolute top-3 left-3 bg-navy/80 backdrop-blur-sm px-2.5 py-1 rounded-lg">
             <span className="font-display text-xs text-white">Owkaz <span className="text-gold">Properties</span></span>
           </div>
         </div>
 
-        {/* Body */}
         <div className="p-5">
-          {/* Title & location */}
           <h2 className="font-display text-xl text-navy leading-tight">{property.title}</h2>
           <div className="flex items-center gap-1 text-xs text-muted mt-1">
             <MapPin size={12} />
             <span>{property.area}, {property.lga}, {property.state}</span>
           </div>
 
-          {/* Price row */}
           <div className="flex items-center justify-between mt-4 p-3 bg-cream rounded-xl border border-border">
             <div>
               <div className="font-display text-2xl text-navy">{formatPrice(property.price)}</div>
@@ -126,7 +119,6 @@ export const PropertyDetailModal = ({ property, onClose }: PropertyDetailModalPr
             </button>
           </div>
 
-          {/* Stats */}
           <div className="grid grid-cols-4 gap-2 mt-3">
             {property.beds != null && (
               <div className="bg-white border border-border rounded-xl p-2.5 text-center">
@@ -156,7 +148,6 @@ export const PropertyDetailModal = ({ property, onClose }: PropertyDetailModalPr
             </div>
           </div>
 
-          {/* Description */}
           {property.description && (
             <div className="mt-4">
               <h3 className="font-semibold text-sm text-navy mb-1.5">Description</h3>
@@ -164,30 +155,28 @@ export const PropertyDetailModal = ({ property, onClose }: PropertyDetailModalPr
             </div>
           )}
 
-          {/* Amenities */}
           {property.amenities?.length > 0 && (
             <div className="mt-4">
               <h3 className="font-semibold text-sm text-navy mb-2">Amenities</h3>
               <div className="flex flex-wrap gap-1.5">
                 {property.amenities.map((a) => (
-                  <span key={a} className="text-[10px] bg-teal/5 border border-teal/20 text-teal px-2 py-0.5 rounded-full">
-                    ✓ {a}
+                  <span key={a} className="inline-flex items-center gap-1 text-[10px] bg-teal/5 border border-teal/20 text-teal px-2 py-0.5 rounded-full">
+                    <Check size={10} />
+                    {a}
                   </span>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Location note */}
           <div className="mt-4 flex items-center gap-2 p-3 bg-cream rounded-xl border border-border text-xs text-muted">
             <MapPin size={13} className="flex-shrink-0 text-teal" />
             Approximate location · Exact address provided after inquiry
           </div>
 
-          {/* Inquiry section */}
           <div className="mt-4 p-4 bg-teal/5 border border-teal/20 rounded-xl">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-lg">🏡</span>
+              <MessageCircle size={18} className="text-teal" />
               <span className="text-sm font-semibold text-navy">Interested in this property?</span>
             </div>
             <p className="text-xs text-muted mb-3 leading-relaxed">
@@ -195,7 +184,7 @@ export const PropertyDetailModal = ({ property, onClose }: PropertyDetailModalPr
             </p>
             {sent ? (
               <div className="text-center py-2">
-                <div className="text-2xl mb-1">✅</div>
+                <div className="flex justify-center mb-1"><CheckCircle2 size={24} className="text-green-600" /></div>
                 <div className="text-sm font-semibold text-navy">Enquiry Sent!</div>
                 <p className="text-xs text-muted mt-0.5">We'll follow up within 24 hours.</p>
               </div>
@@ -223,7 +212,6 @@ export const PropertyDetailModal = ({ property, onClose }: PropertyDetailModalPr
             )}
           </div>
 
-          {/* Action buttons */}
           {!sent && (
             <div className="flex gap-3 mt-4">
               <button
@@ -242,7 +230,7 @@ export const PropertyDetailModal = ({ property, onClose }: PropertyDetailModalPr
                 disabled={isSending || !message.trim()}
                 className="flex-[2] py-2.5 rounded-xl bg-teal text-white text-xs font-semibold hover:bg-teal-light transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {isSending ? 'Sending…' : user ? 'Submit Inquiry' : 'Sign In to Inquire'}
+                {isSending ? 'Sending...' : user ? 'Submit Inquiry' : 'Sign In to Inquire'}
               </button>
             </div>
           )}

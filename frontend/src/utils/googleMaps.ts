@@ -1,11 +1,5 @@
 let loadPromise: Promise<typeof google> | null = null;
 
-/**
- * Loads the Google Maps JS API (Places library only — used for address autocomplete).
- * Uses the official `callback` param rather than `<script>.onload`, because with
- * `loading=async` the outer script can finish loading before the `places` library
- * itself has finished attaching to `window.google.maps` — checking onload alone races that.
- */
 export function loadGoogleMaps(): Promise<typeof google> {
   if (window.google?.maps?.places) return Promise.resolve(window.google);
   if (loadPromise) return loadPromise;

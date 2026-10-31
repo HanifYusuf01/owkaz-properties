@@ -1,14 +1,12 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 
-// Layout
 import { DashboardLayout } from './components/layout/DashboardLayout';
 import { PublicLayout } from './components/layout/PublicLayout';
 import { AuthLayout } from './components/layout/AuthLayout';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
 import { GoogleTranslateWidget } from './components/layout/GoogleTranslateWidget';
 
-// Public pages
 import { HomePage } from './pages/public/HomePage';
 import { PropertiesPage } from './pages/public/PropertiesPage';
 import { SoldPropertiesPage } from './pages/public/SoldPropertiesPage';
@@ -23,13 +21,11 @@ import { TermsOfUsePage } from './pages/public/TermsOfUsePage';
 import { CookiePolicyPage } from './pages/public/CookiePolicyPage';
 import { BuyerProfilePage } from './pages/public/BuyerProfilePage';
 
-// Auth pages
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 
-// Dashboard pages
 import { DashboardPage } from './pages/dashboard/DashboardPage';
 import { ApprovalQueuePage } from './pages/dashboard/admin/ApprovalQueuePage';
 import { AllListingsPage } from './pages/dashboard/admin/AllListingsPage';
@@ -63,7 +59,6 @@ function AppContent() {
     <>
       <GoogleTranslateWidget />
       <Routes>
-      {/* Public marketing site */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/properties" element={<PropertiesPage />} />
@@ -78,7 +73,6 @@ function AppContent() {
         <Route path="/terms-of-use" element={<TermsOfUsePage />} />
         <Route path="/cookie-policy" element={<CookiePolicyPage />} />
 
-        {/* Buyer pages — require auth, live in public layout */}
         <Route element={<ProtectedRoute allowedRoles={[UserRole.BUYER]} />}>
           <Route path="/saved" element={<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"><h1 className="font-display text-2xl text-navy mb-6">Saved Properties</h1><SavedPropertiesPage /></div>} />
           <Route path="/my-inquiries" element={<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"><h1 className="font-display text-2xl text-navy mb-6">My Inquiries</h1><MyInquiriesPage /></div>} />
@@ -86,7 +80,6 @@ function AppContent() {
         </Route>
       </Route>
 
-      {/* Public auth routes */}
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
@@ -94,14 +87,12 @@ function AppContent() {
         <Route path="/reset-password" element={<ResetPasswordPage />} />
       </Route>
 
-      {/* Dashboard — protected */}
       <Route element={<ProtectedRoute />}>
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/dashboard/notifications" element={<NotificationsPage />} />
           <Route path="/dashboard/profile" element={<ProfilePage />} />
 
-          {/* Admin only */}
           <Route element={<ProtectedRoute allowedRoles={[UserRole.ADMIN]} />}>
             <Route path="/dashboard/approval-queue" element={<ApprovalQueuePage />} />
             <Route path="/dashboard/listings" element={<AllListingsPage />} />
@@ -113,13 +104,11 @@ function AppContent() {
             <Route path="/dashboard/site-content" element={<SiteContentPage />} />
           </Route>
 
-          {/* Agent / Owner */}
           <Route element={<ProtectedRoute allowedRoles={[UserRole.AGENT, UserRole.OWNER]} />}>
             <Route path="/dashboard/my-listings" element={<MyListingsPage />} />
             <Route path="/dashboard/submit" element={<SubmitPropertyPage />} />
           </Route>
 
-          {/* Buyer */}
           <Route element={<ProtectedRoute allowedRoles={[UserRole.BUYER]} />}>
             <Route path="/dashboard/browse" element={<BrowsePage />} />
             <Route path="/dashboard/featured" element={<BrowsePage />} />
@@ -129,7 +118,6 @@ function AppContent() {
         </Route>
       </Route>
 
-      {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>

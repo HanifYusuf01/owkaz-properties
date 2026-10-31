@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { PlusCircle, Pencil, Trash2, Play } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, Play, Building2, Camera, Film } from 'lucide-react';
 import {
   useGetProjectsQuery,
   useCreateProjectMutation,
@@ -151,7 +151,6 @@ export const ProjectsManagementPage = () => {
   const removeNew = (i: number) =>
     set('newPhotos', form.newPhotos.filter((_, idx) => idx !== i));
 
-  // Step 1 → Step 2: upload assets and advance to preview
   const handlePreview = async () => {
     setUploadError('');
     setIsUploading(true);
@@ -182,7 +181,6 @@ export const ProjectsManagementPage = () => {
     }
   };
 
-  // Step 2 → Save: create or update project
   const handleSave = async () => {
     const allImages = [...form.existingImages, ...previewImageUrls];
     const videoUrl = previewVideoUrl || form.existingVideoUrl || null;
@@ -324,7 +322,7 @@ export const ProjectsManagementPage = () => {
         onPageChange={setPage}
         emptyState={
           <div className="py-16 text-center bg-white border border-border rounded-xl">
-            <div className="text-4xl mb-3">🏗️</div>
+            <Building2 size={40} className="mx-auto mb-3 text-muted" />
             <h3 className="font-semibold text-navy">No projects yet</h3>
             <p className="text-sm text-muted mt-1 mb-4">Add your first development project.</p>
             <Button onClick={openCreate}><PlusCircle size={14} className="mr-1.5" /> Add Project</Button>
@@ -332,7 +330,6 @@ export const ProjectsManagementPage = () => {
         }
       />
 
-      {/* Create / Edit modal */}
       <Modal
         isOpen={modalOpen}
         onClose={closeModal}
@@ -358,7 +355,6 @@ export const ProjectsManagementPage = () => {
       >
         {step === 1 ? (
           <div className="space-y-5">
-            {/* Basic info */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input label="Project Name *" placeholder="e.g. Emerald Gardens Estate" value={form.name}
                 onChange={(e) => set('name', e.target.value)} />
@@ -398,7 +394,6 @@ export const ProjectsManagementPage = () => {
               </div>
             </div>
 
-            {/* Pricing & units */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <Input label="Price From (₦)" type="number" placeholder="45000000" value={form.priceFrom}
                 onChange={(e) => set('priceFrom', e.target.value)} />
@@ -410,7 +405,6 @@ export const ProjectsManagementPage = () => {
                 onChange={(e) => set('availableUnits', e.target.value)} />
             </div>
 
-            {/* Progress & dates */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Input label="Progress (%)" type="number" placeholder="0–100" value={form.progress}
                 onChange={(e) => set('progress', e.target.value)} />
@@ -428,7 +422,6 @@ export const ProjectsManagementPage = () => {
               </div>
             </div>
 
-            {/* Description */}
             <div>
               <label className="text-xs font-semibold uppercase tracking-wide text-navy block mb-1.5">Description</label>
               <textarea
@@ -440,7 +433,6 @@ export const ProjectsManagementPage = () => {
               />
             </div>
 
-            {/* Features chips */}
             <div>
               <label className="text-xs font-semibold uppercase tracking-wide text-navy block mb-2">Features & Amenities</label>
               <div className="flex flex-wrap gap-2">
@@ -464,14 +456,13 @@ export const ProjectsManagementPage = () => {
               )}
             </div>
 
-            {/* Image upload */}
             <div>
               <label className="text-xs font-semibold uppercase tracking-wide text-navy block mb-2">Project Images</label>
               <div
                 onClick={() => fileInputRef.current?.click()}
                 className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:border-teal/60 hover:bg-teal/5 transition-colors"
               >
-                <div className="text-3xl mb-1">📷</div>
+                <Camera size={32} className="mx-auto mb-1 text-muted" />
                 <p className="text-sm text-muted font-medium">Click to upload images (max 20)</p>
                 <p className="text-xs text-muted mt-0.5">JPG, PNG, WEBP (max 10 MB each)</p>
               </div>
@@ -516,7 +507,6 @@ export const ProjectsManagementPage = () => {
               )}
             </div>
 
-            {/* Video upload */}
             <div>
               <label className="text-xs font-semibold uppercase tracking-wide text-navy block mb-2">Project Video</label>
               {(form.existingVideoUrl && !form.newVideoFile) && (
@@ -545,7 +535,7 @@ export const ProjectsManagementPage = () => {
                   onClick={() => videoInputRef.current?.click()}
                   className="border-2 border-dashed border-gray-300 rounded-xl p-5 text-center cursor-pointer hover:border-teal/60 hover:bg-teal/5 transition-colors"
                 >
-                  <div className="text-2xl mb-1">🎬</div>
+                  <Film size={24} className="mx-auto mb-1 text-muted" />
                   <p className="text-sm text-muted font-medium">Click to upload a status video</p>
                   <p className="text-xs text-muted mt-0.5">MP4, WebM, MOV (max 200 MB)</p>
                 </div>
@@ -566,13 +556,11 @@ export const ProjectsManagementPage = () => {
             {uploadError && <p className="text-xs text-red-500">{uploadError}</p>}
           </div>
         ) : (
-          /* ── Preview Step ── */
           <div className="space-y-5">
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-700">
               Review all details below. Click <strong>Create Project</strong> to publish, or <strong>← Back</strong> to make changes.
             </div>
 
-            {/* Images */}
             {allPreviewImages.length > 0 && (
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-navy mb-2">Photos ({allPreviewImages.length})</p>
@@ -586,7 +574,6 @@ export const ProjectsManagementPage = () => {
               </div>
             )}
 
-            {/* Video */}
             {previewVideoUrl && (
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-navy mb-2">Status Video</p>
@@ -598,7 +585,6 @@ export const ProjectsManagementPage = () => {
               </div>
             )}
 
-            {/* Details grid */}
             <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-widest text-muted mb-0.5">Project Name</p>
@@ -621,7 +607,7 @@ export const ProjectsManagementPage = () => {
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-widest text-muted mb-0.5">Price Range</p>
                 <p className="font-semibold text-navy">
-                  {form.priceFrom ? formatPrice(Number(form.priceFrom)) : '—'}
+                  {form.priceFrom ? formatPrice(Number(form.priceFrom)) : '-'}
                   {form.priceTo ? ` to ${formatPrice(Number(form.priceTo))}` : ''}
                 </p>
               </div>
@@ -667,7 +653,6 @@ export const ProjectsManagementPage = () => {
         )}
       </Modal>
 
-      {/* Delete confirm */}
       <ConfirmModal
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}

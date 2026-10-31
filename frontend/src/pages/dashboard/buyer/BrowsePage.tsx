@@ -1,3 +1,4 @@
+import { Search } from 'lucide-react';
 import { useState } from 'react';
 import {
   useGetPropertiesQuery,
@@ -43,12 +44,11 @@ export const BrowsePage = () => {
 
   return (
     <div className="space-y-5">
-      {/* Filters */}
       <div className="bg-white border border-border rounded-xl p-4 space-y-4">
         <div className="flex gap-3 flex-wrap items-end">
           <div className="flex-1 min-w-[180px]">
             <Input
-              placeholder="🔍 Search by name or area..."
+              placeholder="Search by name or area..."
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             />
@@ -103,12 +103,11 @@ export const BrowsePage = () => {
           </div>
           {properties.length === 0 && (
             <div className="py-20 text-center">
-              <div className="text-5xl mb-3">🔍</div>
+              <Search size={40} className="mx-auto mb-3 text-muted" />
               <h3 className="font-semibold text-navy">No listings found</h3>
               <p className="text-sm text-muted mt-1">Try adjusting your filters.</p>
             </div>
           )}
-          {/* Pagination */}
           {data && data.totalPages > 1 && (
             <div className="flex justify-center gap-2">
               <Button variant="ghost" size="sm" disabled={page === 1} onClick={() => setPage(page - 1)}>← Prev</Button>

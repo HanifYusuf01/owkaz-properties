@@ -101,7 +101,7 @@ export const UsersPage = () => {
         </div>
       ),
     },
-    { key: 'agency', header: 'Agency', className: 'text-muted whitespace-nowrap', cell: (u) => u.agency || '—' },
+    { key: 'agency', header: 'Agency', className: 'text-muted whitespace-nowrap', cell: (u) => u.agency || '-' },
     { key: 'status', header: 'Status', cell: (u) => <Badge status={u.status} /> },
     { key: 'joined', header: 'Joined', className: 'text-muted whitespace-nowrap', cell: (u) => formatDate(u.createdAt) },
     {
@@ -128,7 +128,6 @@ export const UsersPage = () => {
 
   return (
     <div className="space-y-4">
-      {/* Role filter */}
       <div className="flex gap-1 bg-cream rounded-xl p-1 w-fit overflow-x-auto">
         {roles.map((r) => (
           <button

@@ -1,3 +1,4 @@
+import { CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useGetPropertiesQuery } from '../../../features/properties/propertiesApi';
 import { useGetMyInquiriesQuery } from '../../../features/inquiries/inquiriesApi';
@@ -12,7 +13,6 @@ export const BuyerDashboard = () => {
 
   return (
     <div className="space-y-8">
-      {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="bg-white border border-border rounded-xl p-6 relative overflow-hidden">
           <div className="absolute right-0 top-0 bottom-0 w-1 rounded-r-xl bg-navy" />
@@ -34,15 +34,13 @@ export const BuyerDashboard = () => {
         </div>
       </div>
 
-      {/* Callout */}
       <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-        <h5 className="text-xs font-bold uppercase tracking-wide text-green-800 mb-1">✅ Safe & Curated Marketplace</h5>
+        <h5 className="text-xs font-bold uppercase tracking-wide text-green-800 mb-1 flex items-center gap-1.5"><CheckCircle2 size={14} /> Reviewed listings</h5>
         <p className="text-xs text-green-700">
           Every listing on Owkaz is reviewed by our team. Inquire on any property and our agents will coordinate everything, so you'll never need to contact a seller directly.
         </p>
       </div>
 
-      {/* Featured listings */}
       <div>
         <h3 className="font-display text-xl text-navy mb-4">Featured Listings</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">

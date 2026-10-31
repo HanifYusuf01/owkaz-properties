@@ -28,7 +28,7 @@ import { HeroSlidesModule } from './hero-slides/hero-slides.module';
         password: config.get('DB_PASSWORD', 'postgres'),
         database: config.get('DB_NAME', 'owkaz'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: true, // disable in production
+        synchronize: true,
         logging: false,
       }),
       inject: [ConfigService],

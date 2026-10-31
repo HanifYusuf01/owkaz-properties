@@ -103,7 +103,6 @@ export const ListPropertyPage = () => {
 
   return (
     <div>
-      {/* ── Hero ── */}
       <div className="bg-gradient-to-br from-navy to-navy-mid py-16 sm:py-20 relative overflow-hidden text-center">
         <div
           className="absolute inset-0 opacity-[0.04]"
@@ -121,12 +120,11 @@ export const ListPropertyPage = () => {
             List Your Property<br />on Owkaz
           </h1>
           <p className="text-white/60 text-base leading-relaxed">
-            Reach thousands of serious buyers and renters across Nigeria.
+            Reach buyers and renters across Nigeria.
           </p>
         </div>
       </div>
 
-      {/* ── Steps ── */}
       <div className="bg-cream border-b border-border py-14">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-10">
@@ -150,7 +148,6 @@ export const ListPropertyPage = () => {
         </div>
       </div>
 
-      {/* ── Plans ── */}
       <div className="py-14">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-10">
@@ -207,7 +204,6 @@ export const ListPropertyPage = () => {
         </div>
       </div>
 
-      {/* ── Contact note ── */}
       <div className="bg-cream border-y border-border py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6 text-sm text-muted">
@@ -223,7 +219,6 @@ export const ListPropertyPage = () => {
         </div>
       </div>
 
-      {/* ── Listing Form ── */}
       <div id="listing-form" className="bg-white py-14">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-10">

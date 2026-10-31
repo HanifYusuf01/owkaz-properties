@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, MapPin, ChevronLeft, ChevronRight, Play, X } from 'lucide-react';
+import { ArrowLeft, MapPin, ChevronLeft, ChevronRight, Play, X, Building2, Check } from 'lucide-react';
 import { useGetProjectByIdQuery } from '../../features/projects/projectsApi';
 import { formatPrice } from '../../utils/format';
 import { getImageUrl } from '../../utils/imageUrl';
@@ -37,7 +37,7 @@ export const ProjectDetailPage = () => {
   if (!project) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-        <div className="text-5xl mb-3">🏗️</div>
+        <Building2 size={40} className="mx-auto mb-3 text-muted" />
         <h2 className="font-display text-2xl text-navy mb-2">Project Not Found</h2>
         <p className="text-muted text-sm mb-6">This project may have been removed or is no longer available.</p>
         <button
@@ -59,7 +59,6 @@ export const ProjectDetailPage = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Back */}
       <button
         onClick={() => navigate('/projects')}
         className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-navy transition-colors mb-6"
@@ -68,9 +67,7 @@ export const ProjectDetailPage = () => {
         Back to Projects
       </button>
 
-      {/* Hero gallery */}
       <div className="relative rounded-2xl overflow-hidden bg-gray-100 mb-8">
-        {/* Main image */}
         <div
           className="relative h-72 sm:h-96 cursor-pointer group"
           onClick={() => hasImages && openLightbox(activeImg)}
@@ -91,7 +88,6 @@ export const ProjectDetailPage = () => {
             </div>
           )}
 
-          {/* Hover hint */}
           {hasImages && (
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
               <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">
@@ -100,24 +96,20 @@ export const ProjectDetailPage = () => {
             </div>
           )}
 
-          {/* Image counter */}
           {images.length > 1 && (
             <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm text-white text-xs font-semibold px-2.5 py-1 rounded-full">
               {activeImg + 1} / {images.length}
             </div>
           )}
 
-          {/* Status badge */}
           <div className={`absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-bold border ${STATUS_STYLES[project.status] ?? 'bg-surface text-muted border-border'}`}>
             {STATUS_LABELS[project.status] ?? project.status}
           </div>
 
-          {/* Progress bar */}
           <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-black/20">
             <div className="h-full bg-gold transition-all" style={{ width: `${project.progress}%` }} />
           </div>
 
-          {/* Video button */}
           {project.videoUrl && (
             <button
               onClick={(e) => { e.stopPropagation(); setShowVideo(true); }}
@@ -128,7 +120,6 @@ export const ProjectDetailPage = () => {
           )}
         </div>
 
-        {/* Arrow navigation */}
         {images.length > 1 && (
           <>
             <button
@@ -147,7 +138,6 @@ export const ProjectDetailPage = () => {
         )}
       </div>
 
-      {/* Thumbnail strip */}
       {images.length > 1 && (
         <div className="flex gap-2 mb-8 overflow-x-auto pb-1">
           {images.map((img, i) => (
@@ -164,9 +154,7 @@ export const ProjectDetailPage = () => {
         </div>
       )}
 
-      {/* Content grid */}
       <div className="grid lg:grid-cols-[1fr_340px] gap-8">
-        {/* Left column */}
         <div>
           <p className="text-xs font-bold uppercase tracking-widest text-teal mb-1">{project.type}</p>
           <h1 className="font-display text-3xl sm:text-4xl text-navy leading-tight mb-2">{project.name}</h1>
@@ -175,7 +163,6 @@ export const ProjectDetailPage = () => {
             <span>{project.location}{project.lga ? `, ${project.lga}` : ''}, {project.state}</span>
           </div>
 
-          {/* Progress */}
           <div className="mb-6">
             <div className="flex justify-between text-xs text-muted mb-1.5">
               <span>Construction Progress</span>
@@ -186,7 +173,6 @@ export const ProjectDetailPage = () => {
             </div>
           </div>
 
-          {/* Stats row */}
           <div className="grid grid-cols-3 gap-3 mb-8">
             <div className="bg-cream border border-border rounded-xl p-4 text-center">
               <div className="font-bold text-navy text-2xl">{project.totalUnits}</div>
@@ -204,7 +190,6 @@ export const ProjectDetailPage = () => {
             </div>
           </div>
 
-          {/* Video player */}
           {project.videoUrl && (
             <div className="mb-8">
               {showVideo ? (
@@ -241,7 +226,6 @@ export const ProjectDetailPage = () => {
             </div>
           )}
 
-          {/* Description */}
           {project.description && (
             <div className="mb-8">
               <h2 className="font-display text-xl text-navy mb-3">About This Project</h2>
@@ -249,7 +233,6 @@ export const ProjectDetailPage = () => {
             </div>
           )}
 
-          {/* Features */}
           {project.features?.length > 0 && (
             <div className="mb-8">
               <h2 className="font-display text-xl text-navy mb-3">Features & Facilities</h2>
@@ -257,7 +240,7 @@ export const ProjectDetailPage = () => {
                 {project.features.map((f) => (
                   <div key={f} className="flex items-center gap-2 text-sm text-muted">
                     <span className="w-5 h-5 rounded-full bg-teal/10 text-teal flex items-center justify-center text-xs font-bold flex-shrink-0">
-                      ✓
+                      <Check size={12} strokeWidth={3} />
                     </span>
                     {f}
                   </div>
@@ -266,16 +249,13 @@ export const ProjectDetailPage = () => {
             </div>
           )}
 
-          {/* Location */}
           <div className="flex items-start gap-2 p-4 bg-cream rounded-xl border border-border text-sm text-muted">
             <MapPin size={15} className="text-teal flex-shrink-0 mt-0.5" />
             <span>{project.location}{project.lga ? `, ${project.lga}` : ''}, {project.state}</span>
           </div>
         </div>
 
-        {/* Right sidebar */}
         <div className="space-y-4">
-          {/* Price card */}
           <div className="bg-white border border-border rounded-2xl p-5 sticky top-6">
             <div className="mb-4">
               <p className="text-xs text-muted">{project.priceTo ? 'Price Range' : 'Starting from'}</p>
@@ -326,7 +306,6 @@ export const ProjectDetailPage = () => {
         </div>
       </div>
 
-      {/* Lightbox */}
       {lightboxOpen && hasImages && (
         <div
           className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"

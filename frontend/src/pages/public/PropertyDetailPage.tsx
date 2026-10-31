@@ -1,6 +1,6 @@
 import { lazy, Suspense, useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Bed, Bath, Maximize, MapPin, Eye, View, X, ChevronLeft, ChevronRight, Play, Bookmark, BookmarkCheck } from 'lucide-react';
+import { ArrowLeft, Bed, Bath, Maximize, MapPin, Eye, View, X, ChevronLeft, ChevronRight, Play, Bookmark, BookmarkCheck, Home, Tag, CheckCircle2, Check, Phone, MessageCircle } from 'lucide-react';
 
 const PanoramaViewer = lazy(() =>
   import('../../components/property/PanoramaViewer').then((m) => ({ default: m.PanoramaViewer }))
@@ -84,7 +84,7 @@ export const PropertyDetailPage = () => {
   if (!property) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-        <div className="text-5xl mb-3">🏚️</div>
+        <Home size={40} className="mx-auto mb-3 text-muted" />
         <h2 className="font-display text-2xl text-navy mb-2">Property Not Found</h2>
         <p className="text-muted text-sm mb-6">This property may have been removed or is no longer available.</p>
         <button
@@ -106,7 +106,6 @@ export const PropertyDetailPage = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Back */}
       <button
         onClick={() => navigate(isSold ? '/sold-properties' : '/properties')}
         className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-navy transition-colors mb-6"
@@ -115,9 +114,7 @@ export const PropertyDetailPage = () => {
         Back to {isSold ? 'Sold Properties' : 'Properties'}
       </button>
 
-      {/* Gallery */}
       <div className="grid grid-cols-3 gap-3 rounded-2xl overflow-hidden h-64 sm:h-80 mb-8">
-        {/* Main image */}
         <div
           className="col-span-2 relative bg-gray-100 flex items-center justify-center overflow-hidden cursor-pointer group"
           onClick={() => images && openLightbox(activeImg)}
@@ -129,9 +126,8 @@ export const PropertyDetailPage = () => {
               className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
             />
           ) : (
-            <span className="text-8xl opacity-20">🏠</span>
+            <Home size={96} className="text-white opacity-20" />
           )}
-          {/* Expand hint */}
           {images && (
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
               <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">
@@ -159,7 +155,6 @@ export const PropertyDetailPage = () => {
             </button>
           )}
         </div>
-        {/* Thumbnails */}
         <div className="flex flex-col gap-3">
           {images ? (
             <>
@@ -198,7 +193,6 @@ export const PropertyDetailPage = () => {
         </div>
       </div>
 
-      {/* 360° banner — shown when panorama is available */}
       {property.panoramaUrl && (
         <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-gradient-to-r from-navy to-teal rounded-2xl px-5 py-4">
           <div className="flex items-center gap-3">
@@ -219,11 +213,8 @@ export const PropertyDetailPage = () => {
         </div>
       )}
 
-      {/* Content layout */}
       <div className="grid lg:grid-cols-[1fr_380px] gap-8">
-        {/* Main content */}
         <div>
-          {/* Badges */}
           <div className="flex flex-wrap gap-2 mb-4">
             {isSold && (
               <span className="bg-gold/10 text-gold text-xs font-bold px-3 py-1 rounded-full border border-gold/20">
@@ -235,8 +226,8 @@ export const PropertyDetailPage = () => {
                 Featured
               </span>
             )}
-            <span className="bg-teal/10 text-teal text-xs font-bold px-3 py-1 rounded-full border border-teal/20">
-              ✓ Verified
+            <span className="inline-flex items-center gap-1 bg-teal/10 text-teal text-xs font-bold px-3 py-1 rounded-full border border-teal/20">
+              <Check size={12} strokeWidth={3} /> Verified
             </span>
             <span className="bg-cream text-muted text-xs font-semibold px-3 py-1 rounded-full border border-border">
               {property.type}
@@ -263,7 +254,6 @@ export const PropertyDetailPage = () => {
             <span>{property.area}, {property.lga}, {property.state}</span>
           </div>
 
-          {/* Price row */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 p-4 bg-cream rounded-2xl border border-border">
             <div>
               <div className="font-display text-3xl text-navy">
@@ -284,37 +274,35 @@ export const PropertyDetailPage = () => {
             </div>
           </div>
 
-          {/* Specs grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
             {property.beds != null && (
               <div className="bg-white border border-border rounded-xl p-4 text-center">
-                <div className="text-2xl mb-1">🛏️</div>
+                <Bed size={24} className="mx-auto mb-1 text-teal" />
                 <div className="font-bold text-navy text-lg">{property.beds}</div>
                 <div className="text-xs text-muted">Bedrooms</div>
               </div>
             )}
             {property.baths != null && (
               <div className="bg-white border border-border rounded-xl p-4 text-center">
-                <div className="text-2xl mb-1">🚿</div>
+                <Bath size={24} className="mx-auto mb-1 text-teal" />
                 <div className="font-bold text-navy text-lg">{property.baths}</div>
                 <div className="text-xs text-muted">Bathrooms</div>
               </div>
             )}
             {property.sqm != null && (
               <div className="bg-white border border-border rounded-xl p-4 text-center">
-                <div className="text-2xl mb-1">📐</div>
+                <Maximize size={24} className="mx-auto mb-1 text-teal" />
                 <div className="font-bold text-navy text-lg">{property.sqm}</div>
                 <div className="text-xs text-muted">sqm Total</div>
               </div>
             )}
             <div className="bg-white border border-border rounded-xl p-4 text-center">
-              <div className="text-2xl mb-1">📍</div>
+              <MapPin size={24} className="mx-auto mb-1 text-teal" />
               <div className="font-bold text-navy text-sm leading-tight">{property.state}</div>
               <div className="text-xs text-muted">State</div>
             </div>
           </div>
 
-          {/* Description */}
           {property.description && (
             <div className="mb-8">
               <h2 className="font-display text-xl text-navy mb-3">Property Description</h2>
@@ -322,7 +310,6 @@ export const PropertyDetailPage = () => {
             </div>
           )}
 
-          {/* Amenities */}
           {property.amenities?.length > 0 && (
             <div className="mb-8">
               <h2 className="font-display text-xl text-navy mb-3">Amenities & Features</h2>
@@ -330,7 +317,7 @@ export const PropertyDetailPage = () => {
                 {property.amenities.map((a) => (
                   <div key={a} className="flex items-center gap-2 text-sm text-muted">
                     <span className="w-5 h-5 rounded-full bg-teal/10 text-teal flex items-center justify-center text-xs font-bold flex-shrink-0">
-                      ✓
+                      <Check size={12} strokeWidth={3} />
                     </span>
                     {a}
                   </div>
@@ -339,7 +326,6 @@ export const PropertyDetailPage = () => {
             </div>
           )}
 
-          {/* Property video */}
           {property.videoUrl && (
             <div className="mb-8">
               {showVideo ? (
@@ -376,7 +362,6 @@ export const PropertyDetailPage = () => {
             </div>
           )}
 
-          {/* Location */}
           <div className="mb-8">
             <h2 className="font-display text-xl text-navy mb-3">Location</h2>
             <div className="rounded-2xl border border-border overflow-hidden">
@@ -403,7 +388,6 @@ export const PropertyDetailPage = () => {
             </div>
           </div>
 
-          {/* Property details table */}
           <div className="mb-8">
             <h2 className="font-display text-xl text-navy mb-3">Property Details</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -428,7 +412,6 @@ export const PropertyDetailPage = () => {
           </div>
         </div>
 
-        {/* Contact widget */}
         <div className="lg:sticky lg:top-24 h-fit">
           <div className="bg-white border border-border rounded-2xl overflow-hidden shadow-sm">
             <div className="bg-navy p-5">
@@ -441,7 +424,6 @@ export const PropertyDetailPage = () => {
             </div>
 
             <div className="p-5">
-              {/* Owkaz branding */}
               <div className="flex items-center gap-3 bg-cream rounded-xl p-3 mb-4">
                 <img src="/OWKAZ LOGO.png" alt="Owkaz" className="h-6" />
                 <div>
@@ -455,7 +437,7 @@ export const PropertyDetailPage = () => {
 
               {isSold ? (
                 <div className="text-center py-4">
-                  <div className="text-3xl mb-2">🏷️</div>
+                  <Tag size={30} className="mx-auto mb-2 text-muted" />
                   <div className="text-sm font-semibold text-navy">Property Sold</div>
                   <p className="text-xs text-muted mt-1 mb-4">
                     This property is no longer available, but we have many similar properties.
@@ -469,7 +451,7 @@ export const PropertyDetailPage = () => {
                 </div>
               ) : sent ? (
                 <div className="text-center py-4">
-                  <div className="text-3xl mb-2">✅</div>
+                  <CheckCircle2 size={30} className="mx-auto mb-2 text-teal" />
                   <div className="text-sm font-semibold text-navy">Enquiry Sent!</div>
                   <p className="text-xs text-muted mt-1">
                     Owkaz will follow up with you within 24 hours.
@@ -547,11 +529,11 @@ export const PropertyDetailPage = () => {
                   )}
 
                   <div className="grid grid-cols-2 gap-2">
-                    <button className="py-2.5 rounded-xl border border-border text-xs font-semibold text-muted hover:border-navy hover:text-navy transition-colors">
-                      📞 Call Owkaz
+                    <button className="py-2.5 rounded-xl border border-border text-xs font-semibold text-muted hover:border-navy hover:text-navy transition-colors flex items-center justify-center gap-1.5">
+                      <Phone size={13} /> Call Owkaz
                     </button>
-                    <button className="py-2.5 rounded-xl border border-border text-xs font-semibold text-muted hover:border-teal hover:text-teal transition-colors">
-                      💬 WhatsApp
+                    <button className="py-2.5 rounded-xl border border-border text-xs font-semibold text-muted hover:border-teal hover:text-teal transition-colors flex items-center justify-center gap-1.5">
+                      <MessageCircle size={13} /> WhatsApp
                     </button>
                   </div>
                 </div>
@@ -559,7 +541,6 @@ export const PropertyDetailPage = () => {
             </div>
           </div>
 
-          {/* Reference card */}
           <div className="mt-4 bg-cream border border-border rounded-xl p-4">
             <div className="text-[10px] font-bold uppercase tracking-widest text-muted mb-2">Listing Reference</div>
             <div className="font-mono text-sm text-navy bg-white px-3 py-2 rounded-lg border border-border">
@@ -573,7 +554,6 @@ export const PropertyDetailPage = () => {
           </div>
         </div>
       </div>
-      {/* Panorama 360° modal */}
       {showPanorama && property.panoramaUrl && (
         <Suspense fallback={
           <div className="fixed inset-0 z-[100] bg-black flex items-center justify-center">
@@ -584,13 +564,11 @@ export const PropertyDetailPage = () => {
         </Suspense>
       )}
 
-      {/* Lightbox */}
       {lightboxOpen && images && (
         <div
           className="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center"
           onClick={closeLightbox}
         >
-          {/* Close */}
           <button
             onClick={closeLightbox}
             className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-10"
@@ -598,12 +576,10 @@ export const PropertyDetailPage = () => {
             <X size={20} />
           </button>
 
-          {/* Counter */}
           <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/60 text-white text-xs font-semibold px-3 py-1.5 rounded-full z-10">
             {lightboxIdx + 1} / {images.length}
           </div>
 
-          {/* Prev */}
           {images.length > 1 && (
             <button
               onClick={(e) => { e.stopPropagation(); lightboxPrev(); }}
@@ -613,7 +589,6 @@ export const PropertyDetailPage = () => {
             </button>
           )}
 
-          {/* Image */}
           <div className="relative max-w-5xl max-h-[85vh] w-full mx-16" onClick={(e) => e.stopPropagation()}>
             <img
               key={lightboxIdx}
@@ -623,7 +598,6 @@ export const PropertyDetailPage = () => {
             />
           </div>
 
-          {/* Next */}
           {images.length > 1 && (
             <button
               onClick={(e) => { e.stopPropagation(); lightboxNext(); }}
@@ -633,7 +607,6 @@ export const PropertyDetailPage = () => {
             </button>
           )}
 
-          {/* Dot indicators */}
           {images.length > 1 && (
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
               {images.map((_, i) => (

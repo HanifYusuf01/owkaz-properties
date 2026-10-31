@@ -12,7 +12,6 @@ export const MyInquiriesPage = () => {
   const { data: inquiries = [], isLoading } = useGetMyInquiriesQuery();
   const [openId, setOpenId] = useState<string | null>(openInquiryId ?? null);
 
-  // Coming straight from "Send Enquiry" — jump to and open that conversation once it loads.
   useEffect(() => {
     if (!openInquiryId) return;
     setOpenId(openInquiryId);
@@ -25,7 +24,7 @@ export const MyInquiriesPage = () => {
   if (inquiries.length === 0) {
     return (
       <div className="py-20 text-center">
-        <div className="text-5xl mb-3">💬</div>
+        <MessageCircle size={40} className="mx-auto mb-3 text-muted" />
         <h3 className="font-semibold text-navy">No inquiries yet</h3>
         <p className="text-sm text-muted mt-1">Browse listings and submit inquiries on properties you're interested in.</p>
       </div>
@@ -42,7 +41,7 @@ export const MyInquiriesPage = () => {
               onClick={() => setOpenId(isOpen ? null : inq.id)}
               className="w-full p-5 flex gap-4 text-left hover:bg-cream/40 transition-colors"
             >
-              <div className="w-10 h-10 rounded-xl bg-cream flex items-center justify-center text-xl flex-shrink-0">💬</div>
+              <div className="w-10 h-10 rounded-xl bg-cream flex items-center justify-center flex-shrink-0"><MessageCircle size={20} className="text-muted" /></div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-bold text-sm text-navy">{inq.property?.title}</span>

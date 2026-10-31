@@ -30,7 +30,6 @@ export class MailService {
     const from = adminEmail;
     const subject = dto.subject ? `[Owkaz Contact] ${dto.subject}` : '[Owkaz Contact] New Message';
 
-    // Notify admin
     await this.transporter.sendMail({
       from: `"Owkaz Contact Form" <${from}>`,
       to: adminEmail,
@@ -51,27 +50,26 @@ export class MailService {
           </div>
           <p style="font-size:12px;color:#9CA3AF;">Reply directly to this email to respond to ${dto.firstName}.</p>
           <hr style="border:none;border-top:1px solid #eee;margin:20px 0;" />
-          <p style="font-size:12px;color:#9CA3AF;">Owkaz Properties &mdash; Nigeria's premier real estate marketplace</p>
+          <p style="font-size:12px;color:#9CA3AF;">Owkaz Properties, Abuja and Lagos, Nigeria</p>
         </div>
       `,
     });
 
-    // Send confirmation to the sender
     await this.transporter.sendMail({
       from: `"Owkaz Properties" <${from}>`,
       to: dto.email,
-      subject: 'Owkaz: We received your message',
+      subject: 'We received your message',
       html: `
         <div style="font-family:sans-serif;max-width:480px;margin:0 auto;">
           <h2 style="color:#0B2540;">Hi ${dto.firstName},</h2>
-          <p style="color:#6B7280;font-size:14px;line-height:1.7;">Thank you for reaching out to Owkaz Properties. We've received your message and will get back to you within <strong>24 hours</strong>.</p>
+          <p style="color:#6B7280;font-size:14px;line-height:1.7;">Thanks for contacting Owkaz Properties. We have received your message and will reply within <strong>24 hours</strong>.</p>
           <div style="background:#F7F3ED;border-radius:8px;padding:16px;margin:20px 0;">
             <p style="font-size:12px;color:#6B7280;margin:0 0 6px;font-weight:600;text-transform:uppercase;">Your message</p>
             <p style="font-size:13px;color:#111827;line-height:1.6;margin:0;">${dto.message.replace(/\n/g, '<br>')}</p>
           </div>
           <p style="color:#6B7280;font-size:13px;">If you need urgent assistance, call us at <strong>+234 (0) 800 OWKAZ 01</strong> or WhatsApp <strong>+234 (0) 901 000 0000</strong>.</p>
           <hr style="border:none;border-top:1px solid #eee;margin:24px 0;" />
-          <p style="color:#9CA3AF;font-size:12px;">Owkaz Properties &mdash; Nigeria's premier real estate marketplace</p>
+          <p style="color:#9CA3AF;font-size:12px;">Owkaz Properties, Abuja and Lagos, Nigeria</p>
         </div>
       `,
     });
@@ -91,11 +89,11 @@ export class MailService {
     await this.transporter.sendMail({
       from: `"Owkaz Properties" <${from}>`,
       to: dto.to,
-      subject: `Owkaz: We received your enquiry about "${dto.propertyTitle}"`,
+      subject: `We received your enquiry about "${dto.propertyTitle}"`,
       html: `
         <div style="font-family:sans-serif;max-width:480px;margin:0 auto;">
           <h2 style="color:#0B2540;">Hi ${dto.buyerName},</h2>
-          <p style="color:#6B7280;font-size:14px;line-height:1.7;">Thanks for your interest in <strong>${dto.propertyTitle}</strong>. We've received your enquiry and an Owkaz representative will follow up shortly.</p>
+          <p style="color:#6B7280;font-size:14px;line-height:1.7;">Thanks for your interest in <strong>${dto.propertyTitle}</strong>. We have received your enquiry and a member of our team will follow up shortly.</p>
           <div style="background:#F7F3ED;border-radius:8px;padding:16px;margin:20px 0;">
             <p style="font-size:12px;color:#6B7280;margin:0 0 6px;font-weight:600;text-transform:uppercase;">Your message</p>
             <p style="font-size:13px;color:#111827;line-height:1.6;margin:0;">${dto.message.replace(/\n/g, '<br>')}</p>
@@ -105,7 +103,7 @@ export class MailService {
             View Conversation
           </a>
           <hr style="border:none;border-top:1px solid #eee;margin:24px 0;" />
-          <p style="color:#9CA3AF;font-size:12px;">Owkaz Properties &mdash; Nigeria's premier real estate marketplace</p>
+          <p style="color:#9CA3AF;font-size:12px;">Owkaz Properties, Abuja and Lagos, Nigeria</p>
         </div>
       `,
     });
@@ -146,7 +144,7 @@ export class MailService {
             Open in Dashboard
           </a>
           <hr style="border:none;border-top:1px solid #eee;margin:20px 0;" />
-          <p style="font-size:12px;color:#9CA3AF;">Owkaz Properties &mdash; Nigeria's premier real estate marketplace</p>
+          <p style="font-size:12px;color:#9CA3AF;">Owkaz Properties, Abuja and Lagos, Nigeria</p>
         </div>
       `,
     });
@@ -172,9 +170,9 @@ export class MailService {
              style="display:inline-block;margin:24px 0;padding:12px 28px;background:#2A9D8F;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">
             Reset Password
           </a>
-          <p style="color:#666;font-size:13px;">If you didn't request this, you can safely ignore this email.</p>
+          <p style="color:#666;font-size:13px;">If you did not request this, you can ignore this email.</p>
           <hr style="border:none;border-top:1px solid #eee;margin:24px 0;" />
-          <p style="color:#999;font-size:12px;">Owkaz Properties &mdash; Nigeria's premier real estate marketplace</p>
+          <p style="color:#999;font-size:12px;">Owkaz Properties, Abuja and Lagos, Nigeria</p>
         </div>
       `,
     });

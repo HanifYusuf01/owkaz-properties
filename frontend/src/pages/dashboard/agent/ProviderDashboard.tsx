@@ -1,3 +1,4 @@
+import { Home, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useGetMyPropertiesQuery } from '../../../features/properties/propertiesApi';
 import { Badge } from '../../../components/ui/Badge';
@@ -16,7 +17,6 @@ export const ProviderDashboard = () => {
 
   return (
     <div className="space-y-6">
-      {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: 'Total Submitted', value: properties.length, color: 'bg-navy' },
@@ -32,7 +32,6 @@ export const ProviderDashboard = () => {
         ))}
       </div>
 
-      {/* Info callout */}
       <div className="bg-sky-50 border border-sky-200 rounded-xl p-4">
         <h5 className="text-xs font-bold uppercase tracking-wide text-sky-800 mb-1">How It Works</h5>
         <p className="text-xs text-sky-700">
@@ -40,7 +39,6 @@ export const ProviderDashboard = () => {
         </p>
       </div>
 
-      {/* Agency fee notice */}
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3 items-start">
         <span className="text-amber-500 flex-shrink-0 mt-0.5">
           <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -53,7 +51,6 @@ export const ProviderDashboard = () => {
         </div>
       </div>
 
-      {/* My listings */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-display text-xl text-navy">My Listings</h3>
@@ -62,7 +59,7 @@ export const ProviderDashboard = () => {
 
         {properties.length === 0 ? (
           <div className="py-20 text-center">
-            <div className="text-5xl mb-3">🏠</div>
+            <Home size={40} className="mx-auto mb-3 text-muted" />
             <h3 className="font-semibold text-navy">No listings yet</h3>
             <p className="text-sm text-muted mt-1 mb-4">Submit your first property for review.</p>
             <Button onClick={() => navigate('/dashboard/submit')}>Submit Property</Button>
@@ -71,14 +68,14 @@ export const ProviderDashboard = () => {
           <div className="space-y-3">
             {properties.map((p) => (
               <div key={p.id} className="bg-white border border-border rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row gap-3 sm:gap-4 sm:items-start">
-                <div className="hidden sm:flex w-12 h-12 rounded-xl bg-cream items-center justify-center text-2xl flex-shrink-0">🏠</div>
+                <div className="hidden sm:flex w-12 h-12 rounded-xl bg-cream items-center justify-center flex-shrink-0"><Home size={24} className="text-muted" /></div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-bold text-navy">{p.title}</span>
                     <Badge status={p.status} />
                   </div>
                   <div className="text-xs text-muted mt-0.5">
-                    📍 {p.lga}, {p.state} · {formatPrice(p.price)} · {formatDate(p.createdAt)}
+                    <MapPin size={12} className="inline -mt-0.5 mr-1" />{p.lga}, {p.state} · {formatPrice(p.price)} · {formatDate(p.createdAt)}
                   </div>
                   {p.status === PropertyStatus.REJECTED && p.rejectionReason && (
                     <div className="mt-2 p-2.5 bg-red-50 border-l-4 border-red-400 rounded text-xs text-red-700">

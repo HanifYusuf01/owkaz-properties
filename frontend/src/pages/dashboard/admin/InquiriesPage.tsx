@@ -37,7 +37,7 @@ export const InquiriesPage = () => {
         return (
           <div key={inq.id} className="bg-white border border-border rounded-xl overflow-hidden">
             <div className="p-5 flex gap-4">
-              <div className="w-10 h-10 rounded-xl bg-cream flex items-center justify-center text-xl flex-shrink-0">💬</div>
+              <div className="w-10 h-10 rounded-xl bg-cream flex items-center justify-center flex-shrink-0"><MessageCircle size={20} className="text-muted" /></div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-bold text-sm text-navy">{inq.property?.title}</span>

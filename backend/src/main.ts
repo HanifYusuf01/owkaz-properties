@@ -24,8 +24,6 @@ async function bootstrap() {
     }),
   );
 
-  // Strips @Exclude() fields (e.g. User.passwordHash) from every response,
-  // including entities nested via eager relations (Property.submittedBy, etc.)
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
   app.enableCors({

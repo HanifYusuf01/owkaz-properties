@@ -15,7 +15,6 @@ import { UserRole } from '../users/user.entity';
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
-  // ── Public ──
 
   @Get()
   findAll(
@@ -35,7 +34,6 @@ export class ProjectsController {
     return this.projectsService.findById(id);
   }
 
-  // ── Admin only ──
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()

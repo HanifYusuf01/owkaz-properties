@@ -47,7 +47,6 @@ export const BuyerProfilePage = () => {
       <div className="mb-1 text-xs font-bold uppercase tracking-widest text-muted">Account</div>
       <h1 className="font-display text-2xl text-navy mb-6">My Profile</h1>
 
-      {/* Avatar card */}
       <div className="bg-navy rounded-2xl p-5 flex items-center gap-5 mb-5">
         <div className="relative flex-shrink-0">
           {avatarUrl ? (
@@ -96,7 +95,6 @@ export const BuyerProfilePage = () => {
         </div>
       </div>
 
-      {/* Form card */}
       <div className="bg-white border border-border rounded-2xl p-6 space-y-4 mb-5">
         {isSuccess && (
           <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
@@ -163,7 +161,6 @@ export const BuyerProfilePage = () => {
         </div>
       </div>
 
-      {/* Upgrade account */}
       <div className="bg-white border border-border rounded-2xl p-6 mb-5">
         <h3 className="font-semibold text-navy mb-1">Upgrade Your Account</h3>
         <p className="text-xs text-muted mb-4 leading-relaxed">
@@ -207,7 +204,6 @@ export const BuyerProfilePage = () => {
         )}
       </div>
 
-      {/* Account actions */}
       <div className="bg-white border border-border rounded-2xl p-6">
         <h3 className="font-semibold text-navy mb-4">Account Actions</h3>
         <button

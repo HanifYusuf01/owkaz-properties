@@ -8,11 +8,6 @@ export const GoogleSignInButton = ({ onCredential }: GoogleSignInButtonProps) =>
   const buttonRef = useRef<HTMLDivElement>(null);
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
 
-  // Callers pass an inline function that's a new reference on every render (LoginPage/
-  // RegisterPage don't memoize it). Reading it via a ref keeps this effect's own
-  // dependency array stable, so the button is only initialized ONCE per mount instead of
-  // re-injecting Google's iframe into the DOM on every parent re-render — which was
-  // corrupting React's view of the DOM and crashing the whole app on navigation.
   const onCredentialRef = useRef(onCredential);
   onCredentialRef.current = onCredential;
 

@@ -1,3 +1,4 @@
+import { Bookmark } from 'lucide-react';
 import { useState } from 'react';
 import { useGetSavedPropertiesQuery } from '../../../features/properties/propertiesApi';
 import { PropertyCard } from '../../../components/property/PropertyCard';
@@ -28,7 +29,7 @@ export const SavedPropertiesPage = () => {
         </div>
       ) : properties.length === 0 ? (
         <div className="py-24 text-center">
-          <div className="text-5xl mb-3">🔖</div>
+          <Bookmark size={40} className="mx-auto mb-3 text-muted" />
           <h3 className="font-semibold text-navy text-lg">No saved properties</h3>
           <p className="text-sm text-muted mt-1">
             Browse listings and tap the save button to bookmark properties you like.
