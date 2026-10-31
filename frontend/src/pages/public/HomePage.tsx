@@ -24,6 +24,7 @@ import { useAppSelector } from '../../store';
 import { Property } from '../../types';
 import { PAGE_CONTENT } from '../../features/content/pageContentConfig';
 import { CountUp } from '../../components/ui/CountUp';
+import { Skyline } from '../../components/home/Skyline';
 import { delay } from '../../utils/motion';
 
 const SEARCH_TABS = ['Buy', 'Rent', 'Shortlet', 'Land'];
@@ -324,7 +325,8 @@ export const HomePage = () => {
             backgroundSize: '48px 48px',
           }}
         />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+        <Skyline />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-32 sm:pt-24 sm:pb-44">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <div

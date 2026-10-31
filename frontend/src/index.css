@@ -41,6 +41,11 @@ body {
   to { opacity: 1; transform: none; }
 }
 
+@keyframes twinkle {
+  0%, 100% { fill-opacity: 1; }
+  50% { fill-opacity: 0.35; }
+}
+
 @keyframes ken-burns {
   from { transform: scale(1); }
   to { transform: scale(1.1); }
@@ -65,6 +70,10 @@ body {
   animation: ken-burns 14s ease-out forwards;
 }
 
+.sky-lit {
+  animation: twinkle 5s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-in,
   .reveal,
@@ -73,7 +82,8 @@ body {
     transform: none;
     animation: none;
   }
-  .ken-burns {
+  .ken-burns,
+  .sky-lit {
     animation: none;
   }
 }
