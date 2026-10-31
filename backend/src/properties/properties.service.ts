@@ -144,6 +144,12 @@ export class PropertiesService {
     return property;
   }
 
+  async findApprovedPreview(id: string): Promise<Property> {
+    const property = await this.propertiesRepo.findOne({ where: { id, status: PropertyStatus.APPROVED } });
+    if (!property) throw new NotFoundException('Property not found');
+    return property;
+  }
+
   async incrementViews(id: string): Promise<void> {
     await this.propertiesRepo.increment({ id }, 'views', 1);
   }

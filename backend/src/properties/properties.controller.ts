@@ -69,6 +69,11 @@ export class PropertiesController {
     return this.propertiesService.getSavedPropertyIds(user);
   }
 
+  @Get(':id/preview')
+  findPreview(@Param('id') id: string) {
+    return this.propertiesService.findApprovedPreview(id);
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     await this.propertiesService.incrementViews(id);

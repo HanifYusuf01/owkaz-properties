@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Save, Trash2, Upload, ExternalLink } from 'lucide-react';
+import { Save, Trash2, Upload, ExternalLink, MapPin, Search } from 'lucide-react';
 import { useGetContentQuery, useUpdateContentMutation } from '../../../features/content/contentApi';
 import { PAGE_CONTENT } from '../../../features/content/pageContentConfig';
 import {
@@ -17,10 +17,11 @@ import {
   useCreateHeroSlideMutation,
   useDeleteHeroSlideMutation,
 } from '../../../features/heroSlides/heroSlidesApi';
-import { useUploadImagesMutation } from '../../../features/properties/propertiesApi';
+import { useUploadImagesMutation, useGetPropertiesQuery, useGetPropertyPreviewQuery } from '../../../features/properties/propertiesApi';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { getImageUrl } from '../../../utils/imageUrl';
+import { formatPrice } from '../../../utils/format';
 
 const PAGE_KEYS = Object.keys(PAGE_CONTENT);
 
@@ -182,6 +183,110 @@ const HeroSlidesEditor = () => {
       ) : (
         <p className="text-sm text-muted">No background images added yet.</p>
       )}
+    </div>
+  );
+};
+
+const SpotlightEditor = () => {
+  const { data: saved } = useGetContentQuery('spotlight');
+  const [updateContent, { isLoading: isSaving }] = useUpdateContentMutation();
+  const selectedId = saved?.propertyId ?? '';
+  const { data: selected, isError: selectedMissing } = useGetPropertyPreviewQuery(selectedId, { skip: !selectedId });
+  const [term, setTerm] = useState('');
+  const [query, setQuery] = useState('');
+  const [savedAt, setSavedAt] = useState<number | null>(null);
+  const { data: results } = useGetPropertiesQuery({ limit: 8, search: query || undefined });
+
+  useEffect(() => {
+    const timeout = setTimeout(() => setQuery(term.trim()), 300);
+    return () => clearTimeout(timeout);
+  }, [term]);
+
+  const choose = async (propertyId: string) => {
+    await updateContent({ page: 'spotlight', content: { propertyId } }).unwrap();
+    setSavedAt(Date.now());
+  };
+
+  const hasPin = (p: { latitude?: number | null; longitude?: number | null }) => p.latitude != null && p.longitude != null;
+
+  return (
+    <div className="mt-12">
+      <h2 className="font-display text-xl text-navy mb-1">Homepage story: Nigeria to your front door</h2>
+      <p className="text-sm text-muted mb-4">
+        Pick the property the homepage story ends on. The map zooms to its state and area, then opens into its photo.
+        Leave it on Automatic to feature the state with the most listings.
+      </p>
+
+      <div className="bg-white border border-border rounded-2xl p-5 mb-5">
+        <div className="text-xs font-semibold uppercase tracking-wide text-navy mb-2">Currently featured</div>
+        {selectedId && selected ? (
+          <div className="flex items-center gap-3">
+            {selected.images?.[0] && <img src={resolveImg(selected.images[0])} alt="" className="w-16 h-12 rounded-lg object-cover flex-shrink-0" />}
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold text-navy truncate">{selected.title}</div>
+              <div className="text-xs text-muted truncate">{selected.area}, {selected.state} · {formatPrice(selected.price)}</div>
+              {!hasPin(selected) && (
+                <div className="text-xs text-amber-700 mt-1">
+                  This listing has no map pin yet, so the story will zoom to its area without a pin. Add an exact location when editing the listing.
+                </div>
+              )}
+            </div>
+            <Button variant="secondary" size="sm" onClick={() => choose('')} disabled={isSaving}>Use automatic</Button>
+          </div>
+        ) : selectedId && selectedMissing ? (
+          <div className="flex items-center gap-3">
+            <p className="text-sm text-amber-700 flex-1">
+              The property you chose is no longer live, so the homepage is using Automatic.
+            </p>
+            <Button variant="secondary" size="sm" onClick={() => choose('')} disabled={isSaving}>Clear</Button>
+          </div>
+        ) : (
+          <div className="text-sm text-navy">
+            <span className="inline-block rounded-full bg-teal/10 text-teal text-xs font-semibold px-2.5 py-0.5 mr-2">Automatic</span>
+            Uses the state with the most listings.
+          </div>
+        )}
+        {savedAt && !isSaving && <p className="text-xs text-teal mt-3">Saved. The homepage now shows this choice.</p>}
+        {isSaving && <p className="text-xs text-muted mt-3">Saving…</p>}
+      </div>
+
+      <div className="bg-white border border-border rounded-2xl p-5">
+        <label className="text-xs font-semibold uppercase tracking-wide text-navy block mb-1.5">Choose a property</label>
+        <div className="relative mb-3">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+          <input
+            value={term}
+            onChange={(e) => setTerm(e.target.value)}
+            placeholder="Search by title, area, LGA or state"
+            className="w-full border border-border rounded-lg pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:border-teal transition-colors"
+          />
+        </div>
+        {results && results.data.length > 0 ? (
+          <ul className="divide-y divide-border">
+            {results.data.map((p) => (
+              <li key={p.id} className="flex items-center gap-3 py-2.5">
+                {p.images?.[0] ? (
+                  <img src={resolveImg(p.images[0])} alt="" className="w-14 h-10 rounded-md object-cover flex-shrink-0" />
+                ) : (
+                  <div className="w-14 h-10 rounded-md bg-cream flex-shrink-0" />
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium text-navy truncate">{p.title}</div>
+                  <div className="text-xs text-muted truncate flex items-center gap-1">
+                    <MapPin size={11} /> {p.area}, {p.state} · {formatPrice(p.price)}
+                    {hasPin(p) && <span className="ml-1 text-teal font-medium">· map pin</span>}
+                  </div>
+                </div>
+                <Button size="sm" variant={p.id === selectedId ? 'secondary' : 'primary'} onClick={() => choose(p.id)} disabled={isSaving || p.id === selectedId}>
+                  {p.id === selectedId ? 'Featured' : 'Feature'}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-muted">{results ? 'No listings match that search.' : 'Loading listings…'}</p>
+        )}
+      </div>
     </div>
   );
 };
@@ -401,6 +506,7 @@ export const SiteContentPage = () => {
 
       {activePage === 'home' && (
         <>
+          <SpotlightEditor />
           <HeroSlidesEditor />
           <LocationsEditor />
           <PartnersEditor />

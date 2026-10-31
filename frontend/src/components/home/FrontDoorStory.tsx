@@ -4,7 +4,8 @@ import { Bath, BedDouble, ChevronDown, MapPin, Ruler } from 'lucide-react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { geoMercator, geoPath, GeoPermissibleObjects } from 'd3-geo';
-import { useGetPropertiesQuery, useGetPropertiesStateCountsQuery } from '../../features/properties/propertiesApi';
+import { useGetPropertiesQuery, useGetPropertiesStateCountsQuery, useGetPropertyPreviewQuery } from '../../features/properties/propertiesApi';
+import { useGetContentQuery } from '../../features/content/contentApi';
 import { loadNigeriaStates, StateFeature } from '../../utils/nigeriaGeo';
 import { normalizeStateName } from '../../utils/nigeriaStateNames';
 import { formatPrice } from '../../utils/format';
@@ -40,6 +41,10 @@ export const FrontDoorStory = () => {
   const navigate = useNavigate();
   const { data: stateCounts = [] } = useGetPropertiesStateCountsQuery();
   const { data: list } = useGetPropertiesQuery({ limit: 50 });
+  const { data: spotlightContent, isLoading: spotlightContentLoading } = useGetContentQuery('spotlight');
+  const spotlightId = spotlightContent?.propertyId ?? '';
+  const { data: spotlightProperty, isLoading: spotlightLoading } = useGetPropertyPreviewQuery(spotlightId, { skip: !spotlightId });
+  const spotlightReady = !spotlightContentLoading && !(spotlightId && spotlightLoading);
   const [features, setFeatures] = useState<StateFeature[] | null>(null);
   const [step, setStep] = useState(0);
   const [wide, setWide] = useState(() => window.matchMedia('(min-width: 1024px)').matches);
@@ -76,7 +81,9 @@ export const FrontDoorStory = () => {
   const layout = wide ? LAYOUTS.wide : LAYOUTS.narrow;
 
   const story = useMemo(() => {
-    const properties = list?.data ?? [];
+    if (!spotlightReady) return null;
+    const listed = list?.data ?? [];
+    const properties = spotlightProperty && !listed.some((p) => p.id === spotlightProperty.id) ? [spotlightProperty, ...listed] : listed;
     if (!features || stateCounts.length === 0 || properties.length === 0) return null;
 
     const countByKey = new Map<string, number>();
@@ -96,9 +103,11 @@ export const FrontDoorStory = () => {
     const located = (p: (typeof properties)[number]) => p.latitude != null && p.longitude != null;
     const rank = (key: string) =>
       (countByKey.get(key) ?? 0) * 100 + properties.filter((p) => normalizeStateName(p.state) === key && located(p)).length;
+    const spotlightKey = spotlightProperty ? normalizeStateName(spotlightProperty.state) : null;
+    const chosen = spotlightProperty && spotlightKey && featureByKey.has(spotlightKey) ? spotlightProperty : null;
     const keys = [...countByKey.keys()].filter((k) => featureByKey.has(k) && properties.some((p) => normalizeStateName(p.state) === k));
-    if (keys.length === 0) return null;
-    const key = keys.sort((a, b) => rank(b) - rank(a))[0];
+    if (keys.length === 0 && !chosen) return null;
+    const key = chosen ? spotlightKey! : keys.sort((a, b) => rank(b) - rank(a))[0];
 
     const feature = featureByKey.get(key)!;
     const stateProps = properties.filter((p) => normalizeStateName(p.state) === key);
@@ -113,6 +122,7 @@ export const FrontDoorStory = () => {
       .filter((p): p is { id: string; x: number; y: number } => p !== null);
 
     const featured =
+      chosen ??
       stateProps.find((p) => located(p) && p.images?.length) ?? stateProps.find((p) => p.featured && p.images?.length) ?? stateProps.find((p) => p.images?.length) ?? stateProps[0];
     const featuredPin = pins.find((p) => p.id === featured.id) ?? null;
 
@@ -152,7 +162,7 @@ export const FrontDoorStory = () => {
       areas,
       views: [view0, view1, view2, view3],
     };
-  }, [features, stateCounts, list, layout]);
+  }, [features, stateCounts, list, layout, spotlightReady, spotlightProperty]);
 
   useEffect(() => {
     if (!story) return;

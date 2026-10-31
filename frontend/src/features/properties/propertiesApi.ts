@@ -49,6 +49,10 @@ export const propertiesApi = baseApi.injectEndpoints({
       query: (params) => ({ url: '/properties/my/listings', params }),
       providesTags: ['MyListings'],
     }),
+    getPropertyPreview: builder.query<Property, string>({
+      query: (id) => `/properties/${id}/preview`,
+      providesTags: (_result, _err, id) => [{ type: 'Property', id }],
+    }),
     getPropertyById: builder.query<Property, string>({
       query: (id) => `/properties/${id}`,
       providesTags: (_result, _err, id) => [{ type: 'Property', id }],
@@ -127,6 +131,7 @@ export const {
   useGetPublicSoldPropertiesQuery,
   useGetMyPropertiesQuery,
   useGetPropertyByIdQuery,
+  useGetPropertyPreviewQuery,
   useCreatePropertyMutation,
   useUpdatePropertyMutation,
   useApprovePropertyMutation,
