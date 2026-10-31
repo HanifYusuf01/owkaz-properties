@@ -135,6 +135,22 @@ export class PropertiesService {
     return rows.map((r) => ({ state: r.state, count: Number(r.count) }));
   }
 
+  async getAreas(): Promise<{ state: string; lga: string; area: string; count: number }[]> {
+    const rows = await this.propertiesRepo
+      .createQueryBuilder('property')
+      .where('property.status = :status', { status: PropertyStatus.APPROVED })
+      .select('property.state', 'state')
+      .addSelect('property.lga', 'lga')
+      .addSelect('property.area', 'area')
+      .addSelect('COUNT(*)', 'count')
+      .groupBy('property.state')
+      .addGroupBy('property.lga')
+      .addGroupBy('property.area')
+      .getRawMany();
+
+    return rows.map((r) => ({ state: r.state, lga: r.lga, area: r.area, count: Number(r.count) }));
+  }
+
   async findById(id: string): Promise<Property> {
     const property = await this.propertiesRepo.findOne({
       where: { id },

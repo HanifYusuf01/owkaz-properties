@@ -55,6 +55,11 @@ export class PropertiesController {
     return this.propertiesService.getStateCounts();
   }
 
+  @Get('areas')
+  getAreas() {
+    return this.propertiesService.getAreas();
+  }
+
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Get('saved')

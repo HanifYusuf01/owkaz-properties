@@ -3,11 +3,10 @@ import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCreatePropertyMutation, useUploadImagesMutation, useUploadDocumentsMutation, useUploadVideoMutation } from '../../../features/properties/propertiesApi';
 import { Input } from '../../../components/ui/Input';
-import { Select } from '../../../components/ui/Select';
 import { Button } from '../../../components/ui/Button';
 import { AddressSearchInput } from '../../../components/property/AddressSearchInput';
 import { PropertyType } from '../../../types';
-import { NIGERIAN_STATES } from '../../../constants/nigerianStates';
+import { LocationFields } from '../../../components/property/LocationFields';
 
 const PROPERTY_TYPES: { type: PropertyType; icon: LucideIcon }[] = [
   { type: PropertyType.APARTMENT,       icon: Building2 },
@@ -273,47 +272,21 @@ export const SubmitPropertyPage = () => {
               onChange={(e) => set('title', e.target.value)}
               error={errors.title}
             />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Input
-                label="Asking Price (₦)"
-                type="number"
-                placeholder="e.g. 85000000"
-                value={form.price}
-                onChange={(e) => set('price', e.target.value)}
-                error={errors.price}
-              />
-              <Select
-                label="State"
-                placeholder="Select state..."
-                options={NIGERIAN_STATES.map((s) => ({ value: s.label, label: s.label }))}
-                value={form.state}
-                onChange={(e) => {
-                  setForm((prev) => ({ ...prev, state: e.target.value, lga: '' }));
-                }}
-                error={errors.state}
-              />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Select
-                label="LGA"
-                placeholder={form.state ? 'Select LGA...' : 'Select a state first'}
-                options={
-                  (NIGERIAN_STATES.find((s) => s.label === form.state)?.lgas ?? [])
-                    .map((l) => ({ value: l.value, label: l.label }))
-                }
-                value={form.lga}
-                onChange={(e) => set('lga', e.target.value)}
-                error={errors.lga}
-                disabled={!form.state}
-              />
-              <Input
-                label="Area / Neighbourhood"
-                placeholder="e.g. Maitama District"
-                value={form.area}
-                onChange={(e) => set('area', e.target.value)}
-                error={errors.area}
-              />
-            </div>
+            <Input
+              label="Asking Price (₦)"
+              type="number"
+              placeholder="e.g. 85000000"
+              value={form.price}
+              onChange={(e) => set('price', e.target.value)}
+              error={errors.price}
+            />
+            <LocationFields
+              state={form.state}
+              lga={form.lga}
+              area={form.area}
+              errors={errors}
+              onChange={(patch) => setForm((prev) => ({ ...prev, ...patch }))}
+            />
             <AddressSearchInput
               latitude={form.latitude}
               longitude={form.longitude}

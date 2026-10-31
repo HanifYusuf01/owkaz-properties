@@ -15,12 +15,11 @@ import { Button } from '../../../components/ui/Button';
 import { Modal } from '../../../components/ui/Modal';
 import { ConfirmModal } from '../../../components/ui/ConfirmModal';
 import { Input } from '../../../components/ui/Input';
-import { Select } from '../../../components/ui/Select';
 import { DocumentViewer } from '../../../components/ui/DocumentViewer';
 import { formatPrice, formatDate } from '../../../utils/format';
 import { getImageUrl } from '../../../utils/imageUrl';
 import { Property, PropertyStatus, PropertyType } from '../../../types';
-import { NIGERIAN_STATES } from '../../../constants/nigerianStates';
+import { LocationFields } from '../../../components/property/LocationFields';
 import { useAppSelector } from '../../../store';
 import { AddressSearchInput } from '../../../components/property/AddressSearchInput';
 
@@ -362,27 +361,14 @@ export const ApprovalQueuePage = () => {
 
               <Input label="Title" value={reviewForm.title} onChange={(e) => setForm('title', e.target.value)} />
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input label="Price (₦)" type="number" value={reviewForm.price} onChange={(e) => setForm('price', e.target.value)} />
-                <Select
-                  label="State"
-                  options={NIGERIAN_STATES.map((s) => ({ value: s.label, label: s.label }))}
-                  value={reviewForm.state}
-                  onChange={(e) => setReviewForm((prev) => prev ? { ...prev, state: e.target.value, lga: '' } : prev)}
-                />
-              </div>
+              <Input label="Price (₦)" type="number" value={reviewForm.price} onChange={(e) => setForm('price', e.target.value)} />
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Select
-                  label="LGA"
-                  placeholder={reviewForm.state ? 'Select LGA...' : 'Select a state first'}
-                  options={(NIGERIAN_STATES.find((s) => s.label === reviewForm.state)?.lgas ?? []).map((l) => ({ value: l.value, label: l.label }))}
-                  value={reviewForm.lga}
-                  onChange={(e) => setForm('lga', e.target.value)}
-                  disabled={!reviewForm.state}
-                />
-                <Input label="Area" value={reviewForm.area} onChange={(e) => setForm('area', e.target.value)} />
-              </div>
+              <LocationFields
+                state={reviewForm.state}
+                lga={reviewForm.lga}
+                area={reviewForm.area}
+                onChange={(patch) => setReviewForm((prev) => (prev ? { ...prev, ...patch } : prev))}
+              />
 
               <AddressSearchInput
                 latitude={reviewForm.latitude}

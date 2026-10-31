@@ -13,12 +13,11 @@ import { Button } from '../../../components/ui/Button';
 import { Modal } from '../../../components/ui/Modal';
 import { ConfirmModal } from '../../../components/ui/ConfirmModal';
 import { Input } from '../../../components/ui/Input';
-import { Select } from '../../../components/ui/Select';
 import { DataTable, Column } from '../../../components/ui/DataTable';
 import { formatPrice } from '../../../utils/format';
 import { getImageUrl } from '../../../utils/imageUrl';
 import { Property, PropertyStatus, PropertyType } from '../../../types';
-import { NIGERIAN_STATES } from '../../../constants/nigerianStates';
+import { LocationFields } from '../../../components/property/LocationFields';
 import { Pencil, Trash2Icon, Check, X, Star } from 'lucide-react';
 import { AddressSearchInput } from '../../../components/property/AddressSearchInput';
 
@@ -329,27 +328,14 @@ export const AllListingsPage = () => {
 
             <Input label="Title" value={editForm.title} onChange={(e) => setField('title', e.target.value)} />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Input label="Price (₦)" type="number" value={editForm.price} onChange={(e) => setField('price', e.target.value)} />
-              <Select
-                label="State"
-                options={NIGERIAN_STATES.map((s) => ({ value: s.label, label: s.label }))}
-                value={editForm.state}
-                onChange={(e) => setEditForm((prev) => prev ? { ...prev, state: e.target.value, lga: '' } : prev)}
-              />
-            </div>
+            <Input label="Price (₦)" type="number" value={editForm.price} onChange={(e) => setField('price', e.target.value)} />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Select
-                label="LGA"
-                placeholder={editForm.state ? 'Select LGA...' : 'Select a state first'}
-                options={(NIGERIAN_STATES.find((s) => s.label === editForm.state)?.lgas ?? []).map((l) => ({ value: l.value, label: l.label }))}
-                value={editForm.lga}
-                onChange={(e) => setField('lga', e.target.value)}
-                disabled={!editForm.state}
-              />
-              <Input label="Area" value={editForm.area} onChange={(e) => setField('area', e.target.value)} />
-            </div>
+            <LocationFields
+              state={editForm.state}
+              lga={editForm.lga}
+              area={editForm.area}
+              onChange={(patch) => setEditForm((prev) => (prev ? { ...prev, ...patch } : prev))}
+            />
 
             <AddressSearchInput
               latitude={editForm.latitude}

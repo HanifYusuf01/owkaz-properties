@@ -16,13 +16,12 @@ import { Button } from '../../../components/ui/Button';
 import { Modal } from '../../../components/ui/Modal';
 import { ConfirmModal } from '../../../components/ui/ConfirmModal';
 import { Input } from '../../../components/ui/Input';
-import { Select } from '../../../components/ui/Select';
 import { DocumentViewer } from '../../../components/ui/DocumentViewer';
 import { DataTable, Column } from '../../../components/ui/DataTable';
 import { formatPrice, formatDate } from '../../../utils/format';
 import { getImageUrl } from '../../../utils/imageUrl';
 import { Property, PropertyStatus, PropertyType } from '../../../types';
-import { NIGERIAN_STATES } from '../../../constants/nigerianStates';
+import { LocationFields } from '../../../components/property/LocationFields';
 import { Trash2Icon, XCircle, Home } from 'lucide-react';
 import { useAppSelector } from '../../../store';
 import { AddressSearchInput } from '../../../components/property/AddressSearchInput';
@@ -441,29 +440,15 @@ export const MyListingsPage = () => {
 
             <Input label="Listing Title" value={editForm.title} onChange={(e) => setEdit('title', e.target.value)} error={editErrors.title} />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Input label="Asking Price (₦)" type="number" value={editForm.price} onChange={(e) => setEdit('price', e.target.value)} error={editErrors.price} />
-              <Select
-                label="State"
-                options={NIGERIAN_STATES.map((s) => ({ value: s.label, label: s.label }))}
-                value={editForm.state}
-                onChange={(e) => setEditForm((prev) => ({ ...prev, state: e.target.value, lga: '' }))}
-                error={editErrors.state}
-              />
-            </div>
+            <Input label="Asking Price (₦)" type="number" value={editForm.price} onChange={(e) => setEdit('price', e.target.value)} error={editErrors.price} />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Select
-                label="LGA"
-                placeholder={editForm.state ? 'Select LGA...' : 'Select a state first'}
-                options={(NIGERIAN_STATES.find((s) => s.label === editForm.state)?.lgas ?? []).map((l) => ({ value: l.value, label: l.label }))}
-                value={editForm.lga}
-                onChange={(e) => setEdit('lga', e.target.value)}
-                error={editErrors.lga}
-                disabled={!editForm.state}
-              />
-              <Input label="Area / Neighbourhood" value={editForm.area} onChange={(e) => setEdit('area', e.target.value)} error={editErrors.area} />
-            </div>
+            <LocationFields
+              state={editForm.state}
+              lga={editForm.lga}
+              area={editForm.area}
+              errors={editErrors}
+              onChange={(patch) => setEditForm((prev) => ({ ...prev, ...patch }))}
+            />
 
             <AddressSearchInput
               latitude={editForm.latitude}

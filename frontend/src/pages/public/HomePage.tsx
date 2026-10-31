@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, CheckCircle, Users, Lock, Phone, ArrowRight, Bitcoin, Gem, CircleDollarSign, Zap, Landmark, CreditCard, MapPin, BedDouble, Building2, Home, Store, TreePine, Hotel, Star } from 'lucide-react';
+import { Search, CheckCircle, Users, Lock, Phone, ArrowRight, Bitcoin, Gem, CircleDollarSign, Zap, Landmark, CreditCard, MapPin, Building2, Home, Store, TreePine, Hotel, Star } from 'lucide-react';
 import {
   useGetFeaturedPropertiesQuery,
   useGetPropertiesQuery,
@@ -13,7 +13,7 @@ import { PropertyCard } from '../../components/property/PropertyCard';
 import { PriceRangeDropdown } from '../../components/property/PriceRangeDropdown';
 import { MultilineText } from '../../components/ui/MultilineText';
 import { Avatar } from '../../components/ui/Avatar';
-import { formatPrice, formatCompactPrice } from '../../utils/format';
+import { formatPrice } from '../../utils/format';
 import { getImageUrl } from '../../utils/imageUrl';
 import { useGetPublicStatsQuery } from '../../features/stats/statsApi';
 import { useGetContentQuery } from '../../features/content/contentApi';
@@ -87,15 +87,7 @@ export const HomePage = () => {
   const [liveQuery, setLiveQuery] = useState('');
   const [showLiveResults, setShowLiveResults] = useState(false);
   const searchBoxRef = useRef<HTMLDivElement>(null);
-  const stickySearchBoxRef = useRef<HTMLDivElement>(null);
-  const stickyPriceRef = useRef<HTMLDivElement>(null);
 
-  const [stickyVisible, setStickyVisible] = useState(false);
-  const [stickyType, setStickyType] = useState('');
-  const [stickyBeds, setStickyBeds] = useState('');
-  const [stickyPriceMin, setStickyPriceMin] = useState('');
-  const [stickyPriceMax, setStickyPriceMax] = useState('');
-  const [stickyPriceOpen, setStickyPriceOpen] = useState(false);
   const [heroPriceMin, setHeroPriceMin] = useState('');
   const [heroPriceMax, setHeroPriceMax] = useState('');
 
@@ -129,14 +121,8 @@ export const HomePage = () => {
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as Node;
-      const insideHero = searchBoxRef.current?.contains(target);
-      const insideSticky = stickySearchBoxRef.current?.contains(target);
-      if (!insideHero && !insideSticky) {
+      if (!searchBoxRef.current?.contains(e.target as Node)) {
         setShowLiveResults(false);
-      }
-      if (!stickyPriceRef.current?.contains(target)) {
-        setStickyPriceOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -151,158 +137,8 @@ export const HomePage = () => {
     navigate(`/properties?${params.toString()}`);
   };
 
-  useEffect(() => {
-    const onScroll = () => setStickyVisible(window.scrollY > 480 && window.innerWidth >= 768);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  const handleStickySearch = () => {
-    const params = new URLSearchParams();
-    const keyword = searchQuery || stickyType;
-    if (keyword) params.set('search', keyword);
-    if (stickyBeds) params.set('beds', stickyBeds === '5+' ? '5' : stickyBeds);
-    if (stickyPriceMin) params.set('priceMin', stickyPriceMin);
-    if (stickyPriceMax) params.set('priceMax', stickyPriceMax);
-    navigate(`/properties?${params.toString()}`);
-  };
-
   return (
     <div>
-      <div
-        className={`fixed top-0 left-0 right-0 z-40 bg-white border-b border-border shadow-sm transition-transform duration-300 ${
-          stickyVisible ? 'translate-y-0' : '-translate-y-full pointer-events-none'
-        }`}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center gap-3">
-          <button onClick={() => navigate('/')} className="flex items-center flex-shrink-0">
-            <img src="/OWKAZ LOGO.png" alt="Owkaz" className="h-10" />
-          </button>
-
-          <div ref={stickySearchBoxRef} className="hidden md:flex relative items-center flex-1 gap-1 bg-surface border border-border rounded-xl px-2 py-1.5 max-w-2xl mx-auto">
-            <div className="flex items-center gap-1.5 px-2 flex-1 min-w-0">
-              <MapPin size={14} className="text-muted flex-shrink-0" />
-              <input
-                type="text"
-                placeholder="Location"
-                value={searchQuery}
-                onChange={(e) => { setSearchQuery(e.target.value); setShowLiveResults(true); }}
-                onFocus={() => setShowLiveResults(true)}
-                onKeyDown={(e) => e.key === 'Enter' && handleStickySearch()}
-                className="w-full bg-transparent text-sm text-ink placeholder:text-muted focus:outline-none"
-              />
-            </div>
-
-            {stickyVisible && showLiveResults && liveQuery.trim().length >= 2 && (
-              <div className="absolute left-0 right-0 top-full mt-2 bg-white border border-border rounded-xl shadow-2xl overflow-hidden z-20 text-left">
-                {liveResults && liveResults.data.length > 0 ? (
-                  <>
-                    {liveResults.data.map((p) => (
-                      <button
-                        key={p.id}
-                        onClick={() => navigate(`/properties/${p.id}`)}
-                        className="w-full flex items-center justify-between gap-3 px-4 py-2.5 text-left hover:bg-cream transition-colors"
-                      >
-                        <div className="min-w-0">
-                          <div className="text-sm text-navy truncate">{p.title}</div>
-                          <div className="text-xs text-muted truncate">{p.area}, {p.lga}, {p.state}</div>
-                        </div>
-                        <div className="text-xs font-semibold text-teal flex-shrink-0">{formatPrice(p.price)}</div>
-                      </button>
-                    ))}
-                    <button
-                      onClick={handleStickySearch}
-                      className="w-full px-4 py-2.5 text-center text-xs font-semibold text-teal hover:bg-cream transition-colors border-t border-border"
-                    >
-                      See all results for "{searchQuery}"
-                    </button>
-                  </>
-                ) : (
-                  <div className="px-4 py-3 text-sm text-muted">No matching properties yet.</div>
-                )}
-              </div>
-            )}
-            <div className="w-px h-5 bg-border flex-shrink-0" />
-            <div className="flex items-center gap-1.5 px-2 flex-shrink-0">
-              <Building2 size={14} className="text-muted" />
-              <select
-                value={stickyType}
-                onChange={(e) => setStickyType(e.target.value)}
-                className="bg-transparent text-sm text-ink focus:outline-none max-w-[100px]"
-              >
-                <option value="">Type</option>
-                {PROPERTY_TYPES.map((t) => (
-                  <option key={t.label} value={t.label}>{t.label}</option>
-                ))}
-              </select>
-            </div>
-            <div className="w-px h-5 bg-border flex-shrink-0" />
-            <div className="flex items-center gap-1.5 px-2 flex-shrink-0">
-              <BedDouble size={14} className="text-muted" />
-              <select
-                value={stickyBeds}
-                onChange={(e) => setStickyBeds(e.target.value)}
-                className="bg-transparent text-sm text-ink focus:outline-none"
-              >
-                <option value="">Beds / Baths</option>
-                <option value="1">1+</option>
-                <option value="2">2+</option>
-                <option value="3">3+</option>
-                <option value="4">4+</option>
-                <option value="5+">5+</option>
-              </select>
-            </div>
-            <div className="w-px h-5 bg-border flex-shrink-0" />
-            <div ref={stickyPriceRef} className="relative flex items-center gap-1.5 px-2 flex-shrink-0">
-              <span className="text-muted text-xs font-semibold">₦</span>
-              <button
-                type="button"
-                onClick={() => setStickyPriceOpen((v) => !v)}
-                className="bg-transparent text-sm text-ink focus:outline-none max-w-[110px] truncate text-left"
-              >
-                {stickyPriceMin || stickyPriceMax
-                  ? `${stickyPriceMin ? formatCompactPrice(Number(stickyPriceMin)) : 'Any'} – ${stickyPriceMax ? formatCompactPrice(Number(stickyPriceMax)) : 'Any'}`
-                  : 'Price Range'}
-              </button>
-
-              {stickyPriceOpen && priceBounds && priceBounds.max > priceBounds.min && (
-                <div className="absolute left-0 right-0 top-full mt-2 w-72 bg-white border border-border rounded-xl shadow-2xl p-4 z-20 text-left">
-                  <PriceRangeDropdown
-                    min={priceBounds.min}
-                    max={priceBounds.max}
-                    valueMin={stickyPriceMin}
-                    valueMax={stickyPriceMax}
-                    onChangeMin={setStickyPriceMin}
-                    onChangeMax={setStickyPriceMax}
-                  />
-                </div>
-              )}
-            </div>
-            <button
-              onClick={handleStickySearch}
-              className="w-9 h-9 rounded-lg bg-teal text-white flex items-center justify-center hover:bg-teal-light transition-colors flex-shrink-0"
-              aria-label="Search"
-            >
-              <Search size={16} />
-            </button>
-          </div>
-
-          <button
-            onClick={() => navigate('/properties')}
-            className="md:hidden flex-1 flex items-center gap-2 bg-surface border border-border rounded-xl px-3 py-2 text-sm text-muted"
-          >
-            <Search size={14} /> Search properties…
-          </button>
-
-          <button
-            onClick={() => navigate('/login')}
-            className="px-4 py-2 rounded-lg bg-navy text-white text-sm font-semibold hover:bg-navy-mid transition-colors flex-shrink-0"
-          >
-            Sign In
-          </button>
-        </div>
-      </div>
-
       <section className="bg-navy relative overflow-hidden min-h-[600px]">
         {heroSlides.length > 0 && (
           <div className="absolute inset-0">
@@ -407,7 +243,7 @@ export const HomePage = () => {
                     className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-teal transition-colors"
                   />
 
-                  {!stickyVisible && showLiveResults && liveQuery.trim().length >= 2 && (
+                  {showLiveResults && liveQuery.trim().length >= 2 && (
                     <div className="absolute left-0 right-0 top-full mt-2 bg-navy border border-white/20 rounded-xl shadow-2xl overflow-hidden z-20">
                       {liveResults && liveResults.data.length > 0 ? (
                         <>

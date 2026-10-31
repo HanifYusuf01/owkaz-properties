@@ -41,6 +41,10 @@ export const propertiesApi = baseApi.injectEndpoints({
       query: () => '/properties/state-counts',
       providesTags: ['Property'],
     }),
+    getPropertiesAreas: builder.query<{ state: string; lga: string; area: string; count: number }[], void>({
+      query: () => '/properties/areas',
+      providesTags: ['Property'],
+    }),
     getPublicSoldProperties: builder.query<PaginatedResponse<Property>, PropertyFilters>({
       query: (params) => ({ url: '/properties/sold', params }),
       providesTags: ['Property'],
@@ -128,6 +132,7 @@ export const {
   useGetFeaturedPropertiesQuery,
   useGetPropertiesPriceRangeQuery,
   useGetPropertiesStateCountsQuery,
+  useGetPropertiesAreasQuery,
   useGetPublicSoldPropertiesQuery,
   useGetMyPropertiesQuery,
   useGetPropertyByIdQuery,
