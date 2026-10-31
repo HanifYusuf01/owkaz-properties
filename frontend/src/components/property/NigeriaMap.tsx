@@ -1,12 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { geoArea, geoMercator, geoPath, GeoPermissibleObjects } from 'd3-geo';
+import { geoMercator, geoPath, GeoPermissibleObjects } from 'd3-geo';
 import { normalizeStateName } from '../../utils/nigeriaStateNames';
-
-interface StateFeature {
-  type: 'Feature';
-  properties: { shapeName: string };
-  geometry: GeoJSON.Geometry;
-}
+import { loadNigeriaStates, StateFeature } from '../../utils/nigeriaGeo';
 
 interface NigeriaMapProps {
   stateCounts: { state: string; count: number }[];
@@ -16,31 +11,13 @@ interface NigeriaMapProps {
 const WIDTH = 620;
 const HEIGHT = 620;
 
-function fixRingWinding(features: StateFeature[]): StateFeature[] {
-  return features.map((f) => {
-    if (geoArea(f as unknown as GeoPermissibleObjects) <= Math.PI) return f;
-
-    const geom = f.geometry;
-    const reverseRings = (rings: number[][][]) => rings.map((ring) => [...ring].reverse());
-    if (geom.type === 'Polygon') {
-      return { ...f, geometry: { ...geom, coordinates: reverseRings(geom.coordinates) } };
-    }
-    if (geom.type === 'MultiPolygon') {
-      return { ...f, geometry: { ...geom, coordinates: geom.coordinates.map(reverseRings) } };
-    }
-    return f;
-  });
-}
-
 export const NigeriaMap = ({ stateCounts, onSelectState }: NigeriaMapProps) => {
   const [features, setFeatures] = useState<StateFeature[] | null>(null);
   const [hovered, setHovered] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    fetch('/nigeria-states.geojson')
-      .then((r) => r.json())
-      .then((data) => { if (!cancelled) setFeatures(fixRingWinding(data.features)); });
+    loadNigeriaStates().then((loaded) => { if (!cancelled) setFeatures(loaded); });
     return () => { cancelled = true; };
   }, []);
 

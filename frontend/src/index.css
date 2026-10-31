@@ -66,6 +66,10 @@ body {
   animation-delay: var(--d, 0ms);
 }
 
+.step-in {
+  animation: fade-up 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
 .ken-burns {
   animation: ken-burns 14s ease-out forwards;
 }
@@ -76,6 +80,7 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .hero-in,
+  .step-in,
   .reveal,
   .reveal.is-visible {
     opacity: 1;

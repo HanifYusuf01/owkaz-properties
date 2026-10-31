@@ -25,6 +25,7 @@ import { Property } from '../../types';
 import { PAGE_CONTENT } from '../../features/content/pageContentConfig';
 import { CountUp } from '../../components/ui/CountUp';
 import { Skyline } from '../../components/home/Skyline';
+import { FrontDoorStory } from '../../components/home/FrontDoorStory';
 import { delay } from '../../utils/motion';
 
 const SEARCH_TABS = ['Buy', 'Rent', 'Shortlet', 'Land'];
@@ -488,6 +489,8 @@ export const HomePage = () => {
           </div>
         </div>
       </section>
+
+      <FrontDoorStory />
 
       <div className="bg-surface border-y border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
