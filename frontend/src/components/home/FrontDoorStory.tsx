@@ -6,7 +6,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { geoMercator, geoPath, GeoPermissibleObjects } from 'd3-geo';
 import { useGetPropertiesQuery, useGetPropertiesStateCountsQuery, useGetPropertyPreviewQuery } from '../../features/properties/propertiesApi';
 import { useGetContentQuery } from '../../features/content/contentApi';
-import { loadNigeriaStates, StateFeature } from '../../utils/nigeriaGeo';
+import { lgaKey, LgaFeature, loadNigeriaStates, loadStateLgas, StateFeature } from '../../utils/nigeriaGeo';
 import { normalizeStateName } from '../../utils/nigeriaStateNames';
 import { formatPrice } from '../../utils/format';
 import { getImageUrl } from '../../utils/imageUrl';
@@ -16,11 +16,12 @@ gsap.registerPlugin(ScrollTrigger);
 const SIZE = 620;
 const MARGIN = 40;
 const NAV = 64;
-const LABELS = ['Nigeria', 'State', 'Area', 'Property'];
+const LABELS = ['Nigeria', 'State', 'LGA', 'Area', 'Property'];
 const HOLD = 0.5;
 const MOVE = 1;
-const TOTAL = 5;
-const STOP_TIMES = [0.25, 1.75, 3.25, 4.75];
+const TOTAL = 6.5;
+const STOP_TIMES = [0.25, 1.75, 3.25, 4.75, 6.25];
+const LAST = LABELS.length - 1;
 const DOT_GRID = 'radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px)';
 
 const LAYOUTS = {
@@ -28,14 +29,19 @@ const LAYOUTS = {
   narrow: { w: 620, h: 800, cx: 310, cy: 290 },
 };
 
-const stepAt = (time: number) => (time < 1 ? 0 : time < 2.5 ? 1 : time < 4 ? 2 : 3);
-const railPosition = (time: number) => Math.min(1, Math.max(0, (time - STOP_TIMES[0]) / (STOP_TIMES[3] - STOP_TIMES[0])));
+type Layout = (typeof LAYOUTS)['wide'];
+
+const stepAt = (time: number) => (time < 1 ? 0 : time < 2.5 ? 1 : time < 4 ? 2 : time < 5.5 ? 3 : 4);
+const railPosition = (time: number) => Math.min(1, Math.max(0, (time - STOP_TIMES[0]) / (STOP_TIMES[LAST] - STOP_TIMES[0])));
 
 interface View {
   k: number;
   x: number;
   y: number;
 }
+
+const viewOn = (layout: Layout, px: number, py: number, k: number): View => ({ k, x: layout.cx - k * px, y: layout.cy - k * py });
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
 export const FrontDoorStory = () => {
   const navigate = useNavigate();
@@ -46,6 +52,7 @@ export const FrontDoorStory = () => {
   const { data: spotlightProperty, isLoading: spotlightLoading } = useGetPropertyPreviewQuery(spotlightId, { skip: !spotlightId });
   const spotlightReady = !spotlightContentLoading && !(spotlightId && spotlightLoading);
   const [features, setFeatures] = useState<StateFeature[] | null>(null);
+  const [lgas, setLgas] = useState<{ key: string; features: LgaFeature[] } | null>(null);
   const [step, setStep] = useState(0);
   const [wide, setWide] = useState(() => window.matchMedia('(min-width: 1024px)').matches);
 
@@ -80,7 +87,7 @@ export const FrontDoorStory = () => {
 
   const layout = wide ? LAYOUTS.wide : LAYOUTS.narrow;
 
-  const story = useMemo(() => {
+  const base = useMemo(() => {
     if (!spotlightReady) return null;
     const listed = list?.data ?? [];
     const properties = spotlightProperty && !listed.some((p) => p.id === spotlightProperty.id) ? [spotlightProperty, ...listed] : listed;
@@ -127,23 +134,10 @@ export const FrontDoorStory = () => {
     const featuredPin = pins.find((p) => p.id === featured.id) ?? null;
 
     const [[x0, y0], [x1, y1]] = pathGen.bounds(feature as unknown as GeoPermissibleObjects);
-    const cx = (x0 + x1) / 2;
-    const cy = (y0 + y1) / 2;
     const k1 = Math.min((SIZE * 0.62) / (x1 - x0), (SIZE * 0.62) / (y1 - y0));
-    const viewOn = (px: number, py: number, k: number): View => ({ k, x: layout.cx - k * px, y: layout.cy - k * py });
-    const pc = pins.length
-      ? { x: pins.reduce((s, p) => s + p.x, 0) / pins.length, y: pins.reduce((s, p) => s + p.y, 0) / pins.length }
-      : { x: cx, y: cy };
-    const view0: View = { k: 1, x: layout.cx - SIZE / 2, y: layout.cy - SIZE / 2 };
-    const view1 = viewOn(cx, cy, k1);
-    const view2 = viewOn(pc.x, pc.y, k1 * (pins.length ? 2.6 : 1.4));
-    const view3 = featuredPin ? viewOn(featuredPin.x, featuredPin.y, k1 * 3.4) : view2;
-
-    const areaCounts = new Map<string, number>();
-    stateProps.forEach((p) => areaCounts.set(p.area, (areaCounts.get(p.area) ?? 0) + 1));
-    const areas = [...areaCounts.entries()].sort((a, b) => b[1] - a[1]).map(([name, n]) => ({ name, n }));
 
     return {
+      pathGen,
       paths: features.map((f) => ({
         name: f.properties.shapeName,
         key: normalizeStateName(f.properties.shapeName),
@@ -155,14 +149,95 @@ export const FrontDoorStory = () => {
       total,
       statesWithListings: countByKey.size,
       countByKey,
+      stateProps,
       pins,
       featured,
       featuredPin,
-      centre: { x: cx, y: cy },
-      areas,
-      views: [view0, view1, view2, view3],
+      centre: { x: (x0 + x1) / 2, y: (y0 + y1) / 2 },
+      k1,
     };
-  }, [features, stateCounts, list, layout, spotlightReady, spotlightProperty]);
+  }, [features, stateCounts, list, spotlightReady, spotlightProperty]);
+
+  const chosenKey = base?.chosenKey;
+  useEffect(() => {
+    if (!chosenKey) return;
+    let cancelled = false;
+    loadStateLgas(chosenKey)
+      .then((loaded) => {
+        if (!cancelled) setLgas({ key: chosenKey, features: loaded });
+      })
+      .catch(() => {
+        if (!cancelled) setLgas({ key: chosenKey, features: [] });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [chosenKey]);
+
+  const story = useMemo(() => {
+    if (!base || !lgas || lgas.key !== base.chosenKey) return null;
+    const { pathGen, centre, k1, stateProps, pins, featured, featuredPin } = base;
+
+    const items = lgas.features.map((f) => {
+      const geometry = f as unknown as GeoPermissibleObjects;
+      const [[bx0, by0], [bx1, by1]] = pathGen.bounds(geometry);
+      const [lx, ly] = pathGen.centroid(geometry);
+      return {
+        name: f.properties.name,
+        key: lgaKey(f.properties.name),
+        d: pathGen(geometry) ?? '',
+        w: bx1 - bx0,
+        h: by1 - by0,
+        cx: lx,
+        cy: ly,
+      };
+    });
+
+    const countByLga = new Map<string, number>();
+    stateProps.forEach((p) => countByLga.set(lgaKey(p.lga), (countByLga.get(lgaKey(p.lga)) ?? 0) + 1));
+    const chosenLga = items.find((i) => i.key === lgaKey(featured.lga)) ?? null;
+
+    const lgaProps = chosenLga ? stateProps.filter((p) => lgaKey(p.lga) === chosenLga.key) : stateProps;
+    const areaCounts = new Map<string, number>();
+    lgaProps.forEach((p) => areaCounts.set(p.area, (areaCounts.get(p.area) ?? 0) + 1));
+    const areas = [...areaCounts.entries()].sort((a, b) => b[1] - a[1]).map(([name, n]) => ({ name, n }));
+    const lgaPropIds = new Set(lgaProps.map((p) => p.id));
+    const lgaPins = pins.filter((p) => lgaPropIds.has(p.id));
+
+    const view0: View = { k: 1, x: layout.cx - SIZE / 2, y: layout.cy - SIZE / 2 };
+    const view1 = viewOn(layout, centre.x, centre.y, k1);
+    const view2 = chosenLga
+      ? viewOn(layout, lerp(centre.x, chosenLga.cx, 0.55), lerp(centre.y, chosenLga.cy, 0.55), k1 * 1.5)
+      : viewOn(layout, centre.x, centre.y, k1 * 1.15);
+    let view3: View;
+    if (chosenLga) {
+      const k = Math.min((SIZE * 0.55) / Math.max(chosenLga.w, 1), (SIZE * 0.55) / Math.max(chosenLga.h, 1));
+      view3 = viewOn(layout, chosenLga.cx, chosenLga.cy, Math.min(k, k1 * 30));
+    } else {
+      const source = lgaPins.length ? lgaPins : pins;
+      const pc = source.length
+        ? { x: source.reduce((s, p) => s + p.x, 0) / source.length, y: source.reduce((s, p) => s + p.y, 0) / source.length }
+        : centre;
+      view3 = viewOn(layout, pc.x, pc.y, k1 * (source.length ? 2.6 : 1.4));
+    }
+    const view4 = featuredPin ? viewOn(layout, featuredPin.x, featuredPin.y, view3.k * 1.8) : view3;
+
+    return {
+      ...base,
+      lgaItems: items.map((i) => ({
+        ...i,
+        chosen: i === chosenLga,
+        count: countByLga.get(i.key) ?? 0,
+        showLabel: i === chosenLga || (i.w * view2.k >= i.name.length * 6 + 10 && (!chosenLga || Math.hypot(i.cx - chosenLga.cx, i.cy - chosenLga.cy) * view2.k >= 80)),
+      })),
+      lgaTotal: items.length,
+      lgaWithListings: items.filter((i) => countByLga.has(i.key)).length,
+      chosenLga,
+      chosenLgaCount: chosenLga ? countByLga.get(chosenLga.key) ?? 0 : 0,
+      areas,
+      views: [view0, view1, view2, view3, view4],
+    };
+  }, [base, lgas, layout]);
 
   useEffect(() => {
     if (!story) return;
@@ -176,7 +251,8 @@ export const FrontDoorStory = () => {
     const rail = railRef.current;
     if (!wrap || !group || !pinGroup || !chips || !photo || !intro || !info || !rail) return;
 
-    const [v0, v1, v2, v3] = story.views;
+    const q = gsap.utils.selector(wrap);
+    const [v0, v1, v2, v3, v4] = story.views;
     const origin = `${(layout.cx / layout.w) * 100}% ${(layout.cy / layout.h) * 100}%`;
     const paintRail = (time: number) => rail.style.setProperty('--p', String(railPosition(time)));
     const syncFixed = () => {
@@ -189,21 +265,28 @@ export const FrontDoorStory = () => {
     const mm = gsap.matchMedia();
     const build = (scrollTrigger?: ScrollTrigger.Vars) => {
       gsap.set(group, { x: v0.x, y: v0.y, scale: 1, svgOrigin: '0 0' });
-      gsap.set([pinGroup, chips, info, '[data-callout]'], { opacity: 0 });
+      gsap.set([pinGroup, chips, info, ...q('[data-callout]'), ...q('[data-lga-layer]'), ...q('[data-lga-label]')], { opacity: 0 });
       gsap.set(photo, { clipPath: `circle(0% at ${origin})` });
       const tl = gsap.timeline({ paused: !scrollTrigger, defaults: { ease: 'power2.inOut' }, scrollTrigger, onUpdate: syncFixed });
       tl.to(group, { x: v1.x, y: v1.y, scale: v1.k, duration: MOVE }, HOLD)
-        .to('[data-dim]', { opacity: 0.1, duration: MOVE }, HOLD)
-        .to('[data-callout]', { opacity: 1, duration: 0.4 }, 1.3)
-        .to('[data-callout]', { opacity: 0, duration: 0.4 }, 2.4)
+        .to(q('[data-dim]'), { opacity: 0.1, duration: MOVE }, HOLD)
+        .to(q('[data-callout="state"]'), { opacity: 1, duration: 0.4 }, 1.3)
+        .to(q('[data-callout="state"]'), { opacity: 0, duration: 0.4 }, 2.2)
+        .to(q('[data-lga-layer]'), { opacity: 1, duration: 0.7 }, 1.9)
         .to(group, { x: v2.x, y: v2.y, scale: v2.k, duration: MOVE }, 2)
-        .to(pinGroup, { opacity: 1, duration: 0.6 }, 2.5)
-        .to(chips, { opacity: 1, duration: 0.6 }, 2.7)
+        .to(q('[data-lga-label]'), { opacity: 1, duration: 0.5, stagger: 0.015 }, 2.7)
+        .to(q('[data-callout="lga"]'), { opacity: 1, duration: 0.4 }, 3)
         .to(group, { x: v3.x, y: v3.y, scale: v3.k, duration: MOVE }, 3.5)
-        .to(chips, { opacity: 0, duration: 0.4 }, 3.5)
-        .to(intro, { opacity: 0, y: -16, duration: 0.4 }, 3.6)
-        .to(photo, { clipPath: `circle(150% at ${origin})`, duration: 0.95, ease: 'power2.inOut' }, 3.7)
-        .fromTo(info, { opacity: 0, y: 28 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, 4.2)
+        .to(q('[data-lga-dim]'), { opacity: 0.22, duration: MOVE }, 3.5)
+        .to(q('[data-lga-label]'), { opacity: 0, duration: 0.4 }, 3.5)
+        .to(q('[data-callout="lga"]'), { opacity: 0, duration: 0.4 }, 3.5)
+        .to(pinGroup, { opacity: 1, duration: 0.6 }, 4.2)
+        .to(chips, { opacity: 1, duration: 0.6 }, 4.3)
+        .to(group, { x: v4.x, y: v4.y, scale: v4.k, duration: MOVE }, 5)
+        .to(chips, { opacity: 0, duration: 0.4 }, 5)
+        .to(intro, { opacity: 0, y: -16, duration: 0.4 }, 5.1)
+        .to(photo, { clipPath: `circle(150% at ${origin})`, duration: 0.95, ease: 'power2.inOut' }, 5.2)
+        .fromTo(info, { opacity: 0, y: 28 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, 5.7)
         .to({}, { duration: 0.001 }, TOTAL - 0.001);
       syncFixed();
       tlRef.current = tl;
@@ -226,15 +309,18 @@ export const FrontDoorStory = () => {
       return () => {
         tlRef.current?.kill();
         tlRef.current = null;
-        gsap.set([group, pinGroup, chips, photo, intro, info, '[data-callout]', '[data-dim]'], { clearProps: 'all' });
+        gsap.set(
+          [group, pinGroup, chips, photo, intro, info, ...q('[data-callout]'), ...q('[data-lga-layer]'), ...q('[data-lga-label]'), ...q('[data-lga-dim]'), ...q('[data-dim]')],
+          { clearProps: 'all' },
+        );
       };
     });
 
     mm.add('(prefers-reduced-motion: reduce)', () => {
       const tl = build();
-      tl.time(STOP_TIMES[3]);
-      paintRail(STOP_TIMES[3]);
-      setStep(3);
+      tl.time(STOP_TIMES[LAST]);
+      paintRail(STOP_TIMES[LAST]);
+      setStep(LAST);
       syncFixed();
       return () => {
         tl.kill();
@@ -246,7 +332,7 @@ export const FrontDoorStory = () => {
   }, [story, layout]);
 
   const goTo = (target: number) => {
-    const next = Math.max(0, Math.min(LABELS.length - 1, target));
+    const next = Math.max(0, Math.min(LAST, target));
     if (reduced) {
       tlRef.current?.time(STOP_TIMES[next]);
       railRef.current?.style.setProperty('--p', String(railPosition(STOP_TIMES[next])));
@@ -262,8 +348,10 @@ export const FrontDoorStory = () => {
 
   if (!story) return null;
 
-  const { displayState, stateCount, total, statesWithListings, areas, featured } = story;
+  const { displayState, stateCount, total, statesWithListings, areas, featured, chosenLga, lgaTotal, lgaWithListings } = story;
   const plural = (n: number, one: string, many: string) => `${n.toLocaleString()} ${n === 1 ? one : many}`;
+  const lgaName = chosenLga?.name;
+  const introStep = Math.min(step, 3);
   const copy = [
     {
       title: 'All of Nigeria, one place to look',
@@ -271,20 +359,26 @@ export const FrontDoorStory = () => {
     },
     { title: displayState, body: `${plural(stateCount, 'listing', 'listings')} here at the moment.` },
     {
+      title: lgaName ?? 'Local government areas',
+      body: lgaTotal
+        ? `${displayState} has ${plural(lgaTotal, 'local government area', 'local government areas')}. ${lgaWithListings.toLocaleString()} ${lgaWithListings === 1 ? 'has' : 'have'} listings on Owkaz.`
+        : `Browse the local government areas inside ${displayState}.`,
+    },
+    {
       title: 'Down to the neighbourhood',
       body: areas.length
-        ? `Browse areas such as ${areas.slice(0, 3).map((a) => a.name).join(', ')}.`
-        : `Browse the neighbourhoods inside ${displayState}.`,
+        ? `Browse areas${lgaName ? ` in ${lgaName}` : ''} such as ${areas.slice(0, 3).map((a) => a.name).join(', ')}.`
+        : `Browse the neighbourhoods inside ${lgaName ?? displayState}.`,
     },
-    { title: 'Open the front door', body: '' },
-  ][Math.min(step, 2)];
+  ][introStep];
+  const lgaPillWidth = chosenLga ? Math.max(120, chosenLga.name.length * 9.2 + 56) : 0;
 
   return (
     <section
       ref={wrapRef}
       aria-label="From Nigeria to your front door"
       className="relative bg-navy"
-      style={reduced ? { height: `calc(100svh - ${NAV}px)` } : { height: '420vh' }}
+      style={reduced ? { height: `calc(100svh - ${NAV}px)` } : { height: '520vh' }}
     >
       <div className={reduced ? 'relative h-full overflow-hidden' : 'sticky overflow-hidden'} style={reduced ? undefined : { top: NAV, height: `calc(100svh - ${NAV}px)` }}>
         <div
@@ -302,7 +396,7 @@ export const FrontDoorStory = () => {
                   key={p.name}
                   d={p.d}
                   data-dim={chosen ? undefined : ''}
-                  fill={chosen ? 'rgba(229,168,74,0.2)' : hasListings ? 'rgba(18,160,142,0.75)' : '#15375b'}
+                  fill={chosen ? 'rgba(229,168,74,0.14)' : hasListings ? 'rgba(18,160,142,0.75)' : '#15375b'}
                   stroke={chosen ? '#E5A84A' : '#0B2540'}
                   strokeWidth={chosen ? 2 : 1}
                   vectorEffect="non-scaling-stroke"
@@ -310,7 +404,32 @@ export const FrontDoorStory = () => {
                 />
               );
             })}
-            <g data-fixed data-callout data-x={story.centre.x} data-y={story.centre.y} aria-hidden="true">
+
+            <g data-lga-layer>
+              {story.lgaItems.map((l) => (
+                <path
+                  key={l.name}
+                  d={l.d}
+                  data-lga-dim={l.chosen ? undefined : ''}
+                  fill={l.chosen ? 'rgba(229,168,74,0.4)' : l.count > 0 ? 'rgba(18,160,142,0.55)' : 'rgba(255,255,255,0.03)'}
+                  stroke={l.chosen ? '#E5A84A' : 'rgba(255,255,255,0.3)'}
+                  strokeWidth={l.chosen ? 2 : 1}
+                  vectorEffect="non-scaling-stroke"
+                  strokeLinejoin="round"
+                />
+              ))}
+              {story.lgaItems
+                .filter((l) => l.showLabel && !l.chosen)
+                .map((l) => (
+                  <g key={l.name} data-fixed data-lga-label data-x={l.cx} data-y={l.cy}>
+                    <text textAnchor="middle" y={4} fontSize={11} fontWeight={500} fill="rgba(255,255,255,0.85)" stroke="#0B2540" strokeWidth={3} paintOrder="stroke" fontFamily="Inter, sans-serif">
+                      {l.name}
+                    </text>
+                  </g>
+                ))}
+            </g>
+
+            <g data-fixed data-callout="state" data-x={story.centre.x} data-y={story.centre.y} aria-hidden="true">
               <g transform="translate(0 -34)">
                 <rect x={-78} y={-16} width={156} height={32} rx={16} fill="#ffffff" />
                 <text textAnchor="middle" y={5} fontSize={13} fontWeight={600} fill="#0B2540" fontFamily="Inter, sans-serif">
@@ -319,6 +438,19 @@ export const FrontDoorStory = () => {
               </g>
               <circle r={5} fill="#E5A84A" />
             </g>
+
+            {chosenLga && (
+              <g data-fixed data-callout="lga" data-x={chosenLga.cx} data-y={chosenLga.cy} aria-hidden="true">
+                <g transform="translate(0 -30)">
+                  <rect x={-lgaPillWidth / 2} y={-16} width={lgaPillWidth} height={32} rx={16} fill="#ffffff" />
+                  <text textAnchor="middle" y={5} fontSize={13} fontWeight={600} fill="#0B2540" fontFamily="Inter, sans-serif">
+                    {chosenLga.name} · {story.chosenLgaCount}
+                  </text>
+                </g>
+                <circle r={5} fill="#E5A84A" />
+              </g>
+            )}
+
             <g ref={pinsRef}>
               {story.pins.map((p) => (
                 <g key={p.id} data-fixed data-x={p.x} data-y={p.y}>
@@ -350,9 +482,9 @@ export const FrontDoorStory = () => {
 
         <div ref={introRef} className="absolute z-20 left-4 right-4 sm:left-8 bottom-28 sm:bottom-32 lg:max-w-md">
           <span className="inline-block rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/80">
-            {LABELS[Math.min(step, 2)]}
+            {LABELS[introStep]}
           </span>
-          <div key={Math.min(step, 2)} className="step-in">
+          <div key={introStep} className="step-in">
             <h2 className="font-display text-3xl sm:text-5xl text-white mt-4 leading-[1.05]">{copy.title}</h2>
             <p className="text-white/70 text-sm sm:text-base leading-relaxed mt-3 max-w-md">{copy.body}</p>
           </div>
@@ -363,7 +495,7 @@ export const FrontDoorStory = () => {
           )}
         </div>
 
-        <div ref={chipsRef} className="absolute z-20 right-4 sm:right-8 bottom-28 sm:bottom-32 left-4 sm:left-auto flex flex-wrap gap-2 sm:justify-end sm:max-w-sm">
+        <div ref={chipsRef} className="absolute z-20 right-4 sm:right-8 top-14 bottom-auto sm:top-auto sm:bottom-32 left-4 sm:left-auto flex flex-wrap gap-2 sm:justify-end sm:max-w-sm">
           {areas.slice(0, 5).map((a) => (
             <span key={a.name} className="inline-flex items-center gap-1.5 rounded-full bg-white/10 backdrop-blur border border-white/20 px-3 py-1.5 text-xs font-medium text-white">
               <MapPin size={12} className="text-gold-light" />
@@ -373,8 +505,10 @@ export const FrontDoorStory = () => {
           ))}
         </div>
 
-        <div ref={infoRef} className={`absolute z-20 left-4 right-4 sm:left-8 bottom-28 sm:bottom-32 lg:max-w-xl ${step === 3 ? '' : 'pointer-events-none'}`}>
-          <div className="text-[11px] font-semibold uppercase tracking-[0.25em] text-gold-light">Now showing in {displayState}</div>
+        <div ref={infoRef} className={`absolute z-20 left-4 right-4 sm:left-8 bottom-28 sm:bottom-32 lg:max-w-xl ${step === LAST ? '' : 'pointer-events-none'}`}>
+          <div className="text-[11px] font-semibold uppercase tracking-[0.25em] text-gold-light">
+            Now showing in {lgaName ? `${lgaName}, ` : ''}{displayState}
+          </div>
           <h3 className="font-display text-3xl sm:text-5xl text-white mt-3 leading-[1.05]">{featured.title}</h3>
           <div className="flex items-center gap-1.5 text-sm text-white/75 mt-3">
             <MapPin size={14} /> {featured.area}, {featured.lga}
@@ -411,6 +545,8 @@ export const FrontDoorStory = () => {
           </div>
         </div>
 
+        <div className="absolute z-20 left-4 sm:left-8 bottom-1 text-[9px] text-white/35">Boundaries: geoBoundaries (CC BY 4.0)</div>
+
         <div ref={railRef} className="absolute z-20 left-4 right-[10.5rem] sm:left-8 bottom-5" style={{ '--p': 0 } as CSSProperties}>
           <div className="relative mx-5 sm:mx-10">
             <div className="relative h-px bg-white/25">
@@ -423,7 +559,7 @@ export const FrontDoorStory = () => {
                   aria-label={`Go to ${label}`}
                   aria-current={i === step}
                   className="absolute top-0 w-6 h-6 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"
-                  style={{ left: `${(i / (LABELS.length - 1)) * 100}%` }}
+                  style={{ left: `${(i / LAST) * 100}%` }}
                 >
                   <span
                     className={`block rounded-full transition-all duration-300 ${
@@ -440,7 +576,7 @@ export const FrontDoorStory = () => {
                   className={`absolute -translate-x-1/2 text-[10px] sm:text-[11px] uppercase tracking-[0.18em] whitespace-nowrap transition-colors ${
                     i === step ? 'text-white' : 'text-white/45 hidden sm:block'
                   }`}
-                  style={{ left: `${(i / (LABELS.length - 1)) * 100}%` }}
+                  style={{ left: `${(i / LAST) * 100}%` }}
                 >
                   {label}
                 </span>
