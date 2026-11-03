@@ -1,11 +1,12 @@
 import { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bath, BedDouble, ChevronDown, MapPin, Ruler } from 'lucide-react';
+import { Bath, BedDouble, Building2, ChevronDown, MapPin, Ruler } from 'lucide-react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { geoMercator, geoPath, GeoPermissibleObjects } from 'd3-geo';
 import { useGetPropertiesQuery, useGetPropertiesStateCountsQuery, useGetPropertyPreviewQuery } from '../../features/properties/propertiesApi';
 import { useGetContentQuery } from '../../features/content/contentApi';
+import { useGetProjectByIdQuery } from '../../features/projects/projectsApi';
 import { lgaKey, LgaFeature, loadNigeriaStates, loadStateLgas, StateFeature } from '../../utils/nigeriaGeo';
 import { normalizeStateName } from '../../utils/nigeriaStateNames';
 import { formatPrice } from '../../utils/format';
@@ -34,6 +35,24 @@ type Layout = (typeof LAYOUTS)['wide'];
 const stepAt = (time: number) => (time < 1 ? 0 : time < 2.5 ? 1 : time < 4 ? 2 : time < 5.5 ? 3 : 4);
 const railPosition = (time: number) => Math.min(1, Math.max(0, (time - STOP_TIMES[0]) / (STOP_TIMES[LAST] - STOP_TIMES[0])));
 
+interface Destination {
+  kind: 'property' | 'project';
+  id: string;
+  title: string;
+  lga: string | null;
+  place: string;
+  image?: string;
+  price: string | null;
+  beds: number | null;
+  baths: number | null;
+  sqm: number | null;
+  units: string | null;
+  href: string;
+  cta: string;
+  moreLabel: string;
+  moreHref: string;
+}
+
 interface View {
   k: number;
   x: number;
@@ -48,9 +67,11 @@ export const FrontDoorStory = () => {
   const { data: stateCounts = [] } = useGetPropertiesStateCountsQuery();
   const { data: list } = useGetPropertiesQuery({ limit: 50 });
   const { data: spotlightContent, isLoading: spotlightContentLoading } = useGetContentQuery('spotlight');
-  const spotlightId = spotlightContent?.propertyId ?? '';
+  const spotlightProjectId = spotlightContent?.projectId ?? '';
+  const spotlightId = spotlightProjectId ? '' : spotlightContent?.propertyId ?? '';
   const { data: spotlightProperty, isLoading: spotlightLoading } = useGetPropertyPreviewQuery(spotlightId, { skip: !spotlightId });
-  const spotlightReady = !spotlightContentLoading && !(spotlightId && spotlightLoading);
+  const { data: spotlightProject, isLoading: spotlightProjectLoading } = useGetProjectByIdQuery(spotlightProjectId, { skip: !spotlightProjectId });
+  const spotlightReady = !spotlightContentLoading && !(spotlightId && spotlightLoading) && !(spotlightProjectId && spotlightProjectLoading);
   const [features, setFeatures] = useState<StateFeature[] | null>(null);
   const [lgas, setLgas] = useState<{ key: string; features: LgaFeature[] } | null>(null);
   const [step, setStep] = useState(0);
@@ -91,7 +112,9 @@ export const FrontDoorStory = () => {
     if (!spotlightReady) return null;
     const listed = list?.data ?? [];
     const properties = spotlightProperty && !listed.some((p) => p.id === spotlightProperty.id) ? [spotlightProperty, ...listed] : listed;
-    if (!features || stateCounts.length === 0 || properties.length === 0) return null;
+    const projectKey = spotlightProject ? normalizeStateName(spotlightProject.state) : null;
+    if (!features) return null;
+    if (!(projectKey && features.some((f) => normalizeStateName(f.properties.shapeName) === projectKey)) && (stateCounts.length === 0 || properties.length === 0)) return null;
 
     const countByKey = new Map<string, number>();
     for (const { state, count } of stateCounts) {
@@ -111,14 +134,15 @@ export const FrontDoorStory = () => {
     const rank = (key: string) =>
       (countByKey.get(key) ?? 0) * 100 + properties.filter((p) => normalizeStateName(p.state) === key && located(p)).length;
     const spotlightKey = spotlightProperty ? normalizeStateName(spotlightProperty.state) : null;
-    const chosen = spotlightProperty && spotlightKey && featureByKey.has(spotlightKey) ? spotlightProperty : null;
+    const chosenProject = spotlightProject && projectKey && featureByKey.has(projectKey) ? spotlightProject : null;
+    const chosen = !chosenProject && spotlightProperty && spotlightKey && featureByKey.has(spotlightKey) ? spotlightProperty : null;
     const keys = [...countByKey.keys()].filter((k) => featureByKey.has(k) && properties.some((p) => normalizeStateName(p.state) === k));
-    if (keys.length === 0 && !chosen) return null;
-    const key = chosen ? spotlightKey! : keys.sort((a, b) => rank(b) - rank(a))[0];
+    if (keys.length === 0 && !chosen && !chosenProject) return null;
+    const key = chosenProject ? projectKey! : chosen ? spotlightKey! : keys.sort((a, b) => rank(b) - rank(a))[0];
 
     const feature = featureByKey.get(key)!;
     const stateProps = properties.filter((p) => normalizeStateName(p.state) === key);
-    const displayState = key === 'fct' ? 'Abuja (FCT)' : stateProps[0].state;
+    const displayState = key === 'fct' ? 'Abuja (FCT)' : chosenProject?.state ?? stateProps[0].state;
 
     const pins = stateProps
       .filter(located)
@@ -128,10 +152,48 @@ export const FrontDoorStory = () => {
       })
       .filter((p): p is { id: string; x: number; y: number } => p !== null);
 
-    const featured =
-      chosen ??
-      stateProps.find((p) => located(p) && p.images?.length) ?? stateProps.find((p) => p.featured && p.images?.length) ?? stateProps.find((p) => p.images?.length) ?? stateProps[0];
-    const featuredPin = pins.find((p) => p.id === featured.id) ?? null;
+    const featuredProperty = chosenProject
+      ? null
+      : chosen ??
+        stateProps.find((p) => located(p) && p.images?.length) ?? stateProps.find((p) => p.featured && p.images?.length) ?? stateProps.find((p) => p.images?.length) ?? stateProps[0];
+    const featuredPin = featuredProperty ? pins.find((p) => p.id === featuredProperty.id) ?? null : null;
+
+    // What the story lands on, whether that is a property or a project.
+    const featured: Destination = chosenProject
+      ? {
+          kind: 'project',
+          id: chosenProject.id,
+          title: chosenProject.name,
+          lga: chosenProject.lga,
+          place: [chosenProject.location, chosenProject.lga].filter(Boolean).join(', '),
+          image: chosenProject.images?.[0],
+          price: chosenProject.priceFrom ? `From ${formatPrice(chosenProject.priceFrom)}` : null,
+          beds: null,
+          baths: null,
+          sqm: null,
+          units: chosenProject.totalUnits > 0 ? `${chosenProject.availableUnits} of ${chosenProject.totalUnits} units available` : null,
+          href: `/projects/${chosenProject.id}`,
+          cta: 'View project',
+          moreLabel: 'All projects',
+          moreHref: '/projects',
+        }
+      : {
+          kind: 'property',
+          id: featuredProperty!.id,
+          title: featuredProperty!.title,
+          lga: featuredProperty!.lga,
+          place: `${featuredProperty!.area}, ${featuredProperty!.lga}`,
+          image: featuredProperty!.images?.[0],
+          price: formatPrice(featuredProperty!.price),
+          beds: featuredProperty!.beds ?? null,
+          baths: featuredProperty!.baths ?? null,
+          sqm: featuredProperty!.sqm ?? null,
+          units: null,
+          href: `/properties/${featuredProperty!.id}`,
+          cta: 'View property',
+          moreLabel: `More in ${displayState}`,
+          moreHref: `/properties?search=${encodeURIComponent(displayState === 'Abuja (FCT)' ? 'FCT' : displayState)}`,
+        };
 
     const [[x0, y0], [x1, y1]] = pathGen.bounds(feature as unknown as GeoPermissibleObjects);
     const k1 = Math.min((SIZE * 0.62) / (x1 - x0), (SIZE * 0.62) / (y1 - y0));
@@ -146,6 +208,7 @@ export const FrontDoorStory = () => {
       chosenKey: key,
       displayState,
       stateCount: countByKey.get(key) ?? stateProps.length,
+      stateHasListings: (countByKey.get(key) ?? stateProps.length) > 0,
       total,
       statesWithListings: countByKey.size,
       countByKey,
@@ -156,7 +219,7 @@ export const FrontDoorStory = () => {
       centre: { x: (x0 + x1) / 2, y: (y0 + y1) / 2 },
       k1,
     };
-  }, [features, stateCounts, list, spotlightReady, spotlightProperty]);
+  }, [features, stateCounts, list, spotlightReady, spotlightProperty, spotlightProject]);
 
   const chosenKey = base?.chosenKey;
   useEffect(() => {
@@ -371,6 +434,7 @@ export const FrontDoorStory = () => {
         : `Browse the neighbourhoods inside ${lgaName ?? displayState}.`,
     },
   ][introStep];
+  const labels = LABELS.map((label, i) => (i === LAST && featured.kind === 'project' ? 'Project' : label));
   const lgaPillWidth = chosenLga ? Math.max(120, chosenLga.name.length * 9.2 + 56) : 0;
 
   return (
@@ -465,7 +529,7 @@ export const FrontDoorStory = () => {
         <div className="absolute inset-0 z-[5] pointer-events-none bg-gradient-to-t from-navy/90 via-navy/35 via-45% to-transparent lg:bg-gradient-to-r lg:from-navy/90 lg:via-navy/50 lg:via-35% lg:to-transparent lg:to-60%" />
 
         <div ref={photoRef} className="absolute inset-0 z-10 pointer-events-none">
-          {featured.images?.[0] && <img src={getImageUrl(featured.images[0])} alt="" className="w-full h-full object-cover" />}
+          {featured.image && <img src={getImageUrl(featured.image)} alt="" className="w-full h-full object-cover" />}
           <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/55 to-navy/10" />
         </div>
 
@@ -482,7 +546,7 @@ export const FrontDoorStory = () => {
 
         <div ref={introRef} className="absolute z-20 left-4 right-4 sm:left-8 bottom-28 sm:bottom-32 lg:max-w-md">
           <span className="inline-block rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/80">
-            {LABELS[introStep]}
+            {labels[introStep]}
           </span>
           <div key={introStep} className="step-in">
             <h2 className="font-display text-3xl sm:text-5xl text-white mt-4 leading-[1.05]">{copy.title}</h2>
@@ -511,11 +575,14 @@ export const FrontDoorStory = () => {
           </div>
           <h3 className="font-display text-3xl sm:text-5xl text-white mt-3 leading-[1.05]">{featured.title}</h3>
           <div className="flex items-center gap-1.5 text-sm text-white/75 mt-3">
-            <MapPin size={14} /> {featured.area}, {featured.lga}
+            <MapPin size={14} /> {featured.place || displayState}
           </div>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-4">
-            <div className="font-display text-3xl text-gold-light">{formatPrice(featured.price)}</div>
+            {featured.price && <div className="font-display text-3xl text-gold-light">{featured.price}</div>}
             <div className="flex items-center gap-4 text-sm text-white/80">
+              {featured.units && (
+                <span className="inline-flex items-center gap-1.5"><Building2 size={16} /> {featured.units}</span>
+              )}
               {featured.beds != null && (
                 <span className="inline-flex items-center gap-1.5"><BedDouble size={16} /> {featured.beds}</span>
               )}
@@ -530,17 +597,17 @@ export const FrontDoorStory = () => {
           <div className="flex flex-wrap gap-3 mt-6">
             <button
               type="button"
-              onClick={() => navigate(`/properties/${featured.id}`)}
+              onClick={() => navigate(featured.href)}
               className="px-6 py-3 rounded-xl bg-teal text-white text-sm font-semibold hover:bg-teal-light hover:-translate-y-0.5 active:translate-y-0 transition-all"
             >
-              View property
+              {featured.cta}
             </button>
             <button
               type="button"
-              onClick={() => navigate(`/properties?search=${encodeURIComponent(displayState === 'Abuja (FCT)' ? 'FCT' : displayState)}`)}
+              onClick={() => navigate(featured.moreHref)}
               className="px-6 py-3 rounded-xl border border-white/30 text-white text-sm font-semibold hover:bg-white/10 hover:-translate-y-0.5 active:translate-y-0 transition-all"
             >
-              More in {displayState}
+              {featured.moreLabel}
             </button>
           </div>
         </div>
@@ -551,7 +618,7 @@ export const FrontDoorStory = () => {
           <div className="relative mx-5 sm:mx-10">
             <div className="relative h-px bg-white/25">
               <div className="absolute left-0 top-0 h-px bg-gold" style={{ width: 'calc(var(--p) * 100%)' }} />
-              {LABELS.map((label, i) => (
+              {labels.map((label, i) => (
                 <button
                   key={label}
                   type="button"
@@ -570,7 +637,7 @@ export const FrontDoorStory = () => {
               ))}
             </div>
             <div className="relative h-6 mt-3">
-              {LABELS.map((label, i) => (
+              {labels.map((label, i) => (
                 <span
                   key={label}
                   className={`absolute -translate-x-1/2 text-[10px] sm:text-[11px] uppercase tracking-[0.18em] whitespace-nowrap transition-colors ${

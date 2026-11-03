@@ -63,6 +63,6 @@ export function loadStateLgas(stateKey: string): Promise<LgaFeature[]> {
   return cached;
 }
 
-export function lgaKey(name: string): string {
-  return name.toLowerCase().replace(/[^a-z]/g, '');
+export function lgaKey(name: string | null | undefined): string {
+  return (name ?? '').toLowerCase().replace(/[^a-z]/g, '');
 }

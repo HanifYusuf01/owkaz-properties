@@ -18,6 +18,7 @@ import {
   useDeleteHeroSlideMutation,
 } from '../../../features/heroSlides/heroSlidesApi';
 import { useUploadImagesMutation, useGetPropertiesQuery, useGetPropertyPreviewQuery } from '../../../features/properties/propertiesApi';
+import { useGetProjectByIdQuery, useGetProjectsQuery } from '../../../features/projects/projectsApi';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { getImageUrl } from '../../../utils/imageUrl';
@@ -187,59 +188,94 @@ const HeroSlidesEditor = () => {
   );
 };
 
+type SpotlightKind = 'property' | 'project';
+
 const SpotlightEditor = () => {
   const { data: saved } = useGetContentQuery('spotlight');
   const [updateContent, { isLoading: isSaving }] = useUpdateContentMutation();
-  const selectedId = saved?.propertyId ?? '';
-  const { data: selected, isError: selectedMissing } = useGetPropertyPreviewQuery(selectedId, { skip: !selectedId });
+  const savedProjectId = saved?.projectId ?? '';
+  const savedPropertyId = saved?.propertyId ?? '';
+  const selectedId = savedProjectId || savedPropertyId;
+  const selectedKind: SpotlightKind = savedProjectId ? 'project' : 'property';
+  const { data: selectedProperty, isError: propertyMissing } = useGetPropertyPreviewQuery(savedPropertyId, { skip: !savedPropertyId || !!savedProjectId });
+  const { data: selectedProject, isError: projectMissing } = useGetProjectByIdQuery(savedProjectId, { skip: !savedProjectId });
+  const [kind, setKind] = useState<SpotlightKind>('property');
   const [term, setTerm] = useState('');
   const [query, setQuery] = useState('');
   const [savedAt, setSavedAt] = useState<number | null>(null);
-  const { data: results } = useGetPropertiesQuery({ limit: 8, search: query || undefined });
+  const { data: propertyResults } = useGetPropertiesQuery({ limit: 8, search: query || undefined }, { skip: kind !== 'property' });
+  const { data: projectResults } = useGetProjectsQuery({ limit: 8, search: query || undefined }, { skip: kind !== 'project' });
 
   useEffect(() => {
     const timeout = setTimeout(() => setQuery(term.trim()), 300);
     return () => clearTimeout(timeout);
   }, [term]);
 
-  const choose = async (propertyId: string) => {
-    await updateContent({ page: 'spotlight', content: { propertyId } }).unwrap();
+  const choose = async (choice: { kind: SpotlightKind; id: string } | null) => {
+    await updateContent({
+      page: 'spotlight',
+      content: { propertyId: choice?.kind === 'property' ? choice.id : '', projectId: choice?.kind === 'project' ? choice.id : '' },
+    }).unwrap();
     setSavedAt(Date.now());
   };
 
   const hasPin = (p: { latitude?: number | null; longitude?: number | null }) => p.latitude != null && p.longitude != null;
+  const switchKind = (next: SpotlightKind) => {
+    setKind(next);
+    setTerm('');
+    setQuery('');
+  };
+  const missing = selectedKind === 'project' ? projectMissing : propertyMissing;
+  const current = selectedKind === 'project' ? selectedProject : selectedProperty;
 
   return (
     <div className="mt-12">
       <h2 className="font-display text-xl text-navy mb-1">Homepage story: Nigeria to your front door</h2>
       <p className="text-sm text-muted mb-4">
-        Pick the property the homepage story ends on. The map zooms to its state and area, then opens into its photo.
+        Pick the property or project the homepage story ends on. The map zooms to its state and area, then opens into its photo.
         Leave it on Automatic to feature the state with the most listings.
       </p>
 
       <div className="bg-white border border-border rounded-2xl p-5 mb-5">
         <div className="text-xs font-semibold uppercase tracking-wide text-navy mb-2">Currently featured</div>
-        {selectedId && selected ? (
+        {selectedId && selectedKind === 'property' && selectedProperty ? (
           <div className="flex items-center gap-3">
-            {selected.images?.[0] && <img src={resolveImg(selected.images[0])} alt="" className="w-16 h-12 rounded-lg object-cover flex-shrink-0" />}
+            {selectedProperty.images?.[0] && <img src={resolveImg(selectedProperty.images[0])} alt="" className="w-16 h-12 rounded-lg object-cover flex-shrink-0" />}
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold text-navy truncate">{selected.title}</div>
-              <div className="text-xs text-muted truncate">{selected.area}, {selected.state} · {formatPrice(selected.price)}</div>
-              {!hasPin(selected) && (
+              <div className="text-sm font-semibold text-navy truncate">{selectedProperty.title}</div>
+              <div className="text-xs text-muted truncate">Property · {selectedProperty.area}, {selectedProperty.state} · {formatPrice(selectedProperty.price)}</div>
+              {!hasPin(selectedProperty) && (
                 <div className="text-xs text-amber-700 mt-1">
                   This listing has no map pin yet, so the story will zoom to its area without a pin. Add an exact location when editing the listing.
                 </div>
               )}
             </div>
-            <Button variant="secondary" size="sm" onClick={() => choose('')} disabled={isSaving}>Use automatic</Button>
+            <Button variant="secondary" size="sm" onClick={() => choose(null)} disabled={isSaving}>Use automatic</Button>
           </div>
-        ) : selectedId && selectedMissing ? (
+        ) : selectedId && selectedKind === 'project' && selectedProject ? (
+          <div className="flex items-center gap-3">
+            {selectedProject.images?.[0] && <img src={resolveImg(selectedProject.images[0])} alt="" className="w-16 h-12 rounded-lg object-cover flex-shrink-0" />}
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold text-navy truncate">{selectedProject.name}</div>
+              <div className="text-xs text-muted truncate">
+                Project · {selectedProject.location}, {selectedProject.state}
+                {selectedProject.priceFrom ? ` · from ${formatPrice(selectedProject.priceFrom)}` : ''}
+              </div>
+              <div className="text-xs text-amber-700 mt-1">
+                Projects have no map pin, so the story zooms to the project's state{selectedProject.lga ? ' and LGA' : ''} and then opens into its photo.
+              </div>
+            </div>
+            <Button variant="secondary" size="sm" onClick={() => choose(null)} disabled={isSaving}>Use automatic</Button>
+          </div>
+        ) : selectedId && missing ? (
           <div className="flex items-center gap-3">
             <p className="text-sm text-amber-700 flex-1">
-              The property you chose is no longer live, so the homepage is using Automatic.
+              The {selectedKind} you chose is no longer available, so the homepage is using Automatic.
             </p>
-            <Button variant="secondary" size="sm" onClick={() => choose('')} disabled={isSaving}>Clear</Button>
+            <Button variant="secondary" size="sm" onClick={() => choose(null)} disabled={isSaving}>Clear</Button>
           </div>
+        ) : current === undefined && selectedId ? (
+          <p className="text-sm text-muted">Loading…</p>
         ) : (
           <div className="text-sm text-navy">
             <span className="inline-block rounded-full bg-teal/10 text-teal text-xs font-semibold px-2.5 py-0.5 mr-2">Automatic</span>
@@ -251,19 +287,61 @@ const SpotlightEditor = () => {
       </div>
 
       <div className="bg-white border border-border rounded-2xl p-5">
-        <label className="text-xs font-semibold uppercase tracking-wide text-navy block mb-1.5">Choose a property</label>
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <label className="text-xs font-semibold uppercase tracking-wide text-navy">Choose {kind === 'project' ? 'a project' : 'a property'}</label>
+          <div className="inline-flex rounded-lg border border-border p-0.5 text-xs font-semibold" role="tablist" aria-label="What to feature">
+            {(['property', 'project'] as const).map((k) => (
+              <button
+                key={k}
+                type="button"
+                role="tab"
+                aria-selected={kind === k}
+                onClick={() => switchKind(k)}
+                className={`px-3 py-1.5 rounded-md transition-colors ${kind === k ? 'bg-navy text-white' : 'text-navy hover:bg-cream'}`}
+              >
+                {k === 'property' ? 'Properties' : 'Projects'}
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="relative mb-3">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
           <input
             value={term}
             onChange={(e) => setTerm(e.target.value)}
-            placeholder="Search by title, area, LGA or state"
+            placeholder={kind === 'project' ? 'Search by name, location or state' : 'Search by title, area, LGA or state'}
             className="w-full border border-border rounded-lg pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:border-teal transition-colors"
           />
         </div>
-        {results && results.data.length > 0 ? (
+        {kind === 'property' ? (
+          propertyResults && propertyResults.data.length > 0 ? (
+            <ul className="divide-y divide-border">
+              {propertyResults.data.map((p) => (
+                <li key={p.id} className="flex items-center gap-3 py-2.5">
+                  {p.images?.[0] ? (
+                    <img src={resolveImg(p.images[0])} alt="" className="w-14 h-10 rounded-md object-cover flex-shrink-0" />
+                  ) : (
+                    <div className="w-14 h-10 rounded-md bg-cream flex-shrink-0" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-medium text-navy truncate">{p.title}</div>
+                    <div className="text-xs text-muted truncate flex items-center gap-1">
+                      <MapPin size={11} /> {p.area}, {p.state} · {formatPrice(p.price)}
+                      {hasPin(p) && <span className="ml-1 text-teal font-medium">· map pin</span>}
+                    </div>
+                  </div>
+                  <Button size="sm" variant={selectedKind === 'property' && p.id === selectedId ? 'secondary' : 'primary'} onClick={() => choose({ kind: 'property', id: p.id })} disabled={isSaving || (selectedKind === 'property' && p.id === selectedId)}>
+                    {selectedKind === 'property' && p.id === selectedId ? 'Featured' : 'Feature'}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-muted">{propertyResults ? 'No listings match that search.' : 'Loading listings…'}</p>
+          )
+        ) : projectResults && projectResults.data.length > 0 ? (
           <ul className="divide-y divide-border">
-            {results.data.map((p) => (
+            {projectResults.data.map((p) => (
               <li key={p.id} className="flex items-center gap-3 py-2.5">
                 {p.images?.[0] ? (
                   <img src={resolveImg(p.images[0])} alt="" className="w-14 h-10 rounded-md object-cover flex-shrink-0" />
@@ -271,20 +349,20 @@ const SpotlightEditor = () => {
                   <div className="w-14 h-10 rounded-md bg-cream flex-shrink-0" />
                 )}
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-medium text-navy truncate">{p.title}</div>
+                  <div className="text-sm font-medium text-navy truncate">{p.name}</div>
                   <div className="text-xs text-muted truncate flex items-center gap-1">
-                    <MapPin size={11} /> {p.area}, {p.state} · {formatPrice(p.price)}
-                    {hasPin(p) && <span className="ml-1 text-teal font-medium">· map pin</span>}
+                    <MapPin size={11} /> {p.location}, {p.state}
+                    {p.priceFrom ? ` · from ${formatPrice(p.priceFrom)}` : ''}
                   </div>
                 </div>
-                <Button size="sm" variant={p.id === selectedId ? 'secondary' : 'primary'} onClick={() => choose(p.id)} disabled={isSaving || p.id === selectedId}>
-                  {p.id === selectedId ? 'Featured' : 'Feature'}
+                <Button size="sm" variant={selectedKind === 'project' && p.id === selectedId ? 'secondary' : 'primary'} onClick={() => choose({ kind: 'project', id: p.id })} disabled={isSaving || (selectedKind === 'project' && p.id === selectedId)}>
+                  {selectedKind === 'project' && p.id === selectedId ? 'Featured' : 'Feature'}
                 </Button>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-muted">{results ? 'No listings match that search.' : 'Loading listings…'}</p>
+          <p className="text-sm text-muted">{projectResults ? 'No projects match that search.' : 'Loading projects…'}</p>
         )}
       </div>
     </div>
