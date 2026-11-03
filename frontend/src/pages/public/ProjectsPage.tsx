@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Building2 } from 'lucide-react';
 import { useGetProjectsQuery } from '../../features/projects/projectsApi';
-import { compactUnitSummary, formatPriceRange, priceBounds } from '../../utils/projectPricing';
+import { formatCompactPrice, formatPrice } from '../../utils/format';
+import { formatPriceRange, listedUnitTypes, priceBounds } from '../../utils/projectPricing';
 import { getImageUrl } from '../../utils/imageUrl';
 import { useGetContentQuery } from '../../features/content/contentApi';
 import { PAGE_CONTENT } from '../../features/content/pageContentConfig';
@@ -155,7 +156,7 @@ export const ProjectsPage = () => {
               <div
                 key={project.id}
                 onClick={() => navigate(`/projects/${project.id}`)}
-                className="bg-white border border-border rounded-2xl overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-200 cursor-pointer"
+                className="bg-white border border-border rounded-2xl overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-200 cursor-pointer flex flex-col"
               >
                 <div className={`h-48 bg-gradient-to-br ${CARD_GRADS[idx % CARD_GRADS.length]} relative overflow-hidden`}>
                   {project.images?.[0] ? (
@@ -172,12 +173,18 @@ export const ProjectsPage = () => {
                   <div className={`absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold border ${STATUS_STYLES[project.status] ?? 'bg-surface text-muted border-border'}`}>
                     {STATUS_LABELS[project.status] ?? project.status}
                   </div>
+                  {priceBounds(project).from && (
+                    <div className="absolute bottom-3 right-3 rounded-full bg-white/95 backdrop-blur px-3 py-1.5 shadow-md">
+                      <span className="text-[10px] font-semibold uppercase tracking-wide text-muted mr-1.5">From</span>
+                      <span className="font-display text-sm text-navy">{formatCompactPrice(priceBounds(project).from!)}</span>
+                    </div>
+                  )}
                   <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/20">
                     <div className="h-full bg-gold transition-all" style={{ width: `${project.progress}%` }} />
                   </div>
                 </div>
 
-                <div className="p-5">
+                <div className="p-5 flex flex-col flex-1">
                   <div className="text-[10px] font-bold uppercase tracking-widest text-teal mb-1">{project.type}</div>
                   <h3 className="font-display text-lg text-navy leading-tight mb-1">{project.name}</h3>
                   <div className="flex items-center gap-1 text-xs text-muted mb-4">
@@ -195,26 +202,41 @@ export const ProjectsPage = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-end justify-between">
-                    <div>
-                      <div className="text-[10px] text-muted">
-                        {priceBounds(project).to ? 'Price Range' : 'Starting Price'}
-                      </div>
-                      <div className="font-display text-base text-navy mt-0.5">
-                        {priceBounds(project).from ? formatPriceRange(project) : 'Contact us'}
-                      </div>
-                      {compactUnitSummary(project, 2) && (
-                        <div className="text-[11px] text-muted mt-1">{compactUnitSummary(project, 2)}</div>
-                      )}
-                    </div>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); navigate(`/projects/${project.id}`); }}
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-navy text-white text-xs font-semibold hover:bg-navy-mid transition-colors flex-shrink-0"
-                    >
-                      View
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                    </button>
+                  <div className="rounded-xl bg-cream border border-border px-4 py-3 mb-4">
+                    {listedUnitTypes(project).length > 0 ? (
+                      <>
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-muted mb-1">Prices by layout</div>
+                        <ul className="divide-y divide-border">
+                          {listedUnitTypes(project).slice(0, 4).map((u, i) => (
+                            <li key={`${u.name}-${i}`} className="flex items-baseline justify-between gap-3 py-1.5">
+                              <span className="text-sm text-navy font-medium">{u.name}</span>
+                              <span className="font-display text-base text-teal whitespace-nowrap">{formatPrice(Number(u.price))}</span>
+                            </li>
+                          ))}
+                        </ul>
+                        {listedUnitTypes(project).length > 4 && (
+                          <div className="text-[11px] text-muted pt-1">+{listedUnitTypes(project).length - 4} more layouts</div>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-muted">
+                          {priceBounds(project).to ? 'Price range' : 'Starting price'}
+                        </div>
+                        <div className="font-display text-xl text-teal mt-0.5">
+                          {priceBounds(project).from ? formatPriceRange(project) : 'Contact us'}
+                        </div>
+                      </>
+                    )}
                   </div>
+
+                  <button
+                    onClick={(e) => { e.stopPropagation(); navigate(`/projects/${project.id}`); }}
+                    className="mt-auto w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-navy text-white text-xs font-semibold hover:bg-navy-mid transition-colors"
+                  >
+                    View project
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                  </button>
                 </div>
               </div>
             ))}
