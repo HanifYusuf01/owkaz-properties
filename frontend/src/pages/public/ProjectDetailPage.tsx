@@ -4,6 +4,8 @@ import { ArrowLeft, MapPin, ChevronLeft, ChevronRight, Play, X, Building2, Check
 import { useGetProjectByIdQuery } from '../../features/projects/projectsApi';
 import { formatPrice } from '../../utils/format';
 import { getImageUrl } from '../../utils/imageUrl';
+import { UnitTypePrices } from '../../components/property/UnitTypePrices';
+import { listedUnitTypes } from '../../utils/projectPricing';
 
 const STATUS_STYLES: Record<string, string> = {
   ongoing: 'bg-teal/20 text-teal border-teal/30',
@@ -258,14 +260,23 @@ export const ProjectDetailPage = () => {
         <div className="space-y-4">
           <div className="bg-white border border-border rounded-2xl p-5 sticky top-6">
             <div className="mb-4">
-              <p className="text-xs text-muted">{project.priceTo ? 'Price Range' : 'Starting from'}</p>
-              <div className="font-display text-2xl text-navy mt-1">
-                {project.priceFrom
-                  ? formatPrice(project.priceFrom)
-                  : 'Contact for pricing'}
-              </div>
-              {project.priceTo && (
-                <div className="text-sm text-muted">up to {formatPrice(project.priceTo)}</div>
+              {listedUnitTypes(project).length > 0 ? (
+                <>
+                  <p className="text-xs text-muted">Prices by layout</p>
+                  <UnitTypePrices unitTypes={listedUnitTypes(project)} className="mt-2" />
+                </>
+              ) : (
+                <>
+                  <p className="text-xs text-muted">{project.priceTo ? 'Price Range' : 'Starting from'}</p>
+                  <div className="font-display text-2xl text-navy mt-1">
+                    {project.priceFrom
+                      ? formatPrice(project.priceFrom)
+                      : 'Contact for pricing'}
+                  </div>
+                  {project.priceTo && (
+                    <div className="text-sm text-muted">up to {formatPrice(project.priceTo)}</div>
+                  )}
+                </>
               )}
             </div>
 

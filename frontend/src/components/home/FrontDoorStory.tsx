@@ -10,6 +10,7 @@ import { useGetProjectByIdQuery } from '../../features/projects/projectsApi';
 import { lgaKey, LgaFeature, loadNigeriaStates, loadStateLgas, StateFeature } from '../../utils/nigeriaGeo';
 import { normalizeStateName } from '../../utils/nigeriaStateNames';
 import { formatPrice } from '../../utils/format';
+import { compactUnitSummary, priceBounds } from '../../utils/projectPricing';
 import { getImageUrl } from '../../utils/imageUrl';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -43,6 +44,7 @@ interface Destination {
   place: string;
   image?: string;
   price: string | null;
+  unitSummary: string | null;
   beds: number | null;
   baths: number | null;
   sqm: number | null;
@@ -167,7 +169,8 @@ export const FrontDoorStory = () => {
           lga: chosenProject.lga,
           place: [chosenProject.location, chosenProject.lga].filter(Boolean).join(', '),
           image: chosenProject.images?.[0],
-          price: chosenProject.priceFrom ? `From ${formatPrice(chosenProject.priceFrom)}` : null,
+          price: priceBounds(chosenProject).from ? `From ${formatPrice(priceBounds(chosenProject).from!)}` : null,
+          unitSummary: compactUnitSummary(chosenProject, 3),
           beds: null,
           baths: null,
           sqm: null,
@@ -185,6 +188,7 @@ export const FrontDoorStory = () => {
           place: `${featuredProperty!.area}, ${featuredProperty!.lga}`,
           image: featuredProperty!.images?.[0],
           price: formatPrice(featuredProperty!.price),
+          unitSummary: null,
           beds: featuredProperty!.beds ?? null,
           baths: featuredProperty!.baths ?? null,
           sqm: featuredProperty!.sqm ?? null,
@@ -579,6 +583,7 @@ export const FrontDoorStory = () => {
           </div>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-4">
             {featured.price && <div className="font-display text-3xl text-gold-light">{featured.price}</div>}
+            {featured.unitSummary && <div className="basis-full text-sm text-white/80 -mt-1">{featured.unitSummary}</div>}
             <div className="flex items-center gap-4 text-sm text-white/80">
               {featured.units && (
                 <span className="inline-flex items-center gap-1.5"><Building2 size={16} /> {featured.units}</span>

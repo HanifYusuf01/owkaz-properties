@@ -1,6 +1,12 @@
 import { baseApi } from '../../store/baseApi';
 import { PaginatedResponse } from '../../types';
 
+export interface UnitType {
+  name: string;
+  price: number;
+  availableUnits?: number | null;
+}
+
 export interface Project {
   id: string;
   name: string;
@@ -11,6 +17,7 @@ export interface Project {
   description: string | null;
   priceFrom: number | null;
   priceTo: number | null;
+  unitTypes?: UnitType[] | null;
   totalUnits: number;
   availableUnits: number;
   progress: number;

@@ -6,6 +6,13 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+/** One bedroom layout (or plot size) inside a project, with its own price. */
+export interface UnitType {
+  name: string;
+  price: number;
+  availableUnits?: number | null;
+}
+
 @Entity('projects')
 export class Project {
   @PrimaryGeneratedColumn('uuid')
@@ -34,6 +41,9 @@ export class Project {
 
   @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
   priceTo: number | null;
+
+  @Column({ type: 'jsonb', nullable: true })
+  unitTypes: UnitType[] | null;
 
   @Column({ default: 0 })
   totalUnits: number;

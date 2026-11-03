@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Building2 } from 'lucide-react';
 import { useGetProjectsQuery } from '../../features/projects/projectsApi';
-import { formatPrice } from '../../utils/format';
+import { compactUnitSummary, formatPriceRange, priceBounds } from '../../utils/projectPricing';
 import { getImageUrl } from '../../utils/imageUrl';
 import { useGetContentQuery } from '../../features/content/contentApi';
 import { PAGE_CONTENT } from '../../features/content/pageContentConfig';
@@ -58,7 +58,7 @@ export const ProjectsPage = () => {
       .filter((p) => p.status === 'completed')
       .reduce((sum, p) => sum + (p.totalUnits ?? 0), 0);
     const statesCovered = new Set(allProjects.map((p) => p.state)).size;
-    const totalValue = allProjects.reduce((sum, p) => sum + (p.priceFrom ?? 0) * (p.totalUnits ?? 0), 0);
+    const totalValue = allProjects.reduce((sum, p) => sum + (priceBounds(p).from ?? 0) * (p.totalUnits ?? 0), 0);
 
     return [
       { num: activeProjects.toLocaleString(), label: 'Active Projects' },
@@ -198,13 +198,14 @@ export const ProjectsPage = () => {
                   <div className="flex items-end justify-between">
                     <div>
                       <div className="text-[10px] text-muted">
-                        {project.priceTo ? 'Price Range' : 'Starting Price'}
+                        {priceBounds(project).to ? 'Price Range' : 'Starting Price'}
                       </div>
                       <div className="font-display text-base text-navy mt-0.5">
-                        {project.priceFrom
-                          ? formatPrice(project.priceFrom)
-                          : 'Contact us'}
+                        {priceBounds(project).from ? formatPriceRange(project) : 'Contact us'}
                       </div>
+                      {compactUnitSummary(project, 2) && (
+                        <div className="text-[11px] text-muted mt-1">{compactUnitSummary(project, 2)}</div>
+                      )}
                     </div>
                     <button
                       onClick={(e) => { e.stopPropagation(); navigate(`/projects/${project.id}`); }}

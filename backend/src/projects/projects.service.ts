@@ -39,13 +39,22 @@ export class ProjectsService {
     return project;
   }
 
+  /** When a project lists several unit types, its headline price range is worked out from them. */
+  private withDerivedPrices<T extends { unitTypes?: { price: number }[]; priceFrom?: number | null; priceTo?: number | null }>(dto: T): T {
+    const prices = (dto.unitTypes ?? []).map((u) => Number(u.price)).filter((n) => Number.isFinite(n));
+    if (prices.length === 0) return dto;
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    return { ...dto, priceFrom: min, priceTo: max > min ? max : null };
+  }
+
   create(dto: CreateProjectDto): Promise<Project> {
-    return this.repo.save(this.repo.create(dto));
+    return this.repo.save(this.repo.create(this.withDerivedPrices(dto)));
   }
 
   async update(id: string, dto: UpdateProjectDto): Promise<Project> {
     const project = await this.findById(id);
-    Object.assign(project, dto);
+    Object.assign(project, this.withDerivedPrices(dto));
     return this.repo.save(project);
   }
 

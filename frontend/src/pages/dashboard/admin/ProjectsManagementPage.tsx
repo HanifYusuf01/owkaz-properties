@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { PlusCircle, Pencil, Trash2, Play, Building2, Camera, Film } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, Play, Building2, Camera, Film, Plus, X } from 'lucide-react';
 import {
   useGetProjectsQuery,
   useCreateProjectMutation,
@@ -15,7 +15,7 @@ import { Modal } from '../../../components/ui/Modal';
 import { ConfirmModal } from '../../../components/ui/ConfirmModal';
 import { DataTable, Column } from '../../../components/ui/DataTable';
 import { getImageUrl } from '../../../utils/imageUrl';
-import { formatPrice } from '../../../utils/format';
+import { formatPriceRange } from '../../../utils/projectPricing';
 import { NIGERIAN_STATES } from '../../../constants/nigerianStates';
 
 const STATUS_OPTIONS = ['ongoing', 'completed', 'pre-launch', 'selling-fast', 'new-launch'] as const;
@@ -51,6 +51,7 @@ type FormState = {
   description: string;
   priceFrom: string;
   priceTo: string;
+  unitTypes: { name: string; price: string; availableUnits: string }[];
   totalUnits: string;
   availableUnits: string;
   progress: string;
@@ -65,7 +66,7 @@ type FormState = {
 
 const emptyForm: FormState = {
   name: '', type: '', location: '', lga: '', state: '', description: '',
-  priceFrom: '', priceTo: '', totalUnits: '', availableUnits: '',
+  priceFrom: '', priceTo: '', unitTypes: [], totalUnits: '', availableUnits: '',
   progress: '0', completionDate: '', status: 'ongoing',
   features: [], existingImages: [], newPhotos: [],
   existingVideoUrl: '', newVideoFile: null,
@@ -80,6 +81,7 @@ const toFormState = (p: Project): FormState => ({
   description: p.description ?? '',
   priceFrom: p.priceFrom != null ? String(p.priceFrom) : '',
   priceTo: p.priceTo != null ? String(p.priceTo) : '',
+  unitTypes: (p.unitTypes ?? []).map((u) => ({ name: u.name, price: String(u.price), availableUnits: u.availableUnits != null ? String(u.availableUnits) : '' })),
   totalUnits: String(p.totalUnits),
   availableUnits: String(p.availableUnits),
   progress: String(p.progress),
@@ -185,6 +187,10 @@ export const ProjectsManagementPage = () => {
     const allImages = [...form.existingImages, ...previewImageUrls];
     const videoUrl = previewVideoUrl || form.existingVideoUrl || null;
 
+    const unitTypes = form.unitTypes
+      .filter((u) => u.name.trim() && Number(u.price) > 0)
+      .map((u) => ({ name: u.name.trim(), price: Number(u.price), availableUnits: u.availableUnits !== '' ? Number(u.availableUnits) : null }));
+
     const payload = {
       name: form.name,
       type: form.type,
@@ -194,6 +200,7 @@ export const ProjectsManagementPage = () => {
       description: form.description || null,
       priceFrom: form.priceFrom ? Number(form.priceFrom) : null,
       priceTo: form.priceTo ? Number(form.priceTo) : null,
+      unitTypes,
       totalUnits: Number(form.totalUnits) || 0,
       availableUnits: Number(form.availableUnits) || 0,
       progress: Math.min(100, Math.max(0, Number(form.progress) || 0)),
@@ -395,14 +402,56 @@ export const ProjectsManagementPage = () => {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <Input label="Price From (₦)" type="number" placeholder="45000000" value={form.priceFrom}
-                onChange={(e) => set('priceFrom', e.target.value)} />
-              <Input label="Price To (₦)" type="number" placeholder="90000000" value={form.priceTo}
-                onChange={(e) => set('priceTo', e.target.value)} />
+              {form.unitTypes.length === 0 && (
+                <>
+                  <Input label="Price From (₦)" type="number" placeholder="45000000" value={form.priceFrom}
+                    onChange={(e) => set('priceFrom', e.target.value)} />
+                  <Input label="Price To (₦)" type="number" placeholder="90000000" value={form.priceTo}
+                    onChange={(e) => set('priceTo', e.target.value)} />
+                </>
+              )}
               <Input label="Total Units" type="number" placeholder="120" value={form.totalUnits}
                 onChange={(e) => set('totalUnits', e.target.value)} />
               <Input label="Available Units" type="number" placeholder="34" value={form.availableUnits}
                 onChange={(e) => set('availableUnits', e.target.value)} />
+            </div>
+
+            <div className="rounded-xl border border-border p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-wide text-navy">Unit types and prices</div>
+                  <p className="text-xs text-muted mt-1">
+                    {form.unitTypes.length === 0
+                      ? 'Selling more than one layout at different prices? Add each one, for example 3 Bedroom and 4 Bedroom.'
+                      : 'The price range shown for this project is worked out from these.'}
+                  </p>
+                </div>
+                <Button type="button" size="sm" variant="secondary" onClick={() => set('unitTypes', [...form.unitTypes, { name: '', price: '', availableUnits: '' }])}>
+                  <Plus size={14} /> Add unit type
+                </Button>
+              </div>
+              {form.unitTypes.length > 0 && (
+                <div className="mt-3 space-y-2">
+                  {form.unitTypes.map((u, i) => {
+                    const update = (patch: Partial<typeof u>) => set('unitTypes', form.unitTypes.map((row, j) => (j === i ? { ...row, ...patch } : row)));
+                    return (
+                      <div key={i} className="grid grid-cols-[1fr_1fr_5.5rem_auto] gap-2 items-end">
+                        <Input label={i === 0 ? 'Name' : undefined} placeholder="3 Bedroom" value={u.name} onChange={(e) => update({ name: e.target.value })} />
+                        <Input label={i === 0 ? 'Price (₦)' : undefined} type="number" placeholder="180000000" value={u.price} onChange={(e) => update({ price: e.target.value })} />
+                        <Input label={i === 0 ? 'Left' : undefined} type="number" placeholder="Units" value={u.availableUnits} onChange={(e) => update({ availableUnits: e.target.value })} />
+                        <button
+                          type="button"
+                          aria-label="Remove unit type"
+                          onClick={() => set('unitTypes', form.unitTypes.filter((_, j) => j !== i))}
+                          className="mb-1 p-2 rounded-lg text-muted hover:text-red-600 hover:bg-red-50 transition-colors"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -607,8 +656,11 @@ export const ProjectsManagementPage = () => {
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-widest text-muted mb-0.5">Price Range</p>
                 <p className="font-semibold text-navy">
-                  {form.priceFrom ? formatPrice(Number(form.priceFrom)) : '-'}
-                  {form.priceTo ? ` to ${formatPrice(Number(form.priceTo))}` : ''}
+                  {formatPriceRange({
+                    unitTypes: form.unitTypes.map((u) => ({ name: u.name, price: Number(u.price) })),
+                    priceFrom: form.priceFrom ? Number(form.priceFrom) : null,
+                    priceTo: form.priceTo ? Number(form.priceTo) : null,
+                  }) ?? '-'}
                 </p>
               </div>
               <div>

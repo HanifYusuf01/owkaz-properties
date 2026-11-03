@@ -4,6 +4,8 @@ import { X, MapPin, ChevronLeft, ChevronRight, Play, Check } from 'lucide-react'
 import { Project } from '../../features/projects/projectsApi';
 import { formatPrice } from '../../utils/format';
 import { getImageUrl } from '../../utils/imageUrl';
+import { UnitTypePrices } from './UnitTypePrices';
+import { listedUnitTypes } from '../../utils/projectPricing';
 
 const STATUS_STYLES: Record<string, string> = {
   ongoing: 'bg-teal/20 text-teal border-teal/30',
@@ -181,14 +183,23 @@ export const ProjectDetailModal = ({ project, onClose }: ProjectDetailModalProps
             </div>
           </div>
 
-          <div className="flex items-center justify-between mt-4 p-3 bg-cream rounded-xl border border-border">
-            <div>
-              <div className="text-[10px] text-muted">Price from</div>
-              <div className="font-display text-xl text-navy">
-                {project.priceFrom
-                  ? `${formatPrice(project.priceFrom)}${project.priceTo ? ` to ${formatPrice(project.priceTo)}` : '+'}`
-                  : 'Contact for pricing'}
-              </div>
+          <div className="flex items-start justify-between gap-4 mt-4 p-3 bg-cream rounded-xl border border-border">
+            <div className="min-w-0 flex-1">
+              {listedUnitTypes(project).length > 0 ? (
+                <>
+                  <div className="text-[10px] text-muted">Prices by layout</div>
+                  <UnitTypePrices unitTypes={listedUnitTypes(project)} />
+                </>
+              ) : (
+                <>
+                  <div className="text-[10px] text-muted">Price from</div>
+                  <div className="font-display text-xl text-navy">
+                    {project.priceFrom
+                      ? `${formatPrice(project.priceFrom)}${project.priceTo ? ` to ${formatPrice(project.priceTo)}` : '+'}`
+                      : 'Contact for pricing'}
+                  </div>
+                </>
+              )}
             </div>
             {project.completionDate && (
               <div className="text-right">
