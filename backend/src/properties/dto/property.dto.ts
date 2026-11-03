@@ -2,11 +2,13 @@ import {
   IsArray,
   IsBoolean,
   IsEnum,
+  IsInt,
+  Max,
+  Min,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
-  Min,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PropertyType } from '../property.entity';
@@ -262,12 +264,16 @@ export class FilterPropertiesDto {
   @ApiPropertyOptional({ default: 1 })
   @IsOptional()
   @Type(() => Number)
-  @IsNumber()
+  @IsInt()
+  @Min(1)
+  @Max(100000)
   page?: number = 1;
 
   @ApiPropertyOptional({ default: 12 })
   @IsOptional()
   @Type(() => Number)
-  @IsNumber()
+  @IsInt()
+  @Min(1)
+  @Max(100)
   limit?: number = 12;
 }

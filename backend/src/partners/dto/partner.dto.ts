@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsString, Matches, Min } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
@@ -16,6 +16,7 @@ export class CreatePartnerDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @Matches(/^(https?:\/\/.+)?$/i, { message: 'websiteUrl must start with http:// or https://' })
   websiteUrl?: string;
 
   @ApiPropertyOptional()
@@ -40,6 +41,7 @@ export class UpdatePartnerDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @Matches(/^(https?:\/\/.+)?$/i, { message: 'websiteUrl must start with http:// or https://' })
   websiteUrl?: string;
 
   @ApiPropertyOptional()

@@ -1,0 +1,10 @@
+# Single-page app: serve real files as-is, send everything else to the React entry point.
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+DirectoryIndex index.html
+RewriteRule ^index\.html$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.html [L]
+</IfModule>

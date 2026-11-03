@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
+import { escapeHtml, escapeHtmlMultiline, singleLine } from '../common/utils/escape-html';
 
 @Injectable()
 export class MailService {
@@ -28,27 +29,33 @@ export class MailService {
   }): Promise<void> {
     const adminEmail = this.configService.get('MAIL_FROM', 'noreply@owkaz.com');
     const from = adminEmail;
-    const subject = dto.subject ? `[Owkaz Contact] ${dto.subject}` : '[Owkaz Contact] New Message';
+    const subject = dto.subject ? `[Owkaz Contact] ${singleLine(dto.subject)}` : '[Owkaz Contact] New Message';
+    const firstName = escapeHtml(dto.firstName);
+    const fullName = escapeHtml(`${dto.firstName} ${dto.lastName}`);
+    const email = escapeHtml(dto.email);
+    const phone = escapeHtml(dto.phone);
+    const subjectHtml = escapeHtml(dto.subject);
+    const messageHtml = escapeHtmlMultiline(dto.message);
 
     await this.transporter.sendMail({
       from: `"Owkaz Contact Form" <${from}>`,
       to: adminEmail,
-      replyTo: dto.email,
+      replyTo: singleLine(dto.email),
       subject,
       html: `
         <div style="font-family:sans-serif;max-width:560px;margin:0 auto;">
           <h2 style="color:#0B2540;border-bottom:2px solid #C8882A;padding-bottom:12px;">New Contact Form Message</h2>
           <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
-            <tr><td style="padding:8px 0;color:#6B7280;font-size:13px;width:120px;">Name</td><td style="padding:8px 0;font-size:13px;font-weight:600;color:#111827;">${dto.firstName} ${dto.lastName}</td></tr>
-            <tr><td style="padding:8px 0;color:#6B7280;font-size:13px;">Email</td><td style="padding:8px 0;font-size:13px;"><a href="mailto:${dto.email}" style="color:#0E7C6E;">${dto.email}</a></td></tr>
-            ${dto.phone ? `<tr><td style="padding:8px 0;color:#6B7280;font-size:13px;">Phone</td><td style="padding:8px 0;font-size:13px;"><a href="tel:${dto.phone}" style="color:#0E7C6E;">${dto.phone}</a></td></tr>` : ''}
-            ${dto.subject ? `<tr><td style="padding:8px 0;color:#6B7280;font-size:13px;">Subject</td><td style="padding:8px 0;font-size:13px;font-weight:600;color:#111827;">${dto.subject}</td></tr>` : ''}
+            <tr><td style="padding:8px 0;color:#6B7280;font-size:13px;width:120px;">Name</td><td style="padding:8px 0;font-size:13px;font-weight:600;color:#111827;">${fullName}</td></tr>
+            <tr><td style="padding:8px 0;color:#6B7280;font-size:13px;">Email</td><td style="padding:8px 0;font-size:13px;"><a href="mailto:${email}" style="color:#0E7C6E;">${email}</a></td></tr>
+            ${dto.phone ? `<tr><td style="padding:8px 0;color:#6B7280;font-size:13px;">Phone</td><td style="padding:8px 0;font-size:13px;"><a href="tel:${phone}" style="color:#0E7C6E;">${phone}</a></td></tr>` : ''}
+            ${dto.subject ? `<tr><td style="padding:8px 0;color:#6B7280;font-size:13px;">Subject</td><td style="padding:8px 0;font-size:13px;font-weight:600;color:#111827;">${subjectHtml}</td></tr>` : ''}
           </table>
           <div style="background:#F7F3ED;border-radius:8px;padding:20px;margin-bottom:24px;">
             <p style="font-size:13px;color:#6B7280;margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Message</p>
-            <p style="font-size:14px;color:#111827;line-height:1.7;margin:0;">${dto.message.replace(/\n/g, '<br>')}</p>
+            <p style="font-size:14px;color:#111827;line-height:1.7;margin:0;">${messageHtml}</p>
           </div>
-          <p style="font-size:12px;color:#9CA3AF;">Reply directly to this email to respond to ${dto.firstName}.</p>
+          <p style="font-size:12px;color:#9CA3AF;">Reply directly to this email to respond to ${firstName}.</p>
           <hr style="border:none;border-top:1px solid #eee;margin:20px 0;" />
           <p style="font-size:12px;color:#9CA3AF;">Owkaz Properties, Abuja and Lagos, Nigeria</p>
         </div>
@@ -57,16 +64,12 @@ export class MailService {
 
     await this.transporter.sendMail({
       from: `"Owkaz Properties" <${from}>`,
-      to: dto.email,
+      to: singleLine(dto.email),
       subject: 'We received your message',
       html: `
         <div style="font-family:sans-serif;max-width:480px;margin:0 auto;">
-          <h2 style="color:#0B2540;">Hi ${dto.firstName},</h2>
+          <h2 style="color:#0B2540;">Hi ${firstName},</h2>
           <p style="color:#6B7280;font-size:14px;line-height:1.7;">Thanks for contacting Owkaz Properties. We have received your message and will reply within <strong>24 hours</strong>.</p>
-          <div style="background:#F7F3ED;border-radius:8px;padding:16px;margin:20px 0;">
-            <p style="font-size:12px;color:#6B7280;margin:0 0 6px;font-weight:600;text-transform:uppercase;">Your message</p>
-            <p style="font-size:13px;color:#111827;line-height:1.6;margin:0;">${dto.message.replace(/\n/g, '<br>')}</p>
-          </div>
           <p style="color:#6B7280;font-size:13px;">If you need urgent assistance, call us at <strong>+234 (0) 800 OWKAZ 01</strong> or WhatsApp <strong>+234 (0) 901 000 0000</strong>.</p>
           <hr style="border:none;border-top:1px solid #eee;margin:24px 0;" />
           <p style="color:#9CA3AF;font-size:12px;">Owkaz Properties, Abuja and Lagos, Nigeria</p>
@@ -85,18 +88,21 @@ export class MailService {
   }): Promise<void> {
     const from = this.configService.get('MAIL_FROM', 'noreply@owkaz.com');
     const frontendUrl = this.configService.get('FRONTEND_URL', 'http://localhost:5173');
+    const buyerName = escapeHtml(dto.buyerName);
+    const propertyTitle = escapeHtml(dto.propertyTitle);
+    const messageHtml = escapeHtmlMultiline(dto.message);
 
     await this.transporter.sendMail({
       from: `"Owkaz Properties" <${from}>`,
       to: dto.to,
-      subject: `We received your enquiry about "${dto.propertyTitle}"`,
+      subject: `We received your enquiry about "${singleLine(dto.propertyTitle)}"`,
       html: `
         <div style="font-family:sans-serif;max-width:480px;margin:0 auto;">
-          <h2 style="color:#0B2540;">Hi ${dto.buyerName},</h2>
-          <p style="color:#6B7280;font-size:14px;line-height:1.7;">Thanks for your interest in <strong>${dto.propertyTitle}</strong>. We have received your enquiry and a member of our team will follow up shortly.</p>
+          <h2 style="color:#0B2540;">Hi ${buyerName},</h2>
+          <p style="color:#6B7280;font-size:14px;line-height:1.7;">Thanks for your interest in <strong>${propertyTitle}</strong>. We have received your enquiry and a member of our team will follow up shortly.</p>
           <div style="background:#F7F3ED;border-radius:8px;padding:16px;margin:20px 0;">
             <p style="font-size:12px;color:#6B7280;margin:0 0 6px;font-weight:600;text-transform:uppercase;">Your message</p>
-            <p style="font-size:13px;color:#111827;line-height:1.6;margin:0;">${dto.message.replace(/\n/g, '<br>')}</p>
+            <p style="font-size:13px;color:#111827;line-height:1.6;margin:0;">${messageHtml}</p>
           </div>
           <a href="${frontendUrl}/my-inquiries"
              style="display:inline-block;margin:8px 0 24px;padding:12px 28px;background:#2A9D8F;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">
@@ -121,23 +127,27 @@ export class MailService {
   }): Promise<void> {
     const from = this.configService.get('MAIL_FROM', 'noreply@owkaz.com');
     const frontendUrl = this.configService.get('FRONTEND_URL', 'http://localhost:5173');
+    const buyerName = escapeHtml(dto.buyerName);
+    const buyerEmail = escapeHtml(dto.buyerEmail);
+    const propertyTitle = escapeHtml(dto.propertyTitle);
+    const messageHtml = escapeHtmlMultiline(dto.message);
 
     await this.transporter.sendMail({
       from: `"Owkaz Properties" <${from}>`,
       to: dto.to,
-      replyTo: dto.buyerEmail,
-      subject: `New enquiry: "${dto.propertyTitle}"`,
+      replyTo: singleLine(dto.buyerEmail),
+      subject: `New enquiry: "${singleLine(dto.propertyTitle)}"`,
       html: `
         <div style="font-family:sans-serif;max-width:560px;margin:0 auto;">
           <h2 style="color:#0B2540;border-bottom:2px solid #C8882A;padding-bottom:12px;">New Property Enquiry</h2>
           <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
-            <tr><td style="padding:8px 0;color:#6B7280;font-size:13px;width:120px;">Property</td><td style="padding:8px 0;font-size:13px;font-weight:600;color:#111827;">${dto.propertyTitle}</td></tr>
-            <tr><td style="padding:8px 0;color:#6B7280;font-size:13px;">Buyer</td><td style="padding:8px 0;font-size:13px;font-weight:600;color:#111827;">${dto.buyerName}</td></tr>
-            <tr><td style="padding:8px 0;color:#6B7280;font-size:13px;">Email</td><td style="padding:8px 0;font-size:13px;"><a href="mailto:${dto.buyerEmail}" style="color:#0E7C6E;">${dto.buyerEmail}</a></td></tr>
+            <tr><td style="padding:8px 0;color:#6B7280;font-size:13px;width:120px;">Property</td><td style="padding:8px 0;font-size:13px;font-weight:600;color:#111827;">${propertyTitle}</td></tr>
+            <tr><td style="padding:8px 0;color:#6B7280;font-size:13px;">Buyer</td><td style="padding:8px 0;font-size:13px;font-weight:600;color:#111827;">${buyerName}</td></tr>
+            <tr><td style="padding:8px 0;color:#6B7280;font-size:13px;">Email</td><td style="padding:8px 0;font-size:13px;"><a href="mailto:${buyerEmail}" style="color:#0E7C6E;">${buyerEmail}</a></td></tr>
           </table>
           <div style="background:#F7F3ED;border-radius:8px;padding:20px;margin-bottom:24px;">
             <p style="font-size:13px;color:#6B7280;margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Message</p>
-            <p style="font-size:14px;color:#111827;line-height:1.7;margin:0;">${dto.message.replace(/\n/g, '<br>')}</p>
+            <p style="font-size:14px;color:#111827;line-height:1.7;margin:0;">${messageHtml}</p>
           </div>
           <a href="${frontendUrl}/dashboard/inquiries"
              style="display:inline-block;margin-bottom:24px;padding:12px 28px;background:#2A9D8F;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">
@@ -154,7 +164,7 @@ export class MailService {
 
   async sendPasswordReset(to: string, token: string): Promise<void> {
     const frontendUrl = this.configService.get('FRONTEND_URL', 'http://localhost:5173');
-    const resetUrl = `${frontendUrl}/reset-password?token=${token}`;
+    const resetUrl = `${frontendUrl}/reset-password?token=${encodeURIComponent(token)}`;
     const from = this.configService.get('MAIL_FROM', 'noreply@owkaz.com');
 
     await this.transporter.sendMail({

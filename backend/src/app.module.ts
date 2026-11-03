@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
@@ -18,6 +20,7 @@ import { HeroSlidesModule } from './hero-slides/hero-slides.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
@@ -28,7 +31,8 @@ import { HeroSlidesModule } from './hero-slides/hero-slides.module';
         password: config.get('DB_PASSWORD', 'postgres'),
         database: config.get('DB_NAME', 'owkaz'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: true,
+        // Set DB_SYNCHRONIZE=false once the schema is stable so a model change can never alter or drop live columns.
+        synchronize: config.get('DB_SYNCHRONIZE', 'true') !== 'false',
         logging: false,
       }),
       inject: [ConfigService],
@@ -47,5 +51,6 @@ import { HeroSlidesModule } from './hero-slides/hero-slides.module';
     LocationsModule,
     HeroSlidesModule,
   ],
+  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}

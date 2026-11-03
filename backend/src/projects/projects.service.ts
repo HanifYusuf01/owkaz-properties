@@ -14,7 +14,9 @@ export class ProjectsService {
   async findAll(
     filters: { search?: string; page?: number; limit?: number } = {},
   ): Promise<{ data: Project[]; total: number; page: number; limit: number; totalPages: number }> {
-    const { search, page = 1, limit = 12 } = filters;
+    const { search } = filters;
+    const page = Math.max(1, Number(filters.page) || 1);
+    const limit = Math.min(1000, Math.max(1, Number(filters.limit) || 12));
     const where = search
       ? [
           { name: ILike(`%${search}%`) },

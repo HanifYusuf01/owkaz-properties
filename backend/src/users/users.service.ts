@@ -8,6 +8,8 @@ import { UpdateUserDto, UpdateUserRoleDto, UpdateUserStatusDto } from './dto/upd
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../notifications/notification.entity';
 
+export type RequestableRole = 'agent' | 'owner';
+
 const BOT_EMAIL = 'assistant@owkaz.ng';
 
 @Injectable()
@@ -53,7 +55,9 @@ export class UsersService {
   async findAll(
     filters: { role?: UserRole; status?: UserStatus; page?: number; limit?: number } = {},
   ): Promise<{ data: User[]; total: number; page: number; limit: number; totalPages: number }> {
-    const { role, status, page = 1, limit = 20 } = filters;
+    const { role, status } = filters;
+    const page = Math.max(1, Number(filters.page) || 1);
+    const limit = Math.min(1000, Math.max(1, Number(filters.limit) || 20));
     const query = this.usersRepo.createQueryBuilder('user');
     if (role) query.andWhere('user.role = :role', { role });
     if (status) query.andWhere('user.status = :status', { status });
@@ -71,7 +75,10 @@ export class UsersService {
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    return this.usersRepo.findOne({ where: { email } });
+    return this.usersRepo
+      .createQueryBuilder('user')
+      .where('LOWER(user.email) = LOWER(:email)', { email: email.trim() })
+      .getOne();
   }
 
   async updateRefreshToken(id: string, hash: string | null): Promise<void> {
@@ -97,7 +104,7 @@ export class UsersService {
     return this.findById(id) as Promise<User>;
   }
 
-  async requestRole(user: User, requestedRole: 'agent' | 'owner'): Promise<{ message: string }> {
+  async requestRole(user: User, requestedRole: RequestableRole): Promise<{ message: string }> {
     await this.usersRepo.update(user.id, { roleRequest: requestedRole });
 
     const admins = await this.usersRepo.find({ where: { role: UserRole.ADMIN } });
@@ -127,20 +134,12 @@ export class UsersService {
     });
   }
 
-  async findByResetToken(token: string): Promise<User | null> {
-    const users = await this.usersRepo
+  async findByResetToken(tokenHash: string): Promise<User | null> {
+    return this.usersRepo
       .createQueryBuilder('user')
-      .where('user.passwordResetToken IS NOT NULL')
+      .where('user.passwordResetToken = :tokenHash', { tokenHash })
       .andWhere('user.passwordResetExpiry > :now', { now: new Date() })
-      .getMany();
-
-    for (const user of users) {
-      const valid = await import('bcrypt').then((bcrypt) =>
-        bcrypt.compare(token, user.passwordResetToken!),
-      );
-      if (valid) return user;
-    }
-    return null;
+      .getOne();
   }
 
   async resetPassword(id: string, passwordHash: string): Promise<void> {

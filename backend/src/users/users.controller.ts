@@ -8,10 +8,12 @@ import {
   Body,
   UseGuards,
   Query,
+  ParseEnumPipe,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { UsersService } from './users.service';
-import { UpdateUserDto, UpdateUserRoleDto, UpdateUserStatusDto } from './dto/update-user.dto';
+import { RequestRoleDto, UpdateUserDto, UpdateUserRoleDto, UpdateUserStatusDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -29,8 +31,8 @@ export class UsersController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
   findAll(
-    @Query('role') role?: UserRole,
-    @Query('status') status?: UserStatus,
+    @Query('role', new ParseEnumPipe(UserRole, { optional: true })) role?: UserRole,
+    @Query('status', new ParseEnumPipe(UserStatus, { optional: true })) status?: UserStatus,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
@@ -54,35 +56,35 @@ export class UsersController {
   }
 
   @Post('me/request-role')
-  requestRole(@CurrentUser() user: User, @Body('role') role: 'agent' | 'owner') {
-    return this.usersService.requestRole(user, role);
+  requestRole(@CurrentUser() user: User, @Body() dto: RequestRoleDto) {
+    return this.usersService.requestRole(user, dto.role);
   }
 
   @Get(':id')
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.findById(id);
   }
 
   @Patch(':id/status')
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
-  updateStatus(@Param('id') id: string, @Body() dto: UpdateUserStatusDto) {
+  updateStatus(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateUserStatusDto) {
     return this.usersService.updateStatus(id, dto);
   }
 
   @Patch(':id/role')
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
-  updateRole(@Param('id') id: string, @Body() dto: UpdateUserRoleDto) {
+  updateRole(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateUserRoleDto) {
     return this.usersService.updateRole(id, dto);
   }
 
   @Delete(':id')
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.remove(id);
   }
 }

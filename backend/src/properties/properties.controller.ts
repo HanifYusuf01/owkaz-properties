@@ -8,6 +8,7 @@ import {
   Param,
   Query,
   UseGuards,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { PropertiesService } from './properties.service';
@@ -20,6 +21,7 @@ import {
 } from './dto/property.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
+import { OptionalJwtAuthGuard } from '../common/guards/optional-jwt-auth.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { User, UserRole } from '../users/user.entity';
@@ -75,14 +77,14 @@ export class PropertiesController {
   }
 
   @Get(':id/preview')
-  findPreview(@Param('id') id: string) {
+  findPreview(@Param('id', ParseUUIDPipe) id: string) {
     return this.propertiesService.findApprovedPreview(id);
   }
 
+  @UseGuards(OptionalJwtAuthGuard)
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    await this.propertiesService.incrementViews(id);
-    return this.propertiesService.findById(id);
+  findOne(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: User | null) {
+    return this.propertiesService.findVisible(id, user);
   }
 
 
@@ -99,7 +101,7 @@ export class PropertiesController {
   @Roles(UserRole.ADMIN)
   @Get('admin/sold')
   findSold(@Query() filters: FilterPropertiesDto) {
-    return this.propertiesService.findSold(filters);
+    return this.propertiesService.findSold(filters, false);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -123,7 +125,7 @@ export class PropertiesController {
   @Roles(UserRole.AGENT, UserRole.OWNER, UserRole.ADMIN)
   @Patch(':id')
   update(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdatePropertyDto,
     @CurrentUser() user: User,
   ) {
@@ -134,7 +136,7 @@ export class PropertiesController {
   @ApiBearerAuth()
   @Roles(UserRole.ADMIN)
   @Patch(':id/approve')
-  approve(@Param('id') id: string) {
+  approve(@Param('id', ParseUUIDPipe) id: string) {
     return this.propertiesService.approve(id);
   }
 
@@ -142,7 +144,7 @@ export class PropertiesController {
   @ApiBearerAuth()
   @Roles(UserRole.ADMIN)
   @Patch(':id/reject')
-  reject(@Param('id') id: string, @Body() dto: RejectPropertyDto) {
+  reject(@Param('id', ParseUUIDPipe) id: string, @Body() dto: RejectPropertyDto) {
     return this.propertiesService.reject(id, dto);
   }
 
@@ -151,7 +153,7 @@ export class PropertiesController {
   @Roles(UserRole.AGENT, UserRole.OWNER, UserRole.ADMIN)
   @Patch(':id/sold')
   markSold(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: MarkSoldDto,
     @CurrentUser() user: User,
   ) {
@@ -162,21 +164,21 @@ export class PropertiesController {
   @ApiBearerAuth()
   @Roles(UserRole.ADMIN)
   @Patch(':id/feature')
-  toggleFeatured(@Param('id') id: string) {
+  toggleFeatured(@Param('id', ParseUUIDPipe) id: string) {
     return this.propertiesService.toggleFeatured(id);
   }
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Post(':id/save')
-  saveProperty(@Param('id') id: string, @CurrentUser() user: User) {
+  saveProperty(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: User) {
     return this.propertiesService.saveProperty(id, user);
   }
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Delete(':id/save')
-  unsaveProperty(@Param('id') id: string, @CurrentUser() user: User) {
+  unsaveProperty(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: User) {
     return this.propertiesService.unsaveProperty(id, user);
   }
 
@@ -184,7 +186,7 @@ export class PropertiesController {
   @ApiBearerAuth()
   @Roles(UserRole.AGENT, UserRole.OWNER, UserRole.ADMIN)
   @Delete(':id')
-  remove(@Param('id') id: string, @CurrentUser() user: User) {
+  remove(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: User) {
     return this.propertiesService.remove(id, user);
   }
 
@@ -193,7 +195,7 @@ export class PropertiesController {
   @ApiBearerAuth()
   @Roles(UserRole.AGENT, UserRole.OWNER, UserRole.ADMIN)
   @Get(':id/notes')
-  getNotes(@Param('id') id: string, @CurrentUser() user: User) {
+  getNotes(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: User) {
     return this.propertiesService.getNotes(id, user);
   }
 
@@ -202,7 +204,7 @@ export class PropertiesController {
   @Roles(UserRole.AGENT, UserRole.OWNER, UserRole.ADMIN)
   @Post(':id/notes')
   addNote(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body('content') content: string,
     @CurrentUser() user: User,
   ) {

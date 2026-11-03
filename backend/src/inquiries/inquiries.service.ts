@@ -94,9 +94,15 @@ export class InquiriesService {
     if (user.role !== UserRole.ADMIN && inquiry.buyer.id !== user.id) {
       throw new ForbiddenException('Not authorized to view this conversation');
     }
-    return this.messagesRepo.find({
+    const messages = await this.messagesRepo.find({
       where: { inquiry: { id } },
       order: { createdAt: 'ASC' },
+    });
+    // Senders are shown by display name only; their email, phone and account fields stay private.
+    return messages.map((m) => {
+      const { id: senderId, name, avatarUrl, role } = m.sender;
+      m.sender = { id: senderId, name, avatarUrl, role } as User;
+      return m;
     });
   }
 
@@ -245,6 +251,15 @@ export class InquiriesService {
       relations: ['property', 'buyer', 'assignedTo'],
     });
     if (!inquiry) throw new NotFoundException('Inquiry not found');
+    return inquiry;
+  }
+
+  /** A conversation is visible only to the buyer who opened it and to admins. */
+  async findForUser(id: string, user: User): Promise<Inquiry> {
+    const inquiry = await this.findById(id);
+    if (user.role !== UserRole.ADMIN && inquiry.buyer.id !== user.id) {
+      throw new ForbiddenException('Not authorized to view this inquiry');
+    }
     return inquiry;
   }
 

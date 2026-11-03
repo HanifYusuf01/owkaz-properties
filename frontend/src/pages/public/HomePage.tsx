@@ -407,7 +407,7 @@ export const HomePage = () => {
                     className="h-10 sm:h-12 max-w-[140px] object-contain grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-200"
                   />
                 );
-                return partner.websiteUrl ? (
+                return partner.websiteUrl && /^https?:\/\//i.test(partner.websiteUrl) ? (
                   <a key={partner.id} href={partner.websiteUrl} target="_blank" rel="noopener noreferrer">
                     {logo}
                   </a>

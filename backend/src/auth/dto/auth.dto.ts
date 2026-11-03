@@ -1,7 +1,11 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserRole } from '../../users/user.entity';
+
+export const normalizeEmail = ({ value }: { value: unknown }) =>
+  typeof value === 'string' ? value.trim().toLowerCase() : value;
 
 const REGISTERABLE_ROLES = [
   UserRole.BUYER,
@@ -14,15 +18,19 @@ export class RegisterDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
+  @MaxLength(100)
   name: string;
 
   @ApiProperty()
+  @Transform(normalizeEmail)
   @IsEmail()
+  @MaxLength(254)
   email: string;
 
   @ApiProperty({ minLength: 8 })
   @IsString()
   @MinLength(8)
+  @MaxLength(128)
   password: string;
 
   @ApiProperty({ enum: REGISTERABLE_ROLES, default: UserRole.BUYER })
@@ -32,6 +40,7 @@ export class RegisterDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(150)
   agency?: string;
 }
 
@@ -44,17 +53,22 @@ export class GoogleAuthDto {
 
 export class LoginDto {
   @ApiProperty()
+  @Transform(normalizeEmail)
   @IsEmail()
+  @MaxLength(254)
   email: string;
 
   @ApiProperty()
   @IsString()
+  @MaxLength(128)
   password: string;
 }
 
 export class ForgotPasswordDto {
   @ApiProperty()
+  @Transform(normalizeEmail)
   @IsEmail()
+  @MaxLength(254)
   email: string;
 }
 
@@ -67,5 +81,6 @@ export class ResetPasswordDto {
   @ApiProperty({ minLength: 8 })
   @IsString()
   @MinLength(8)
+  @MaxLength(128)
   password: string;
 }

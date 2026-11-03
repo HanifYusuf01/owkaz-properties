@@ -14,7 +14,6 @@
     "@reduxjs/toolkit": "^2.11.2",
     "axios": "^1.14.0",
     "d3-geo": "^3.1.1",
-    "geojson-rewind": "^0.3.1",
     "gsap": "^3.15.0",
     "lucide-react": "^1.7.0",
     "react": "^19.2.4",

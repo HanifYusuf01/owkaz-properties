@@ -40,6 +40,15 @@ export class PropertiesService {
     return this.propertiesRepo.save(property);
   }
 
+  /** Public responses only ever carry the lister's display details, never their contact or account fields. */
+  private toPublic<T extends Property | null | undefined>(property: T): T {
+    if (property?.submittedBy) {
+      const { id, name, agency, avatarUrl } = property.submittedBy;
+      property.submittedBy = { id, name, agency, avatarUrl } as User;
+    }
+    return property;
+  }
+
   async findAll(filters: FilterPropertiesDto, isPublic = false) {
     const { page = 1, limit = 12, search, type, status, state, lga, priceMin, priceMax, beds, featured } = filters;
 
@@ -71,10 +80,11 @@ export class PropertiesService {
     query.orderBy('property.createdAt', 'DESC');
 
     const total = await query.getCount();
-    const data = await query
+    const rows = await query
       .skip((page - 1) * limit)
       .take(limit)
       .getMany();
+    const data = isPublic ? rows.map((p) => this.toPublic(p)) : rows;
 
     return {
       data,
@@ -86,11 +96,12 @@ export class PropertiesService {
   }
 
   async findFeatured(): Promise<Property[]> {
-    return this.propertiesRepo.find({
+    const rows = await this.propertiesRepo.find({
       where: { featured: true, status: PropertyStatus.APPROVED },
       order: { createdAt: 'DESC' },
       take: 6,
     });
+    return rows.map((p) => this.toPublic(p));
   }
 
   async findMine(userId: string, filters: FilterPropertiesDto) {
@@ -104,8 +115,10 @@ export class PropertiesService {
     return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
-  async findSold(filters: FilterPropertiesDto) {
-    return this.findAll({ ...filters, status: PropertyStatus.SOLD });
+  async findSold(filters: FilterPropertiesDto, isPublic = true) {
+    const result = await this.findAll({ ...filters, status: PropertyStatus.SOLD }, false);
+    if (isPublic) result.data = result.data.map((p) => this.toPublic(p));
+    return result;
   }
 
   async getPriceRange(status?: string): Promise<{ min: number; max: number }> {
@@ -163,7 +176,23 @@ export class PropertiesService {
   async findApprovedPreview(id: string): Promise<Property> {
     const property = await this.propertiesRepo.findOne({ where: { id, status: PropertyStatus.APPROVED } });
     if (!property) throw new NotFoundException('Property not found');
-    return property;
+    return this.toPublic(property);
+  }
+
+  /**
+   * Single-listing read. Approved and sold listings are public; anything else (pending, rejected)
+   * is visible only to the person who submitted it and to admins.
+   */
+  async findVisible(id: string, viewer: User | null): Promise<Property> {
+    const property = await this.findById(id);
+    const privileged = !!viewer && (viewer.role === UserRole.ADMIN || property.submittedBy?.id === viewer.id);
+    if (privileged) return property;
+
+    const isPublicStatus = property.status === PropertyStatus.APPROVED || property.status === PropertyStatus.SOLD;
+    if (!isPublicStatus) throw new NotFoundException('Property not found');
+
+    if (property.status === PropertyStatus.APPROVED) await this.incrementViews(id);
+    return this.toPublic(property);
   }
 
   async incrementViews(id: string): Promise<void> {
@@ -274,10 +303,11 @@ export class PropertiesService {
   async getSavedProperties(user: User): Promise<Property[]> {
     const dbUser = await this.usersRepo.findOne({ where: { id: user.id } });
     if (!dbUser || !dbUser.savedPropertyIds.length) return [];
-    return this.propertiesRepo.find({
-      where: { id: In(dbUser.savedPropertyIds) },
+    const rows = await this.propertiesRepo.find({
+      where: { id: In(dbUser.savedPropertyIds), status: In([PropertyStatus.APPROVED, PropertyStatus.SOLD]) },
       relations: ['submittedBy'],
     });
+    return rows.map((p) => this.toPublic(p));
   }
 
   async getSavedPropertyIds(user: User): Promise<string[]> {
@@ -294,11 +324,13 @@ export class PropertiesService {
   }
 
   async addNote(propertyId: string, user: User, content: string): Promise<PropertyNote> {
+    const text = typeof content === 'string' ? content.trim() : '';
+    if (!text || text.length > 5000) throw new BadRequestException('Note must be between 1 and 5000 characters');
     const property = await this.findById(propertyId);
     if (user.role !== UserRole.ADMIN && property.submittedBy.id !== user.id) {
       throw new ForbiddenException('Not authorized to add notes to this property');
     }
-    const note = this.notesRepo.create({ propertyId, user, content });
+    const note = this.notesRepo.create({ propertyId, user, content: text });
     return this.notesRepo.save(note);
   }
 

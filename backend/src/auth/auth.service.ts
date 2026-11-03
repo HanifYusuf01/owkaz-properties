@@ -15,6 +15,9 @@ import { LoginDto, RegisterDto, ForgotPasswordDto, ResetPasswordDto } from './dt
 import { MailService } from './mail.service';
 import { UserRole, UserStatus } from '../users/user.entity';
 
+const DUMMY_HASH = bcrypt.hashSync('owkaz-timing-equaliser', 10);
+const hashResetToken = (token: string) => crypto.createHash('sha256').update(token).digest('hex');
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -41,10 +44,9 @@ export class AuthService {
 
   async login(dto: LoginDto) {
     const user = await this.usersService.findByEmail(dto.email);
-    if (!user) throw new UnauthorizedException('Invalid credentials');
-
-    const valid = await bcrypt.compare(dto.password, user.passwordHash);
-    if (!valid) throw new UnauthorizedException('Invalid credentials');
+    // Compare against a dummy hash when the account doesn't exist so response time doesn't reveal which emails are registered.
+    const valid = await bcrypt.compare(dto.password, user?.passwordHash ?? DUMMY_HASH);
+    if (!user || !valid) throw new UnauthorizedException('Invalid credentials');
 
     if (user.status === UserStatus.PENDING) {
       throw new ForbiddenException('Your account is pending admin approval.');
@@ -65,7 +67,7 @@ export class AuthService {
       throw new BadRequestException('Google sign-in is not configured on this server.');
     }
 
-    let payload: { email?: string; name?: string } | undefined;
+    let payload: { email?: string; name?: string; email_verified?: boolean } | undefined;
     try {
       const client = new OAuth2Client(clientId);
       const ticket = await client.verifyIdToken({ idToken, audience: clientId });
@@ -75,13 +77,15 @@ export class AuthService {
     }
 
     if (!payload?.email) throw new UnauthorizedException('Google account has no email');
+    if (!payload.email_verified) throw new UnauthorizedException('Google account email is not verified');
 
-    let user = await this.usersService.findByEmail(payload.email);
+    const email = payload.email.trim().toLowerCase();
+    let user = await this.usersService.findByEmail(email);
     if (!user) {
       const passwordHash = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 10);
       user = await this.usersService.create({
-        name: payload.name ?? payload.email.split('@')[0],
-        email: payload.email,
+        name: payload.name ?? email.split('@')[0],
+        email,
         passwordHash,
         role: UserRole.BUYER,
       });
@@ -141,14 +145,15 @@ export class AuthService {
 
     const token = crypto.randomBytes(32).toString('hex');
     const expiry = new Date(Date.now() + 60 * 60 * 1000);
-    const tokenHash = await bcrypt.hash(token, 10);
+    // High-entropy random token, so a plain SHA-256 is enough and lets us look the user up directly.
+    const tokenHash = hashResetToken(token);
 
     await this.usersService.setPasswordResetToken(user.id, tokenHash, expiry);
     await this.mailService.sendPasswordReset(user.email, token);
   }
 
   async resetPassword(dto: ResetPasswordDto): Promise<void> {
-    const user = await this.usersService.findByResetToken(dto.token);
+    const user = await this.usersService.findByResetToken(hashResetToken(dto.token));
     if (!user) throw new BadRequestException('Invalid or expired reset token');
 
     const passwordHash = await bcrypt.hash(dto.password, 10);

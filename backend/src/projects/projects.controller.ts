@@ -1,7 +1,4 @@
-import {
-  Controller, Get, Post, Patch, Delete,
-  Param, Body, Query, UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Body, Query, UseGuards, ParseUUIDPipe } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto, UpdateProjectDto } from './dto/project.dto';
@@ -30,7 +27,7 @@ export class ProjectsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.projectsService.findById(id);
   }
 
@@ -47,7 +44,7 @@ export class ProjectsController {
   @ApiBearerAuth()
   @Roles(UserRole.ADMIN)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateProjectDto) {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateProjectDto) {
     return this.projectsService.update(id, dto);
   }
 
@@ -55,7 +52,7 @@ export class ProjectsController {
   @ApiBearerAuth()
   @Roles(UserRole.ADMIN)
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.projectsService.remove(id);
   }
 }

@@ -7,6 +7,8 @@ import {
   Param,
   Query,
   UseGuards,
+  ParseEnumPipe,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { InquiriesService } from './inquiries.service';
@@ -35,7 +37,7 @@ export class InquiriesController {
   @Get()
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
-  findAll(@Query('status') status?: InquiryStatus) {
+  findAll(@Query('status', new ParseEnumPipe(InquiryStatus, { optional: true })) status?: InquiryStatus) {
     return this.inquiriesService.findAll(status);
   }
 
@@ -45,31 +47,31 @@ export class InquiriesController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.inquiriesService.findById(id);
+  findOne(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: User) {
+    return this.inquiriesService.findForUser(id, user);
   }
 
   @Patch(':id')
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
-  update(@Param('id') id: string, @Body() dto: UpdateInquiryDto, @CurrentUser() user: User) {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateInquiryDto, @CurrentUser() user: User) {
     return this.inquiriesService.update(id, dto, user);
   }
 
   @Patch(':id/assign')
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
-  assign(@Param('id') id: string, @Body() dto: AssignInquiryDto) {
+  assign(@Param('id', ParseUUIDPipe) id: string, @Body() dto: AssignInquiryDto) {
     return this.inquiriesService.assign(id, dto);
   }
 
   @Get(':id/messages')
-  getMessages(@Param('id') id: string, @CurrentUser() user: User) {
+  getMessages(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: User) {
     return this.inquiriesService.getMessages(id, user);
   }
 
   @Post(':id/messages')
-  addMessage(@Param('id') id: string, @Body() dto: SendInquiryMessageDto, @CurrentUser() user: User) {
+  addMessage(@Param('id', ParseUUIDPipe) id: string, @Body() dto: SendInquiryMessageDto, @CurrentUser() user: User) {
     return this.inquiriesService.addMessage(id, user, dto);
   }
 }

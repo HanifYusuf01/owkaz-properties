@@ -361,7 +361,7 @@ const PartnersEditor = () => {
               <img src={getImageUrl(p.logoUrl)} alt={p.name} className="h-10 w-16 object-contain flex-shrink-0" />
               <div className="min-w-0 flex-1">
                 <div className="text-sm font-semibold text-navy truncate">{p.name}</div>
-                {p.websiteUrl && (
+                {p.websiteUrl && /^https?:\/\//i.test(p.websiteUrl) && (
                   <a
                     href={p.websiteUrl}
                     target="_blank"

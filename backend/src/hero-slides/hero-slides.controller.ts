@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Body, UseGuards, ParseUUIDPipe } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { HeroSlidesService } from './hero-slides.service';
 import { CreateHeroSlideDto, UpdateHeroSlideDto } from './dto/hero-slide.dto';
@@ -29,7 +29,7 @@ export class HeroSlidesController {
   @ApiBearerAuth()
   @Roles(UserRole.ADMIN)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateHeroSlideDto) {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateHeroSlideDto) {
     return this.heroSlidesService.update(id, dto);
   }
 
@@ -37,7 +37,7 @@ export class HeroSlidesController {
   @ApiBearerAuth()
   @Roles(UserRole.ADMIN)
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.heroSlidesService.remove(id);
   }
 }
