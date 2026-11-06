@@ -49,7 +49,24 @@ export const GoogleTranslateWidget = () => {
   const [open, setOpen] = useState(false);
   const [current, setCurrent] = useState(getCookieLang);
   const [ready, setReady] = useState(false);
+  const [tucked, setTucked] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+
+  // On phones the button tucks away while scrolling down so it never sits on top of content, and returns when scrolling up.
+  useEffect(() => {
+    const phone = window.matchMedia('(max-width: 639px)');
+    let last = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (phone.matches && Math.abs(y - last) > 8) {
+        setTucked(y > last && y > 120);
+        if (y > last) setOpen(false);
+        last = y;
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   useEffect(() => {
     patchDomForGoogleTranslate();
@@ -103,17 +120,21 @@ export const GoogleTranslateWidget = () => {
     <>
       <div id="google_translate_element" style={{ display: 'none' }} />
 
-      <div ref={ref} className="fixed bottom-5 right-5 z-[100] notranslate" translate="no">
+      <div
+        ref={ref}
+        className={`fixed bottom-4 right-4 sm:bottom-5 sm:right-5 z-[100] notranslate transition-transform duration-300 ${tucked ? 'translate-y-24 sm:translate-y-0' : ''}`}
+        translate="no"
+      >
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
           disabled={!ready}
           aria-label="Change language"
-          className="flex items-center gap-2 pl-3 pr-2.5 py-2.5 rounded-full bg-navy text-white shadow-xl border border-white/10 hover:bg-navy-mid transition-colors disabled:opacity-60"
+          className="flex items-center justify-center gap-2 w-11 h-11 sm:w-auto sm:h-auto sm:pl-3 sm:pr-2.5 sm:py-2.5 rounded-full bg-navy text-white shadow-xl border border-white/10 hover:bg-navy-mid transition-colors disabled:opacity-60"
         >
-          <Languages size={16} />
-          <span className="text-xs font-semibold">{active.label}</span>
-          <ChevronDown size={13} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
+          <Languages size={18} className="sm:w-4 sm:h-4" />
+          <span className="hidden sm:inline text-xs font-semibold">{active.label}</span>
+          <ChevronDown size={13} className={`hidden sm:block transition-transform ${open ? 'rotate-180' : ''}`} />
         </button>
 
         {open && (

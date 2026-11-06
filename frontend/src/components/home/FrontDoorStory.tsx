@@ -28,7 +28,7 @@ const DOT_GRID = 'radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px)';
 
 const LAYOUTS = {
   wide: { w: 960, h: 620, cx: 650, cy: 310 },
-  narrow: { w: 620, h: 800, cx: 310, cy: 290 },
+  narrow: { w: 620, h: 640, cx: 310, cy: 320 },
 };
 
 type Layout = (typeof LAYOUTS)['wide'];
@@ -195,7 +195,7 @@ export const FrontDoorStory = () => {
           units: null,
           href: `/properties/${featuredProperty!.id}`,
           cta: 'View property',
-          moreLabel: `More in ${displayState}`,
+          moreLabel: `More in ${displayState.replace(' (FCT)', '')}`,
           moreHref: `/properties?search=${encodeURIComponent(displayState === 'Abuja (FCT)' ? 'FCT' : displayState)}`,
         };
 
@@ -454,6 +454,8 @@ export const FrontDoorStory = () => {
           style={{ backgroundImage: `${DOT_GRID}, radial-gradient(ellipse 60% 70% at ${(layout.cx / layout.w) * 100}% 50%, rgba(18,160,142,0.22), transparent 70%)`, backgroundSize: '26px 26px, 100% 100%' }}
         />
 
+        {/* Below lg the map and photo live in their own pane above the text, so nothing is drawn behind the copy. */}
+        <div className="absolute inset-x-0 top-12 bottom-[20rem] overflow-hidden lg:inset-0">
         <svg viewBox={`0 0 ${layout.w} ${layout.h}`} className="absolute inset-0 w-full h-full select-none" aria-hidden="true" focusable="false">
           <g ref={groupRef}>
             {story.paths.map((p) => {
@@ -530,12 +532,15 @@ export const FrontDoorStory = () => {
           </g>
         </svg>
 
-        <div className="absolute inset-0 z-[5] pointer-events-none bg-gradient-to-t from-navy/90 via-navy/35 via-45% to-transparent lg:bg-gradient-to-r lg:from-navy/90 lg:via-navy/50 lg:via-35% lg:to-transparent lg:to-60%" />
+        <div className="hidden lg:block absolute inset-0 z-[5] pointer-events-none lg:bg-gradient-to-r lg:from-navy/90 lg:via-navy/50 lg:via-35% lg:to-transparent lg:to-60%" />
 
         <div ref={photoRef} className="absolute inset-0 z-10 pointer-events-none">
           {featured.image && <img src={getImageUrl(featured.image)} alt="" className="w-full h-full object-cover" />}
-          <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/55 to-navy/10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-navy/80 via-transparent to-navy/10 lg:from-navy lg:via-navy/55 lg:to-navy/10" />
         </div>
+        </div>
+
+        <div className="lg:hidden absolute inset-x-0 bottom-0 h-[20rem] z-[15] bg-navy border-t border-white/10" />
 
         <div className="absolute z-20 top-5 left-4 right-4 sm:left-8 sm:right-8 flex items-start justify-between gap-3">
           <div className="text-[11px] font-semibold uppercase tracking-[0.25em] text-teal-light flex items-center gap-2">
@@ -548,22 +553,22 @@ export const FrontDoorStory = () => {
           </div>
         </div>
 
-        <div ref={introRef} className="absolute z-20 left-4 right-4 sm:left-8 bottom-28 sm:bottom-32 lg:max-w-md">
+        <div ref={introRef} className="absolute z-20 left-5 right-5 sm:left-8 bottom-24 sm:bottom-32 lg:max-w-md">
           <span className="inline-block rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/80">
             {labels[introStep]}
           </span>
           <div key={introStep} className="step-in">
-            <h2 className="font-display text-3xl sm:text-5xl text-white mt-4 leading-[1.05]">{copy.title}</h2>
-            <p className="text-white/70 text-sm sm:text-base leading-relaxed mt-3 max-w-md">{copy.body}</p>
+            <h2 className="font-display text-2xl sm:text-5xl text-white mt-3 sm:mt-4 leading-[1.1]">{copy.title}</h2>
+            <p className="text-white/70 text-sm sm:text-base leading-relaxed mt-2 sm:mt-3 max-w-md">{copy.body}</p>
           </div>
           {step === 0 && (
-            <div className="mt-6 inline-flex items-center gap-2 text-xs text-white/55">
+            <div className="mt-3 sm:mt-6 inline-flex items-center gap-2 text-xs text-white/55">
               Scroll to explore <ChevronDown size={14} className="animate-bounce" />
             </div>
           )}
         </div>
 
-        <div ref={chipsRef} className="absolute z-20 right-4 sm:right-8 top-14 bottom-auto sm:top-auto sm:bottom-32 left-4 sm:left-auto flex flex-wrap gap-2 sm:justify-end sm:max-w-sm">
+        <div ref={chipsRef} className="hidden lg:flex absolute z-20 right-8 bottom-32 flex-wrap gap-2 justify-end max-w-sm">
           {areas.slice(0, 5).map((a) => (
             <span key={a.name} className="inline-flex items-center gap-1.5 rounded-full bg-white/10 backdrop-blur border border-white/20 px-3 py-1.5 text-xs font-medium text-white">
               <MapPin size={12} className="text-gold-light" />
@@ -573,16 +578,16 @@ export const FrontDoorStory = () => {
           ))}
         </div>
 
-        <div ref={infoRef} className={`absolute z-20 left-4 right-4 sm:left-8 bottom-28 sm:bottom-32 lg:max-w-xl ${step === LAST ? '' : 'pointer-events-none'}`}>
-          <div className="text-[11px] font-semibold uppercase tracking-[0.25em] text-gold-light">
+        <div ref={infoRef} className={`absolute z-20 left-5 right-5 sm:left-8 bottom-24 sm:bottom-32 lg:max-w-xl ${step === LAST ? '' : 'pointer-events-none'}`}>
+          <div className="hidden sm:block text-[11px] font-semibold uppercase tracking-[0.25em] text-gold-light">
             Now showing in {lgaName ? `${lgaName}, ` : ''}{displayState}
           </div>
-          <h3 className="font-display text-3xl sm:text-5xl text-white mt-3 leading-[1.05]">{featured.title}</h3>
-          <div className="flex items-center gap-1.5 text-sm text-white/75 mt-3">
+          <h3 className="font-display text-2xl sm:text-5xl text-white sm:mt-3 leading-[1.1]">{featured.title}</h3>
+          <div className="flex items-center gap-1.5 text-sm text-white/75 mt-2 sm:mt-3">
             <MapPin size={14} /> {featured.place || displayState}
           </div>
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-4">
-            {featured.price && <div className="font-display text-3xl text-gold-light">{featured.price}</div>}
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-1 mt-3 sm:mt-4">
+            {featured.price && <div className="font-display text-2xl sm:text-3xl text-gold-light">{featured.price}</div>}
             {featured.unitSummary && <div className="basis-full text-sm text-white/80 -mt-1">{featured.unitSummary}</div>}
             <div className="flex items-center gap-4 text-sm text-white/80">
               {featured.units && (
@@ -599,18 +604,18 @@ export const FrontDoorStory = () => {
               )}
             </div>
           </div>
-          <div className="flex flex-wrap gap-3 mt-6">
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-3 mt-4 sm:mt-6">
             <button
               type="button"
               onClick={() => navigate(featured.href)}
-              className="px-6 py-3 rounded-xl bg-teal text-white text-sm font-semibold hover:bg-teal-light hover:-translate-y-0.5 active:translate-y-0 transition-all"
+              className="px-4 sm:px-6 py-3 rounded-xl bg-teal text-white text-sm font-semibold hover:bg-teal-light hover:-translate-y-0.5 active:translate-y-0 transition-all"
             >
               {featured.cta}
             </button>
             <button
               type="button"
               onClick={() => navigate(featured.moreHref)}
-              className="px-6 py-3 rounded-xl border border-white/30 text-white text-sm font-semibold hover:bg-white/10 hover:-translate-y-0.5 active:translate-y-0 transition-all"
+              className="px-4 sm:px-6 py-3 rounded-xl border border-white/30 text-white text-sm font-semibold hover:bg-white/10 hover:-translate-y-0.5 active:translate-y-0 transition-all"
             >
               {featured.moreLabel}
             </button>
@@ -619,7 +624,7 @@ export const FrontDoorStory = () => {
 
         <div className="absolute z-20 left-4 sm:left-8 bottom-1 text-[9px] text-white/35">Boundaries: geoBoundaries (CC BY 4.0)</div>
 
-        <div ref={railRef} className="absolute z-20 left-4 right-[10.5rem] sm:left-8 bottom-5" style={{ '--p': 0 } as CSSProperties}>
+        <div ref={railRef} className="absolute z-20 left-5 right-[4.5rem] sm:left-8 sm:right-[10.5rem] bottom-5" style={{ '--p': 0 } as CSSProperties}>
           <div className="relative mx-5 sm:mx-10">
             <div className="relative h-px bg-white/25">
               <div className="absolute left-0 top-0 h-px bg-gold" style={{ width: 'calc(var(--p) * 100%)' }} />

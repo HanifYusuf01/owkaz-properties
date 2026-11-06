@@ -45,13 +45,17 @@ export const PropertyCard = ({ property, showStatus = false, actions, onCardClic
             {isSaved ? <BookmarkCheck size={15} /> : <Bookmark size={15} />}
           </button>
         )}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-navy/80 to-transparent p-4">
+        <div className="hidden sm:block absolute bottom-0 left-0 right-0 bg-gradient-to-t from-navy/80 to-transparent p-4">
           <div className="font-display text-xl text-white">{formatPrice(property.price)}</div>
           <div className="text-white/60 text-[10px] uppercase tracking-wide">Asking Price</div>
         </div>
       </div>
 
       <div className="p-4">
+        <div className="sm:hidden mb-2">
+          <div className="font-display text-xl text-navy">{formatPrice(property.price)}</div>
+          <div className="text-muted text-[10px] uppercase tracking-wide">Asking Price</div>
+        </div>
         <div className="flex items-start justify-between gap-2 mb-2">
           <h3 className="font-semibold text-sm text-navy leading-snug">{property.title}</h3>
           {showStatus && <Badge status={property.status} />}

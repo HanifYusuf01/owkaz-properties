@@ -185,16 +185,16 @@ export const HomePage = () => {
               <p className="hero-in text-white/70 text-sm sm:text-lg leading-relaxed mb-8 max-w-lg" style={delay(240)}>
                 {content.heroSubtitle}
               </p>
-              <div className="hero-in flex flex-wrap gap-3 mb-10" style={delay(360)}>
+              <div className="hero-in grid grid-cols-1 sm:flex sm:flex-wrap gap-3 mb-10" style={delay(360)}>
                 <button
                   onClick={() => navigate('/properties')}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-teal text-white font-semibold text-sm hover:bg-teal-light hover:-translate-y-0.5 active:translate-y-0 transition-all"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-teal text-white font-semibold text-sm hover:bg-teal-light hover:-translate-y-0.5 active:translate-y-0 transition-all"
                 >
                   <Search size={16} /> Browse Properties
                 </button>
                 <button
                   onClick={() => navigate('/login')}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/20 text-white font-semibold text-sm hover:bg-white/10 hover:-translate-y-0.5 active:translate-y-0 transition-all"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-white/20 text-white font-semibold text-sm hover:bg-white/10 hover:-translate-y-0.5 active:translate-y-0 transition-all"
                 >
                   List Your Property
                 </button>
@@ -582,7 +582,7 @@ export const HomePage = () => {
               <p className="text-white/60 text-lg mb-8 max-w-md">
                 {content.ctaSubtitle}
               </p>
-              <div className="flex flex-wrap gap-3">
+              <div className="grid grid-cols-1 sm:flex sm:flex-wrap w-full sm:w-auto gap-3">
                 <button
                   onClick={() => navigate('/properties')}
                   className="px-6 py-3 rounded-xl bg-teal text-white font-semibold text-sm hover:bg-teal-light hover:-translate-y-0.5 active:translate-y-0 transition-all"
